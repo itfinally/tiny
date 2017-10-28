@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.itfinally.core.repository.mapper.BaseMapper">
+    <resultMap id="baseEntity" type="BaseEntity">
+        <result property="status" column="status" javaType="int"/>
+        <result property="createTime" column="create_time" javaType="long"/>
+        <result property="deleteTime" column="delete_time" javaType="long"/>
+        <result property="updateTime" column="update_time" javaType="long"/>
+    </resultMap>
+
+    <cache flushInterval="600000"
+           size="1024"
+           eviction="LRU"
+           blocking="false"
+           readOnly="false"/>
+
+    <!-- 所有删除定义为 value = -1, BaseStatusEnumEnum 保持一致 -->
+</mapper>
