@@ -1,6 +1,7 @@
 package top.itfinally.security.configure;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
@@ -18,14 +19,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 import top.itfinally.security.web.component.AccessForbiddenHandler;
+import top.itfinally.security.web.component.JwtAuthenticationProcessingFilter;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-@EnableWebSecurity( debug = true )
+@EnableWebSecurity
 @Order( SecurityProperties.ACCESS_OVERRIDE_ORDER )
 @EnableGlobalMethodSecurity( prePostEnabled = true )
 public class SecurityConfigure extends WebSecurityConfigurerAdapter {
@@ -35,6 +40,7 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
     private OncePerRequestFilter jwtAuthorizationFilter;
     private PermissionEvaluator permissionValidService;
     private AccessDeniedHandler accessDeniedHandler;
+    private OncePerRequestFilter adminManagerFilter;
     private UserDetailsService userDetailsService;
 
     @Bean
@@ -68,6 +74,12 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
+    public SecurityConfigure setAdminAuthenticationFilter( OncePerRequestFilter adminManagerFilter ) {
+        this.adminManagerFilter = adminManagerFilter;
+        return this;
+    }
+
+    @Autowired
     public SecurityConfigure setUserDetailsService( UserDetailsService userDetailsService ) {
         this.userDetailsService = userDetailsService;
         return this;
@@ -77,6 +89,7 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
     protected void configure( HttpSecurity http ) throws Exception {
         http.addFilterBefore( jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class )
                 .addFilterBefore( jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class )
+                .addFilterBefore( adminManagerFilter, HeaderWriterFilter.class )
 
                 .exceptionHandling()
                 .accessDeniedHandler( accessDeniedHandler )
@@ -87,17 +100,15 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .formLogin().disable()
                 .httpBasic().disable()
-                .anonymous().disable()      // Cannot access '/verifies/login' to login if disable anonymous request
+                .anonymous().disable()
                 .sessionManagement().sessionCreationPolicy( STATELESS )
 
                 .and()
 
                 .authorizeRequests()
                 .antMatchers( HttpMethod.OPTIONS ).permitAll()
-                .antMatchers( "/verifies/**" ).anonymous()
                 .regexMatchers( "^/authorization/(get_roles|get_permissions)" ).permitAll()
                 .antMatchers( "/authorization/**" ).hasRole( "ADMIN" )
-                .antMatchers( "/admin/**" ).hasIpAddress( "127.0.0.1" )
                 .anyRequest().authenticated();
     }
 

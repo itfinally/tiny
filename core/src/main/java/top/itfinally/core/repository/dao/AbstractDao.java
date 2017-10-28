@@ -1,5 +1,6 @@
 package top.itfinally.core.repository.dao;
 
+import com.google.common.reflect.TypeToken;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -16,11 +17,17 @@ public abstract class AbstractDao<Entity extends BaseEntity<Entity>, Mapper exte
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
     private Mapper baseMapper;
+    private Class<Mapper> baseMapperCls;
 
     private SqlSessionFactory sessionFactory;
 
+    @SuppressWarnings( "unchecked" )
     protected void setBaseMapper( Mapper baseMapper ) {
         this.baseMapper = baseMapper;
+
+        // Get origin mapper by guava type token
+        TypeToken<Mapper> mapperTypeToken = new TypeToken<Mapper>( getClass() ) {};
+        this.baseMapperCls = ( Class<Mapper> ) mapperTypeToken.getRawType();
     }
 
     @Autowired
@@ -61,18 +68,23 @@ public abstract class AbstractDao<Entity extends BaseEntity<Entity>, Mapper exte
     @SuppressWarnings( "unchecked" )
     public int updateAll( Collection<Entity> entities ) {
         SqlSession session = sessionFactory.openSession();
-        Mapper mapper = session.getMapper( ( Class<Mapper> ) baseMapper.getClass() );
+
+        // Cannot just get mapper proxy by baseMapper.getClass() because the base mapper already been proxy, it is a proxy class!
+        // Session will throw a exception if find proxy by a proxy class
+        Mapper mapper = session.getMapper( baseMapperCls );
 
         try {
             for ( Entity entity : entities ) {
                 mapper.update( entity.setUpdateTime( System.currentTimeMillis() ) );
             }
 
+            int effectRow = session.flushStatements().size();
             session.commit();
-            return session.flushStatements().size();
+
+            return effectRow;
 
         } catch ( Exception e ) {
-            logger.error( "batch update failure.", e );
+            logger.error( "Batch update failure.", e );
             session.rollback();
 
         } finally {

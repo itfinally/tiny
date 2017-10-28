@@ -148,7 +148,7 @@ public class VerifiesControllerTesting {
         List<RoleVoBean> roles = new ArrayList<>( roleResponse.getResult() );
 
         List<String> requestBody = new ArrayList<>();
-        requestBody.add( roles.get( 1 ).getId() );
+        requestBody.add( roles.get( 0 ).getId() );
 
         // 开始测试 grant_roles_to 接口, 撤销 admin 账户的 ADMIN 并赋予 USER 角色
         String grantJsonString = mockMvc.perform( post( "/authorization/grant_role_to/{authorityId}", userResponse.getResult().getId() )
