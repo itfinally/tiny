@@ -41,7 +41,7 @@ public class AuthorizationController {
         }
 
         return authorizationService.addPermission( new PermissionEntity()
-                .setName( name )
+                .setName( name.toLowerCase() )
                 .setDescription( description )
         );
     }
@@ -63,7 +63,7 @@ public class AuthorizationController {
         }
 
         return authorizationService.addRole( new RoleEntity()
-                .setName( name )
+                .setName( name.toUpperCase() )
                 .setDescription( description )
         );
     }

@@ -1,5 +1,3 @@
-[TOC]
-
 #### 前言
 这是一个基于 spring-security 编写的权限控制模块,
 为了实现比较基础的权限控制, 查了比较多的资料并写出这一个模块.
@@ -15,9 +13,14 @@
  
 在 SecurityConfigure 中, 可以见到类的顶部有一个 `@Order( SecurityProperties.ACCESS_OVERRIDE_ORDER )` 注解.
 这是为了将来整合 Spring-Security-OAuth2 时, 降低权限验证拦截器的优先级, 优先给 OAuth2 进行调用方验证.
- 
+
+在默认情况下, 关闭了基于 http/表单 的登陆, 取消 csrf 校验, session 存留以及拒绝匿名访问, 并且开启了方法级别的权限校验. 
+
+本来打算设计成连带 url 都是可配置式的, 但是考虑到这种 资源-权限 的变更情况比较罕见, 
+而且设计出来还要考虑 url 的请求方法, 所以采用直接在方法上 @PreAuthorize 注解写 spEL 表达式的方式进行校验, 
+对应的校验器是 `top.itfinally.security.service.PermissionValidService`.
+
 #### 模块说明
-在默认情况下, 关闭了基于 http/表单 的登陆, 取消 csrf 校验, session 存留以及拒绝匿名访问. 
 内置的端点如下:
  * /verifies/login                  | 登陆
  * /authorization
@@ -72,7 +75,7 @@ POST /authorization/add_permission
         description: ${这是个给人看的字段, 不能重复定义}
 ```
 跟上面一样, Bearer 与 token 之间有且仅有一个空格.
-不过这里有个注意的地方, *所有在 /authorization 下的端点都只能被 ADMIN 角色访问.*
+不过这里有个注意的地方, <strong>所有在 /authorization 下的端点都只能被 ADMIN 角色访问.</strong>
 
 ##### /authorization/add_role
 ```
@@ -157,7 +160,10 @@ GET /authorization/get_permissions
 ```
 GET /admin/initialization
 ```
-直接调用就是了, 在 /admin 下的端口都不需要登陆, 只要是在本地( 127.0.0.1 )调用即可.
+直接调用就是了. 在默认情况下下, /admin 内所有端点都只能在本地( 也就是 127.0.0.1 )访问.
+这也是考虑到不要给什么阿猫阿狗随便就能远程调用到而设置的最简单的防御.
+假如再加一个账户身份验证的东西只会陷入"先有鸡还是先有蛋"的怪圈.
+
 实际上这里的处理比较奇怪, 为了绕开 spring-security 禁用匿名的限制, 直接在 filter 上调用 service, 
 详细的源码请查阅`top.itfinally.security.web.component.AdminManagerFilter`
 
@@ -177,10 +183,6 @@ GET /admin/lock
     
 #### 使用说明
 
-在默认情况下下, /admin 内所有端点都只能在本地( 也就是 127.0.0.1 )访问.
-这也是考虑到不要给什么阿猫阿狗随便就能远程调用到而设置的最简单的防御.
-假如再加一个账户身份验证的东西只会陷入"先有鸡还是先有蛋"的怪圈.
-
 1. 使用 resource 目录下的 security.sql 创建表
 2. 通过 curl 调用 get /admin/initialization 创建初始数据
 3. 再一次用 curl 调用 get /admin/create 创建超级管理员账户, 默认账户密码均为 admin
@@ -190,3 +192,100 @@ GET /admin/lock
 
 #### 开发说明
 
+这个万一当然不能直接用啦, 毕竟业务不一样, 先说说怎么覆盖默认实现.
+
+提个醒, <strong>所有覆盖的类, 除了加上诸如 @Service, @Component 之类的注解, 必须再加上 @Primary 注解来告诉 
+Spring 在多实现的情况下优先使用你的实现, 否则 Spring 容器会直接报错.
+</strong>
+
+理论上, 所有的组件都可以通过上述方法进行重写覆盖, 不过建议还是别那么调皮.
+下面列出所有可覆盖的组件.
+
+##### AccessForbiddenHandler 异常及拒绝访问的返回值处理
+ 这个类实现了 AuthenticationEntryPoint, AccessDeniedHandler 两个接口, 顾名思义, 
+ 当请求进入到身份验证流程( AuthenticationManager 阶段 )或者权限验证流程( PermissionEvaluator 阶段 )时,
+ 将捕捉 AuthenticationException, AccessDeniedException 两个异常进行统一返回.
+ 
+ 因为在 JwtAuthenticationProcessingFilter 内, 把这个处理器也加了进去, 
+ 所以如果登陆失败时, 也会转到这个处理器统一返回.
+ 
+ 说白了, 就是为了统一返回实体而实现的, 当然你也可以重写这个实现, 返回你自己的响应实体.
+ 你也可以定制你的实体, 通过继承 `top.itfinally.core.vo.BaseResponseVoBean` 添加你需要的字段.
+ 
+ 记得实体是分为:
+ * 基类( BaseVoBean )
+ * 单对象( SingleResponseVoBean )
+ * 列表对象( CollectionResponseVoBean )
+ * 字典对象( MapResponseVoBean )
+ 
+ 当然了, 已经存在的字段还是不能改的, 除非前端不打算统一规范或者
+ 是 JavaScript 这种弱类型语言.
+ 
+ ( 其实像我这种早就不要脸的人觉得, 如此完美的实体定义, 这TM还要改?  )
+ 
+##### UserDetailCachingService 用户信息缓存
+
+这个类建议墙裂重写, 默认实现是使用 guava 的 CacheBuilder 创建的缓存集合. 默认超时时间为 30 天.
+而且默认的缓存失效处理是直接返回 null, 不建议在生产时使用默认实现.
+
+不设置缓存失效处理是因为访问验证和用户登录是分离的, 这个组件属于访问验证的一部分.
+
+这里的缓存不需要计较失效时间对缓存的影响, 因为拿不到身份的话直接就当 401 状态处理, 
+用户必须重新登录才能登陆, 中间的时间不存在雪崩问题.( app 自动登陆另当别论, 这是个注意点 )
+
+嗯, 说得好像有多少流量一样, OA 组件还计较辣么多, mdzz.  = =||
+ 
+##### UserDetailService 用户信息获取
+
+这个东西是重点, 先说说当初设计时是怎么想的.
+
+spring security 给出的必须的字段很明确, 就是一个用户的用户名密码及其账户状态, 通过六个必要的字段来构成用户信息.
+那么在实现的时候, 如果要做到既实现 spring security 要求的信息, 又能便于重写用户信息, 
+那只能把用户的基础信息拆开, 分成 UserDetail/UserAuthority 两个实体, UserAuthority 作为用户信息的附加描述和用户角色的关联.
+
+所以整套工具的权限角色, 仅仅与 UserAuthority 进行绑定, 
+完全不需要知道 UserDetail 是什么东西从哪里来, 甚至不需要知道 UserDetail 对应的 dao 层 api, 
+在 UserAuthority 与 UserDetail 之间, 有的联系仅仅是 UserDetail 之间的 一个 authorityId.
+(这个 authorityId 仅仅是存储在 UserDetail 伤的一个普通的字符串类型的字段, 数据库及其dao层上绝不可设计成任何形式的外键)
+
+因此整个登录流程如下:
+```
+        user request  ->      ...... ( 略过 security 内部流程 ) 
+                                |
+                          JwtAuthenticationProcessingFilter
+                                |
+                              ...... ( 略过 security 内部流程 )
+                                |
+                          UserDetailService  <-- proxy and return --> UserDetailService implement
+                                |
+                              ...... ( 略过 security 内部流程 )
+                                |
+        user response <-  UserDetailCachingService & JwtTokenService
+```
+
+其中 UserDetailService implement 这一步就是需要继承 `top.itfinally.security.service.UserDetailService` 并实现的类,
+啰啰嗦嗦说那么多就是为了这个, 当然本身也有一个默认实现, 叫做 `UserDetailService.Default`, 
+如果觉得这个就OK的话, 可以直接使用, 对应的数据表是 `security_default_user`.
+
+如果是自己重新实现( 多数情况下都是 ) UserDetailService, 意味着对应的实体也要重新实现,
+对应的用户实体是 `top.itfinally.security.repository.po.UserDetailsEntity`, 而且在设计用户注册时必须注入 `top.itfinally.security.service.AuthorizationService` 
+并且传入注册用户的 id( 注意不是 authorityId ) 调用 register 方法, 否则拦截器永远拒绝该用户的访问.
+
+注册的流程大概如下:
+```
+UserDetailEntity user = new MyUserDetailEntity();
+userDao.save( user );
+authorizationService.save( user.getId() );
+```
+
+#### 最后
+其实最好还是对 spring-security 有个感性的认知, 列一下当初查阅过比较有用的资料:
+
+* [JSON Web Token (JWT) in Spring Security -  a real-world example](https://www.linkedin.com/pulse/json-web-token-jwt-spring-security-real-world-example-boris-trivic)
+* [REST Security with JWT using Java and Spring Security](https://www.toptal.com/java/rest-security-with-jwt-spring-security-and-java)
+* [重拾后端之Spring Boot（四）：使用JWT和Spring Security保护REST API](http://www.jianshu.com/p/6307c89fe3fa)
+* [集成JWT到Spring Boot项目](http://www.saily.top/2016/12/08/spring-boot-jwt/)
+
+无论有多少资料, 其实最好也是最快的认知方式, 就是通过 debug + 各种博客 摸清整个框架的流程, 
+然后再尝试跟着源码一块块去边抄边写, 慢慢理解作者的意图, 即使最后失败( 像这种工业级框架一个人写必然是会失败的 ),
+也能收获不少.

@@ -28,6 +28,7 @@ import java.io.IOException;
 public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
     private final ObjectMapper jsonMapper = new ObjectMapper();
     private UserDetailCachingService userDetailCachingService;
+    private AccessForbiddenHandler accessForbiddenHandler;
     private JwtTokenService jwtTokenService;
 
     protected JwtAuthenticationProcessingFilter() {
@@ -43,6 +44,12 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
     @Autowired
     public JwtAuthenticationProcessingFilter setUserDetailCachingService( UserDetailCachingService userDetailCachingService ) {
         this.userDetailCachingService = userDetailCachingService;
+        return this;
+    }
+
+    @Autowired
+    public JwtAuthenticationProcessingFilter setAccessForbiddenHandler( AccessForbiddenHandler accessForbiddenHandler ) {
+        this.accessForbiddenHandler = accessForbiddenHandler;
         return this;
     }
 
@@ -88,9 +95,6 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
 
     @Override
     protected void unsuccessfulAuthentication( HttpServletRequest request, HttpServletResponse response, AuthenticationException failed ) throws IOException, ServletException {
-        response.setHeader( "Content-Type", "application/json;charset=UTF-8" );
-        response.getWriter().write( jsonMapper.writeValueAsString(
-                new BaseResponseVoBean<>( ResponseStatusEnum.UNAUTHORIZED ).setMessage( failed.getMessage() )
-        ) );
+        accessForbiddenHandler.commence( request, response, failed );
     }
 }

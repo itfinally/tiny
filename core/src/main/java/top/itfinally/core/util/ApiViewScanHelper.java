@@ -26,7 +26,7 @@ public class ApiViewScanHelper {
 
         String absoluteSourcePath = sourcePath.getFile();
         if ( !absoluteSourcePath.matches( ".*classes.*" ) ) {
-            throw new IllegalArgumentException( "source path must be a classes path: " + absoluteSourcePath );
+            throw new IllegalArgumentException( "Source path must be a classes path: " + absoluteSourcePath );
         }
 
         // spring boot 打包后路径会变成 classes! , 此处用非贪婪匹配去除该路径

@@ -1,19 +1,21 @@
 package top.itfinally.core.util;
 
-import com.google.common.collect.Sets;
-
-import javax.annotation.concurrent.NotThreadSafe;
+import javax.validation.constraints.NotNull;
+import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CollectionUtils {
     private CollectionUtils() {
     }
 
     public static class Item {
-        private Object[] result;
+        private final Object[] result;
 
 
         private Item( Object[] result ) {
@@ -24,242 +26,203 @@ public class CollectionUtils {
             return result.length;
         }
 
-        public <T> T get( int index ) {
+        public <T> T get( int index ) throws ClassCastException {
             return getOrDefault( index, null );
         }
 
-        public <T> T get( int index, Class<T> cls ) {
+        public <T> T get( int index, Class<T> cls ) throws ClassCastException {
             return getOrDefault( index, cls, null );
         }
 
         @SuppressWarnings( "unchecked" )
-        public <T> T getOrDefault( int index, T defaultVal ) {
+        public <T> T getOrDefault( int index, T defaultVal ) throws ClassCastException {
             return null == result[ index ] ? defaultVal : ( T ) result[ index ];
         }
 
-        public <T> T getOrDefault( int index, Class<T> cls, T defaultVal ) {
-            return null == result[ index ] ? defaultVal : cls.cast( result[ index ] );
+        public <T> T getOrDefault( int index, Class<T> cls, T defaultVal ) throws ClassCastException {
+            if ( null == cls ) {
+                throw new NullPointerException( "Class cannot be null." );
+            }
+
+            return index >= result.length || null == result[ index ] ? defaultVal : cls.cast( result[ index ] );
         }
 
         public Object[] getAll() {
-            Object[] copy = new Object[ result.length ];
-            System.arraycopy( result, 0, copy, 0, result.length );
-
-            return copy;
+            return Arrays.stream( result ).toArray();
         }
 
         @SuppressWarnings( "unchecked" )
         private <T> T[] getAll( Class<T> cls ) {
-            return ( T[] ) new Object[ result.length ];
+            if ( null == cls ) {
+                throw new NullPointerException( "Class cannot be null." );
+            }
+
+            return Arrays.stream( result ).toArray( length -> ( T[] ) Array.newInstance( cls, length ) );
         }
     }
 
-    public static final class ZipMethod implements Iterable<Item> {
-        private final List<List<?>> container = new ArrayList<>();
-        private final boolean isShortBoard;
+    private static final class ZipMethod implements Iterable<Item> {
         private final int maxLength;
         private final int minLength;
+        private final boolean isQuick;
+        private final List<List<?>> targets;
 
-        @NotThreadSafe
-        private class Itr implements Iterator<Item> {
-            private volatile Object[] objects;
-            private volatile int cursor = 0;
+        private ZipMethod( boolean isQuick, Collection<?>[] targets ) {
+            this.maxLength = targets.length <= 0 ? 0 : Arrays.stream( targets )
+                    .map( Collection::size )
+                    .max( ( sizeA, sizeB ) -> sizeA > sizeB ? sizeA : sizeB )
+                    .orElse( 0 );
 
-            @Override
-            public boolean hasNext() {
-                return isShortBoard ? cursor < minLength : cursor < maxLength;
-            }
+            this.minLength = targets.length <= 0 ? 0 : Arrays.stream( targets )
+                    .map( Collection::size )
+                    .min( ( sizeA, sizeB ) -> sizeA < sizeB ? sizeA : sizeB )
+                    .orElse( 0 );
 
-            @Override
-            public Item next() {
-                int cursor = this.cursor;
-                int nextCursor = cursor + 1;
+            this.targets = Arrays.stream( targets )
+                    .map( ( Function<Collection<?>, ? extends ArrayList<?>> ) ArrayList::new )
+                    .collect( Collectors.toList() );
 
-                objects = new Object[ container.size() ];
-
-                for ( int index = 0, length = container.size(); index < length; index += 1 ) {
-                    if ( cursor < container.get( index ).size() ) {
-                        objects[ index ] = container.get( index ).get( cursor );
-
-                    } else {
-                        objects[ index ] = null;
-                    }
-                }
-
-                if ( this.cursor != cursor ) {
-                    throw new ConcurrentModificationException();
-                }
-
-                this.cursor = nextCursor;
-
-                return new Item( objects );
-            }
-        }
-
-        @SuppressWarnings( "unchecked" )
-        private ZipMethod( boolean isShortBord, List<? extends Collection> iterable ) {
-            int minLength = Integer.MAX_VALUE;
-            int maxLength = 0;
-
-            for ( Collection item : iterable ) {
-                maxLength = Math.max( maxLength, item.size() );
-                minLength = Math.min( minLength, item.size() );
-
-                container.add( new ArrayList<>( item ) );
-            }
-
-            if ( iterable.isEmpty() ) {
-                maxLength = minLength = 0;
-            }
-
-            this.maxLength = maxLength;
-            this.minLength = minLength;
-            this.isShortBoard = isShortBord;
+            this.isQuick = isQuick;
         }
 
 
         @Override
         public Iterator<Item> iterator() {
-            return new Itr();
+            return new Iterator<Item>() {
+                private final AtomicInteger cursor = new AtomicInteger();
+
+                @Override
+                public boolean hasNext() {
+                    return cursor.get() >= ( isQuick ? minLength : maxLength );
+                }
+
+                @Override
+                public Item next() {
+                    int cursor = this.cursor.getAndIncrement();
+                    return new Item( targets.stream().map( item -> cursor >= item.size() ? null : item.get( cursor ) ).toArray() );
+                }
+            };
         }
 
         @Override
         public void forEach( Consumer<? super Item> action ) {
-            Objects.requireNonNull( action );
-
-            int cursor = 0;
-            Object[] objects;
-
-            while ( true ) {
-                objects = new Object[ this.container.size() ];
-
-                for ( int index = 0, length = this.container.size(); index < length; index += 1 ) {
-                    if ( cursor < this.container.get( index ).size() ) {
-                        objects[ index ] = this.container.get( index ).get( cursor );
-
-                    } else {
-                        objects[ index ] = null;
-                    }
-                }
-
-                action.accept( new Item( objects ) );
-
-                cursor += 1;
-                if ( isShortBoard ? cursor >= minLength : cursor >= maxLength ) {
-                    break;
-                }
-            }
-        }
-    }
-
-    private static final class MapMethod<T> {
-        private final List<T> result = new ArrayList<>();
-        private final Function<Item, T> action;
-        private final ZipMethod zipped;
-
-        private MapMethod( Function<Item, T> action, List<? extends Collection> iterable ) {
-            Objects.requireNonNull( action );
-
-            this.action = action;
-            this.zipped = new ZipMethod( true, iterable );
-        }
-
-        private List<T> process() {
-            for ( Item item : zipped ) {
-                result.add( action.apply( item ) );
+            if ( null == action ) {
+                throw new NullPointerException( "Action cannot be null." );
             }
 
-            return result;
+            forEach( action, 0 );
+        }
+
+        private int forEach( Consumer<? super Item> action, int cursor ) {
+            if ( cursor >= ( isQuick ? minLength : maxLength ) ) {
+                return 0;
+            }
+
+            action.accept( new Item( targets.stream().map( item -> cursor >= item.size() ? null : item.get( cursor ) ).toArray() ) );
+            return forEach( action, cursor + 1 );
         }
     }
 
-    public static ZipMethod zip( List<? extends Collection> iterable ) {
-        return zip( true, iterable );
+    public static ZipMethod zip( Collection<?>... targets ) {
+        return new ZipMethod( true, targets );
     }
 
-    public static ZipMethod zip( boolean isShortBoard, List<? extends Collection> iterable ) {
-        return new ZipMethod( isShortBoard, iterable );
-    }
-
-    public static <T> List<T> map( Function<Item, T> action, List<? extends Collection> iterable ) {
-        return new MapMethod<>( action, iterable ).process();
+    public static ZipMethod zip( boolean isQuick, Collection<?>... targets ) {
+        return new ZipMethod( isQuick, targets );
     }
 
     // 并集
     @SafeVarargs
-    public static <T> List<T> union( Collection<T> src, Collection<T>... iterable ) {
-        Set<T> filter = new HashSet<>( src );
-        Arrays.stream( iterable ).forEach( filter::addAll );
+    public static <T> List<T> union( @NotNull Collection<T> src, @NotNull Collection<T>... targets ) {
+        if ( null == src || null == targets ) {
+            throw new NullPointerException( "Src and targets cannot be null." );
+        }
 
-        return new ArrayList<>( filter );
+        if ( targets.length <= 0 ) {
+            return new ArrayList<>( src );
+        }
+
+        return union(
+                Stream.concat( src.stream(), targets[ 0 ].stream() ).collect( Collectors.toSet() ),
+                Arrays.stream( targets ).skip( 1 ).toArray( ( IntFunction<Collection<T>[]> ) Collection[]::new )
+        );
     }
 
     // 交集
     @SafeVarargs
-    public static <T> List<T> intersection( Collection<T> src, Collection<T>... iterable ) {
-        // 浅复制一次, 否则会影响原集合
-        src = new ArrayList<>( src );
+    public static <T> List<T> intersection( @NotNull Collection<T> src, @NotNull Collection<T>... targets ) {
+        if ( null == src || null == targets ) {
+            throw new NullPointerException( "Src and targets cannot be null." );
+        }
 
-        Arrays.stream( iterable ).forEach( src::retainAll );
-        return new ArrayList<>( src );
+        return intersection( new HashSet<>( src ), Stream.empty(), targets ).distinct().collect( Collectors.toList() );
+    }
+
+    private static <T> Stream<T> intersection( Set<T> src, Stream<T> container, Collection<T>[] targets ) {
+        if ( targets.length <= 0 ) {
+            return container;
+        }
+
+        return intersection(
+                src, Stream.concat( container, targets[ 0 ].stream().filter( src::contains ) ),
+                Arrays.stream( targets ).skip( 1 ).toArray( ( IntFunction<Collection<T>[]> ) Collection[]::new )
+        );
     }
 
     // 补集
     @SafeVarargs
-    public static <T> List<T> complement( Collection<T> src, Collection<T>... iterable ) {
-        Set<T> hashSrc = Sets.newHashSet( src );
-        List<T> result = new ArrayList<>();
+    public static <T> List<T> complement( @NotNull Collection<T> src, @NotNull Collection<T>... targets ) {
+        if ( null == src || null == targets ) {
+            throw new NullPointerException( "Src and targets cannot be null." );
+        }
 
-        Arrays.stream( iterable ).forEach( collection -> {
-            for ( T item : collection ) {
-                if ( !hashSrc.contains( item ) ) {
-                    result.add( item );
-                }
-            }
-        } );
+        return complement( new HashSet<>( src ), Stream.empty(), targets ).distinct().collect( Collectors.toList() );
+    }
 
-        return result;
+    private static <T> Stream<T> complement( Set<T> src, Stream<T> container, Collection<T>[] targets ) {
+        if ( targets.length <= 0 ) {
+            return container;
+        }
+
+        return complement(
+                src, Stream.concat( container, targets[ 0 ].stream().filter( item -> !src.contains( item ) ) ),
+                Arrays.stream( targets ).skip( 1 ).toArray( ( IntFunction<Collection<T>[]> ) Collection[]::new )
+        );
     }
 
     @SuppressWarnings( "unchecked" )
-    public static <T> T[] removeIf( T[] arr, Object match ) {
+    public static <T> T[] removeIf( @NotNull T[] arr, Object match ) {
+        if ( null == arr ) {
+            throw new NullPointerException( "Arr cannot be null." );
+        }
+
         return ( T[] ) Arrays.stream( arr )
-                .filter( item -> {
-
-                    if ( null == match ) {
-                        return item != null;
-                    }
-
-                    return !match.equals( item );
-
-                } ).toArray();
+                .filter( item -> null == match ? item != null : !match.equals( item ) )
+                .toArray();
     }
 
-    public static <T> List<T> removeIf( Collection<T> collection, Object match ) {
+    public static <T> List<T> removeIf( @NotNull Collection<T> collection, Object match ) {
+        if ( null == collection ) {
+            throw new NullPointerException( "Collection cannot be null." );
+        }
+
         return collection.stream()
-                .filter( item -> {
-
-                    if ( null == match ) {
-                        return item != null;
-                    }
-
-                    return !match.equals( item );
-                } )
+                .filter( item -> null == match ? item != null : !match.equals( item ) )
                 .collect( Collectors.toList() );
     }
 
     @SuppressWarnings( "unchecked" )
-    public static <T> T[] removeIf( T[] arr, Function<T, Boolean> action ) {
-        if ( null == action ) {
-            throw new NullPointerException( "action cannot be null" );
+    public static <T> T[] removeIf( @NotNull T[] arr, @NotNull Function<T, Boolean> action ) {
+        if ( null == arr || null == action ) {
+            throw new NullPointerException( "Arr and action cannot be null." );
         }
 
         return ( T[] ) Arrays.stream( arr ).filter( item -> !action.apply( item ) ).toArray();
     }
 
-    public static <T> List<T> removeIf( Collection<T> collection, Function<T, Boolean> action ) {
-        if ( null == action ) {
-            throw new NullPointerException( "action cannot be null" );
+    public static <T> List<T> removeIf( @NotNull Collection<T> collection, @NotNull Function<T, Boolean> action ) {
+        if ( null == collection || null == action ) {
+            throw new NullPointerException( "Collection and action cannot be null." );
         }
 
         return collection.stream().filter( item -> !action.apply( item ) ).collect( Collectors.toList() );
