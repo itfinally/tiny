@@ -3,6 +3,7 @@ package top.itfinally.core.util;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FileScanUtils {
     private FileScanUtils() {
@@ -25,48 +26,51 @@ public class FileScanUtils {
             return paths;
         }
 
-        String[] subPaths = sourceFile.list();
-        if ( null == subPaths ) {
+        String[] files = sourceFile.list();
+        if ( null == files ) {
             return paths;
         }
 
-        Deque<String> subPathDeque = castArrayToDeque( path, subPaths );
-        while ( subPathDeque.size() > 0 ) {
-            doFileTreeScanning( subPathDeque, paths );
-        }
-
-        return paths;
+        return doScanning( mergePaths( path, files ), Stream.empty() )
+                .collect( Collectors.toList() );
     }
 
-    private static List<String> doFileTreeScanning( Deque<String> deque, List<String> paths ) {
-        String path;
-        Iterator<String> iterator = deque.iterator();
-
-        while ( iterator.hasNext() ) {
-            path = iterator.next();
-            if ( new File( path ).isFile() ) {
-                paths.add( path );
-                iterator.remove();
-            }
+    private static Stream<String> doScanning( List<String> paths, Stream<String> fileStream ) {
+        if ( paths.isEmpty() ) {
+            return fileStream;
         }
 
-        if ( deque.isEmpty() ) {
-            return paths;
+        List<String> allFiles = paths.stream()
+                .filter( pathOrFile -> new File( pathOrFile ).isFile() )
+                .collect( Collectors.toList() );
 
-        } else {
-            String subPath = deque.pop();
-            String[] subPaths = new File( subPath ).list();
-            if ( subPaths != null ) {
-                deque.addAll( castArrayToDeque( subPath, subPaths ) );
-            }
+        List<String> allPaths = unBoxList( paths.stream()
+                .filter( pathOrFile -> !new File( pathOrFile ).isFile() )
+                .map( path -> mergePaths( path, new File( path ).list() ) )
+                .collect( Collectors.toList() ), Stream.empty() )
 
-            return doFileTreeScanning( deque, paths );
+                .collect( Collectors.toList() );
+
+
+        for (String p: allPaths) {
+            System.out.println(p);
         }
+
+        return doScanning( allPaths, Stream.concat( fileStream, allFiles.stream() ) );
     }
 
-    private static Deque<String> castArrayToDeque( String path, String[] subPaths ) {
-        return Arrays.stream( subPaths )
-                .map( item -> path + File.separator + item )
-                .collect( Collectors.toCollection( ArrayDeque::new ) );
+    private static List<String> mergePaths( String path, String[] files ) {
+        return Arrays.stream( files ).map( item -> path + File.separator + item ).collect( Collectors.toList() );
+    }
+
+    private static Stream<String> unBoxList( List<List<String>> paths, Stream<String> stream ) {
+        if ( paths.isEmpty() ) {
+            return stream;
+        }
+
+        return unBoxList(
+                paths.stream().skip( 1 ).collect( Collectors.toList() ),
+                Stream.concat( stream, paths.get( 0 ).stream() )
+        );
     }
 }

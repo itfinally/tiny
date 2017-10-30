@@ -192,7 +192,7 @@ GET /admin/lock
 
 #### 开发说明
 
-这个万一当然不能直接用啦, 毕竟业务不一样, 先说说怎么覆盖默认实现.
+这个当然不能直接用啦, 毕竟业务不一样, 先说说怎么覆盖默认实现.
 
 提个醒, <strong>所有覆盖的类, 除了加上诸如 @Service, @Component 之类的注解, 必须再加上 @Primary 注解来告诉 
 Spring 在多实现的情况下优先使用你的实现, 否则 Spring 容器会直接报错.
@@ -273,9 +273,9 @@ spring security 给出的必须的字段很明确, 就是一个用户的用户�
 
 注册的流程大概如下:
 ```
-UserDetailEntity user = new MyUserDetailEntity();
-userDao.save( user );
-authorizationService.save( user.getId() );
+UserDetailEntity user = new YourUserDetailEntity();
+yourUserDao.save( user );
+authorizationService.register( user.getId() );
 ```
 
 #### 最后

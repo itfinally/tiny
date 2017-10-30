@@ -3,11 +3,13 @@ package top.itfinally.security.web;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import top.itfinally.core.util.RestUrlScanHelper;
 import top.itfinally.core.vo.BaseResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
 import top.itfinally.security.repository.po.*;
 import top.itfinally.security.service.AuthorizationService;
 
+import java.net.URL;
 import java.util.List;
 
 import static top.itfinally.core.enumerate.ResponseStatusEnum.BAD_REQUEST;
@@ -15,6 +17,10 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.BAD_REQUEST;
 @RestController
 @RequestMapping( "/authorization" )
 public class AuthorizationController {
+
+    public static void main( String[] args ) {
+        System.out.println( new RestUrlScanHelper( AuthorizationController.class ).doScanForPackage() );
+    }
 
     private AuthorizationService authorizationService;
 

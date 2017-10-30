@@ -61,7 +61,7 @@ public class CollectionUtils {
         }
     }
 
-    private static final class ZipMethod implements Iterable<Item> {
+    public static final class ZipMethod implements Iterable<Item> {
         private final int maxLength;
         private final int minLength;
         private final boolean isQuick;
@@ -93,7 +93,7 @@ public class CollectionUtils {
 
                 @Override
                 public boolean hasNext() {
-                    return cursor.get() >= ( isQuick ? minLength : maxLength );
+                    return cursor.get() < ( isQuick ? minLength : maxLength );
                 }
 
                 @Override
