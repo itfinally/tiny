@@ -1,6 +1,7 @@
 package top.itfinally.security.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.itfinally.core.enumerate.DataStatusEnum;
@@ -25,12 +26,19 @@ import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 @Service
 public class AuthorizationService {
 
+    private PermissionValidService permissionValidService;
     private UserDetailService userDetailService;
     private RolePermissionDao rolePermissionDao;
     private UserAuthorityDao userAuthorityDao;
     private PermissionDao permissionDao;
     private UserRoleDao userRoleDao;
     private RoleDao roleDao;
+
+    @Autowired
+    public AuthorizationService setPermissionValidService( PermissionValidService permissionValidService ) {
+        this.permissionValidService = permissionValidService;
+        return this;
+    }
 
     @Autowired
     public AuthorizationService setUserDetailService( UserDetailService userDetailService ) {
@@ -69,6 +77,7 @@ public class AuthorizationService {
     }
 
     @Transactional
+    @PreAuthorize( "hasPermission( null, 'register_user' )" )
     public SingleResponseVoBean<Integer> register( String userId ) {
         UserDetailsEntity user = userDetailService.loadUserById( userId );
         UserAuthorityEntity userAuthority = new UserAuthorityEntity();
@@ -79,7 +88,7 @@ public class AuthorizationService {
 
         int effectRow = 0;
         effectRow += userAuthorityDao.save( userAuthority );
-        effectRow += userDetailService.save( user.setAuthorityId( userAuthority.getId() ) );
+        effectRow += userDetailService.update( user.setAuthorityId( userAuthority.getId() ) );
 
         return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( effectRow );
     }
@@ -156,6 +165,8 @@ public class AuthorizationService {
             effectRow += rolePermissionDao.removeAll( deletes, System.currentTimeMillis() );
         }
 
+        permissionValidService.refreshRolePermission( roleId );
+
         return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( effectRow );
     }
 
@@ -221,9 +232,7 @@ public class AuthorizationService {
 
     public CollectionResponseVoBean<RoleVoBean> getRoles() {
         List<RoleEntity> roles = roleDao.queryAll(
-                NOT_PAGING.getVal(),
-                NOT_PAGING.getVal(),
-                NOT_STATUS_FLAG.getVal()
+                NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal()
         );
 
         ResponseStatusEnum status = roles.isEmpty() ? EMPTY_RESULT : SUCCESS;
@@ -233,9 +242,7 @@ public class AuthorizationService {
 
     public CollectionResponseVoBean<PermissionVoBean> getPermissions() {
         List<PermissionEntity> permissions = permissionDao.queryAll(
-                NOT_PAGING.getVal(),
-                NOT_PAGING.getVal(),
-                NOT_STATUS_FLAG.getVal()
+                NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal()
         );
 
         ResponseStatusEnum status = permissions.isEmpty() ? EMPTY_RESULT : SUCCESS;

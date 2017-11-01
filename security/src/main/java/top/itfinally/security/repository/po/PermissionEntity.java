@@ -16,11 +16,11 @@ public class PermissionEntity extends BaseEntity<PermissionEntity> {
     }
 
     public String getName() {
-        return name;
+        return name.toLowerCase();
     }
 
     public PermissionEntity setName( String name ) {
-        this.name = name;
+        this.name = name.toLowerCase();
         return this;
     }
 

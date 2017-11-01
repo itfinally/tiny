@@ -101,7 +101,7 @@ public class VerifiesControllerTesting {
     }
 
     public String login() throws Exception {
-        String basic = "Basic " + new String( Base64.encode( "admin:admin".getBytes() ), "utf-8" );
+        String basic = "Basic " + new String( Base64.encode( "testing:950116".getBytes() ), "utf-8" );
         String loginJsonString = mockMvc.perform( post( "/verifies/login" ).header( "Authorization", basic ) )
                 .andExpect( status().isOk() )
                 .andReturn()
@@ -116,6 +116,7 @@ public class VerifiesControllerTesting {
         return response.getResult();
     }
 
+    // 修改用户角色, ok
     @Test
     public void grantRoleTesting() throws Exception {
         String token = "Bearer " + login();
@@ -156,11 +157,30 @@ public class VerifiesControllerTesting {
                 .header( "Content-Type", "application/json" )
                 .content( jsonMapper.writeValueAsString( requestBody ) )
         ).andDo( print() )
-//                .andExpect( status().isOk() )
+                .andExpect( status().isOk() )
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         System.out.println( grantJsonString );
+    }
+
+    @Test
+    public void createUser() throws Exception {
+        String token = "Bearer " + login();
+
+        String actionJsonString = mockMvc.perform( get( "/user/create_user" ).header( "Authorization", token ) )
+                .andDo( print() )
+                .andExpect( status().isOk() )
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        JavaType roleType = jsonMapper.getTypeFactory().constructParametricType(
+                SingleResponseVoBean.class, Integer.class
+        );
+
+        SingleResponseVoBean response = jsonMapper.readValue( actionJsonString, roleType );
+        System.out.println( response );
     }
 }

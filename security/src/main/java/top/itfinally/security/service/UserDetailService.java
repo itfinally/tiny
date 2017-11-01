@@ -7,17 +7,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import top.itfinally.core.enumerate.DataStatusEnum;
-import top.itfinally.core.repository.QueryEnum;
 import top.itfinally.security.repository.po.RoleEntity;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
 import top.itfinally.security.repository.po.UserDetailsEntity;
 import top.itfinally.security.repository.dao.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 
 public abstract class UserDetailService<User extends UserDetailsEntity> implements UserDetailsService {
     private UserAuthorityDao userAuthorityDao;

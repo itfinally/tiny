@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import top.itfinally.core.util.DateUtils;
 import top.itfinally.security.SecurityServerApplication;
 import top.itfinally.security.repository.po.RoleEntity;
 import top.itfinally.security.repository.dao.RoleDao;
@@ -33,7 +32,5 @@ public class DataVerifiesTesting {
         List<RoleEntity> roles = roleDao
                 .queryAll( NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal() );
 
-        String result = DateUtils.format( roles.get( 0 ).getCreateTime(), true );
-        System.out.println( " 数据时间：" + result );
     }
 }

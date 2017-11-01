@@ -1,6 +1,5 @@
 package top.itfinally.security.repository.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import top.itfinally.core.repository.po.BaseEntity;
 
@@ -19,18 +18,19 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
     }
 
     public String getName() {
-        return name;
+        return name.toUpperCase();
     }
 
     @Override
-    @JsonIgnore
-    // use default prefix for security, and ignore serializable
+
+    // Use default prefix for security, and ignore serializable
+    // Only spring security use it.
     public String getAuthority() {
         return "ROLE_" + name.toUpperCase();
     }
 
     public RoleEntity setName( String name ) {
-        this.name = name;
+        this.name = name.toUpperCase();
         return this;
     }
 

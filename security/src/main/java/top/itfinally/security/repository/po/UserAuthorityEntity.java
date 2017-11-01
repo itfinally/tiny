@@ -1,5 +1,6 @@
 package top.itfinally.security.repository.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import top.itfinally.core.repository.po.BaseEntity;
@@ -38,6 +39,10 @@ public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> impleme
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    public List<RoleEntity> getRoles() {
         return authorities;
     }
 

@@ -1,5 +1,7 @@
 package top.itfinally.core.util;
 
+import com.google.common.collect.Lists;
+
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,25 +12,23 @@ public class FileScanUtils {
     }
 
     public static List<String> doScan( String path ) {
-        List<String> paths = new ArrayList<>();
         if ( null == path ) {
-            return paths;
+            return new ArrayList<>();
         }
 
         File sourceFile = new File( path );
 
         if ( !sourceFile.exists() ) {
-            return paths;
+            return new ArrayList<>();
         }
 
         if ( sourceFile.isFile() ) {
-            paths.add( path );
-            return paths;
+            return Lists.newArrayList( path );
         }
 
         String[] files = sourceFile.list();
         if ( null == files ) {
-            return paths;
+            return new ArrayList<>();
         }
 
         return doScanning( mergePaths( path, files ), Stream.empty() )
@@ -50,11 +50,6 @@ public class FileScanUtils {
                 .collect( Collectors.toList() ), Stream.empty() )
 
                 .collect( Collectors.toList() );
-
-
-        for (String p: allPaths) {
-            System.out.println(p);
-        }
 
         return doScanning( allPaths, Stream.concat( fileStream, allFiles.stream() ) );
     }

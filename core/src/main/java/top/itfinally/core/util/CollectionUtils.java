@@ -190,6 +190,26 @@ public class CollectionUtils {
         );
     }
 
+    @SafeVarargs
+    public static <T> List<T> merge( @NotNull Collection<T>... targets ) {
+        if ( targets.length <= 1 ) {
+            return new ArrayList<>( targets[ 0 ] );
+        }
+
+        return merge( targets, Stream.empty() ).collect( Collectors.toList() );
+    }
+
+    private static <T> Stream<T> merge( Collection<T>[] targets, Stream<T> stream ) {
+        if ( targets.length <= 0 ) {
+            return stream;
+        }
+
+        return merge(
+                Arrays.stream( targets ).skip( 1 ).toArray( ( IntFunction<Collection<T>[]> ) Collection[]::new ),
+                Stream.concat( stream, targets[ 0 ].stream() )
+        );
+    }
+
     @SuppressWarnings( "unchecked" )
     public static <T> T[] removeIf( @NotNull T[] arr, Object match ) {
         if ( null == arr ) {
