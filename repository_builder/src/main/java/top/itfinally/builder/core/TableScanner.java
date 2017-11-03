@@ -1,16 +1,15 @@
-package top.itfinally.builder.util;
+package top.itfinally.builder.core;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ExtendedBeanInfoFactory;
-import top.itfinally.builder.annotation.Column;
 import top.itfinally.builder.annotation.MetaData;
 import top.itfinally.builder.annotation.Table;
 import top.itfinally.builder.entity.ColumnMetaData;
+import top.itfinally.builder.entity.EntityMetaData;
 import top.itfinally.builder.entity.TableMetaData;
 import top.itfinally.core.util.FileScanUtils;
-import top.itfinally.core.util.RegExpUtils;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.beans.FeatureDescriptor;
@@ -29,11 +28,10 @@ public class TableScanner {
 
     private final String scanPackage;
     private final String entityEndWith;
-    private final boolean mapUnderscoreToCamelCase;
+    private final ColumnScanner columnScanner;
 
     private final ExtendedBeanInfoFactory beanInfoFactory = new ExtendedBeanInfoFactory();
-    private final RegExpUtils.RegExp entityNameMatcher = RegExpUtils.compile( "\\.([\\w$]+)$" );
-    private final RegExpUtils.RegExp clsNameMatcher = RegExpUtils.compile( "((\\w+/)*([\\w$]+))\\.class" );
+    private final Map<Class<?>, EntityMetaData> entityMetaDataCache = new HashMap<>();
 
     private Map<String, TableMetaData> resultMaps = new HashMap<>();
 
@@ -44,7 +42,7 @@ public class TableScanner {
     public TableScanner( String scanPackage, String entityEndWith, boolean mapUnderscoreToCamelCase ) {
         this.scanPackage = scanPackage;
         this.entityEndWith = entityEndWith;
-        this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
+        this.columnScanner = new ColumnScanner( mapUnderscoreToCamelCase );
     }
 
     public Map<String, TableMetaData> doScan() throws IllegalStateException, NullPointerException {
@@ -59,11 +57,11 @@ public class TableScanner {
 
                 .filter( path -> path.contains( scanPackagePath ) )
 
-                .map( path -> clsNameMatcher.exec( path.split( scanPackagePath )[ 1 ] )[ 1 ] )
+                .map( path -> path.substring( path.indexOf( scanPackagePath ) ).replace( ".class", "" ) )
 
                 .map( className -> {
                     try {
-                        return Class.forName( String.format( "%s.%s", scanPackage, className.replaceAll( File.separator, "." ) ) );
+                        return Class.forName( className.replaceAll( File.separator, "." ) );
 
                     } catch ( ClassNotFoundException e ) {
                         logger.error( "Failed to load class " + className );
@@ -108,47 +106,44 @@ public class TableScanner {
         Table table = cls.getAnnotation( Table.class );
         MetaData metaData = cls.getAnnotation( MetaData.class );
 
-        String baseName = extractEntityName( cls.getName() );
-        String tableName = null == table ? null : table.name();
-        String entityName = entityNameMatcher.exec( cls.getName() )[ 1 ];
+        String tableName = ( null == table ? null : table.name() );
+        List<ColumnMetaData> columns = columnAnalysis( cls );
 
-        List<ColumnMetaData> columns = columnScanner( cls );
         if ( null == columns ) {
             return null;
         }
 
         TableMetaData meta = new TableMetaData()
-                .setThisCls( cls )
                 .setColumns( columns )
-                .setBaseName( baseName )
-                .setEntityName( entityName )
 
                 .setTable( table != null )
+
                 .setMeta( metaData != null )
 
+                .setThisEntity( createEntityMetaData( cls ) )
+
                 // Use entity name as table name if not set.
-                .setTableName( StringUtils.isBlank( tableName ) ? entityName : tableName );
+                .setTableName( StringUtils.isBlank( tableName ) ? cls.getSimpleName() : tableName );
 
         Class<?> extend = cls.getSuperclass();
         if ( extend.getAnnotation( MetaData.class ) != null ) {
-            meta.setExtendCls( extend );
+            meta.setExtendEntity( createEntityMetaData( extend ) );
         }
 
         return meta;
     }
 
-    private String extractEntityName( String clsName ) {
-        String entityName = entityNameMatcher.exec( clsName )[ 1 ];
-        String lowerEntityName = entityName.toLowerCase();
+    private String extractEntityName( String clsSimpleName ) {
+        String lowerEntityName = clsSimpleName.toLowerCase();
 
-        if ( lowerEntityName.endsWith( entityEndWith ) ) {
-            return entityName.substring( 0, entityName.length() - entityEndWith.length() );
+        if ( lowerEntityName.endsWith( entityEndWith.toLowerCase() ) ) {
+            return clsSimpleName.substring( 0, clsSimpleName.length() - entityEndWith.length() );
         }
 
-        return entityName;
+        return clsSimpleName;
     }
 
-    private List<ColumnMetaData> columnScanner( Class<?> cls ) {
+    private List<ColumnMetaData> columnAnalysis( Class<?> cls ) {
         try {
             List<Field> fields = Arrays.asList( cls.getDeclaredFields() );
 
@@ -179,45 +174,10 @@ public class TableScanner {
             ) );
         }
 
-        Column fromWrite = descriptor.getWriteMethod().getAnnotation( Column.class );
-        Column fromRead = descriptor.getReadMethod().getAnnotation( Column.class );
-        Column fromField = field.getAnnotation( Column.class );
-
-        ColumnMetaData columnInfo;
-        if ( fromField != null ) {
-            columnInfo = createColumnBean( field, fromField );
-
-        } else if ( fromRead != null ) {
-            columnInfo = createColumnBean( field, fromRead );
-
-        } else if ( fromWrite != null ) {
-            columnInfo = createColumnBean( field, fromWrite );
-
-        } else {
-            columnInfo = null;
-        }
-
         return columnAnalysis(
                 fields.stream().skip( 1 ).collect( Collectors.toList() ),
-                descriptors, Stream.concat( stream, Stream.of( columnInfo ) )
+                descriptors, Stream.concat( stream, Stream.of( columnScanner.doScan( field, descriptor ) ) )
         );
-    }
-
-    private ColumnMetaData createColumnBean( Field field, Column column ) {
-        String propertyName = column.property();
-        String columnName = column.column();
-
-        return new ColumnMetaData()
-                .setJavaType( field.getType() )
-                .setProperty( StringUtils.isBlank( propertyName ) ? field.getName() : propertyName )
-                .setColumn( StringUtils.isBlank( columnName ) ? caseToUnderscore( field.getName() ) : column.column() );
-    }
-
-    private String caseToUnderscore( String camel ) {
-        return !mapUnderscoreToCamelCase ? camel : camel
-                .replaceAll( "[A-Z]+", "_$0" )
-                .toLowerCase()
-                .replaceFirst( "_", "" );
     }
 
     private String getAbsolutePath() {
@@ -230,5 +190,27 @@ public class TableScanner {
         }
 
         return url.getPath();
+    }
+
+    private EntityMetaData createEntityMetaData( Class<?> cls ) {
+        if ( entityMetaDataCache.containsKey( cls ) ) {
+            return entityMetaDataCache.get( cls );
+        }
+
+        String offset = cls.getName()
+                .replace( scanPackage, "" )
+                .replace( cls.getSimpleName(), "" )
+                .replaceAll( "(^\\.|\\.$)", "" );
+
+        EntityMetaData entityMetaData = new EntityMetaData()
+                .setThisCls( cls )
+                .setOffset( offset )
+                .setName( cls.getName() )
+                .setSimpleName( cls.getSimpleName() )
+                .setPath( cls.getResource( "" ).getPath() )
+                .setBaseName( extractEntityName( cls.getSimpleName() ) );
+
+        entityMetaDataCache.put( cls, entityMetaData );
+        return entityMetaData;
     }
 }

@@ -49,7 +49,11 @@ core ( 基础工具及类库 ) & parent ( 基础pom ) 两个子模块.
 
 * 所有涉及到数据库交互的实体类都继承于 core 模块的 repository.po.BaseEntity 类.
 
-* 所有实体均采用 builder 模式的编写风格, 好歹也提高提下键盘寿命.( 慎用 apache 的 beanutils copy bean, 这货只能识别返回值为 void 的 setter )
+* 所有实体均采用 builder 模式的编写风格, 好歹也提高提下键盘寿命. 关于实体类是否应该使用 void 返回, 这里还有一些 sof 论坛的讨论
+  [Does Java bean's setter permit return this?](https://stackoverflow.com/questions/5741369/does-java-beans-setter-permit-return-this),
+  因为 jdk 自带的 Introspector, 以及 apache 名下的 BeanUtils 都不会识别 non-void 类型的 setter, 有意思的是 spring 的 ExtendedBeanInfoFactory 
+  支持这一类型的 setter( 其实早在以前 spring 也是不支持的, 在 sof 里搜索 <strong>java non-void setter</strong> 会找到很多相关的讨论 ), 
+  当然我也是支持使用这种 non-void 的 setter, 毕竟在构造器上写一堆密密麻麻的形参实在是丑的不行, 当然这个也是各有所爱了.
 
 * 秉承 linux 那句 "没有消息就是好消息". 一般在编写时考虑到的问题都会写在文档上, 如果没有说明, 那一般是没问题. 
   如果碰到并且确认是个 bug, 记得带上砖头来 issues 找作者拍砖.
@@ -60,7 +64,7 @@ core ( 基础工具及类库 ) & parent ( 基础pom ) 两个子模块.
   ( 其实也有提供物理删除, 但是已经重写基类进行禁用, 强行调用会直接抛异常, 在 `top.itfinally.core.repository.dao.AbstractDao` 内,
    有需要的自行修改再编译打包)
    
-* 尽量遵循函数式编程风格以便减少共享变量, 变量/对象 一经 赋值/逸出 后不可再修改
+* 尽量遵循函数式编程风格以便减少共享变量和拆分问题, 尽可能做到变量/对象的状态不可变.
    
 整个项目开发基于以下版本/工具/框架:
 * IntelliJ IDEA ( 不喜欢 eclipse 那么原始的工具, 请善待自己 )

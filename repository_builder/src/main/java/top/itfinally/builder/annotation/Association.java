@@ -6,9 +6,9 @@ import java.lang.annotation.*;
 @Target( ElementType.METHOD )
 @Retention( RetentionPolicy.RUNTIME )
 public @interface Association {
-    String property();
+    String property() default "";
 
-    String column();
+    String column() default "";
 
     Class<?> join();
 }

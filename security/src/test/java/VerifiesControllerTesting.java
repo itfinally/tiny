@@ -132,7 +132,8 @@ public class VerifiesControllerTesting {
         );
 
         // 获取用户 authority 数据
-        SingleResponseVoBean<UserAuthorityVoBean> userResponse = jsonMapper.readValue( userJsonString, userType );
+        SingleResponseVoBean<UserAuthorityVoBean> userResponse = jsonMapper
+                .readValue( userJsonString, userType );
 
         String roleJsonString = mockMvc.perform( get( "/authorization/get_roles" ).header( "Authorization", token ) )
                 .andExpect( status().isOk() )

@@ -1,7 +1,8 @@
 package top.itfinally.builder.repository.po.ttt.aaa;
 
-/**
- * Created by finally on 17/11/3.
- */
-public class EEntity {
+import top.itfinally.builder.annotation.Table;
+import top.itfinally.builder.repository.po.BaseEntity;
+
+@Table
+public class EEntity extends BaseEntity {
 }

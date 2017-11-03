@@ -1,7 +1,9 @@
 package top.itfinally.builder.repository.po.ttt;
 
-/**
- * Created by finally on 17/11/3.
- */
-public class DEntity {
+import top.itfinally.builder.annotation.MetaData;
+import top.itfinally.builder.annotation.Table;
+
+@Table
+@MetaData
+public class DEntity extends CEntity {
 }

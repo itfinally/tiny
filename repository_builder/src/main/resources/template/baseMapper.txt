@@ -1,34 +1,56 @@
-package top.itfinally.core.repository.mapper;
+#if ( ${table.thisEntity.offset} != "" )
+package ${package}.mapper.${table.thisEntity.offset};
+
+#else
+package ${package}.mapper;
+
+#end
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import ${baseEntityClassName};
+import ${table.thisEntity.name};
 
 import java.util.Collection;
+#if( "Date" == ${timeType} )
+import java.util.Date;
+#end
 import java.util.List;
 import java.util.Map;
 
 @Mapper
-public interface BaseMapper<Entity extends ${baseEntityBase}>{
+public interface BaseMapper<Entity extends ${table.thisEntity.simpleName}>{
     Entity query( @Param( "id" ) String id );
-    
-    List<Entity> queryAll(@Param( "beginRow" ) int beginRow,@Param( "row" ) int row,@Param( "status" ) int status);
-    
-    List<Entity> queryBySpecificId(@Param( "ids" ) Collection<String> ids,@Param( "beginRow" ) int beginRow,@Param( "row" ) int row,@Param( "status" ) int status);
 
-        int save(Entity entity);
+    List<Entity> queryAll(
+        @Param( "beginRow" ) int beginRow,
+        @Param( "row" ) int row,
+        @Param( "status" ) int status
+    );
 
-        int saveAll(@Param( "entities" ) Collection<Entity> entities);
+    List<Entity> queryBySpecificId(
+        @Param( "ids" ) Collection<String> ids,
+        @Param( "beginRow" ) int beginRow,
+        @Param( "row" ) int row,
+        @Param( "status" ) int status
+    );
 
-        int update(Entity entity);
+    int save( Entity entity );
 
-        int specificUpdate(@Param( "id" ) String id,@Param( "updateTime" ) long updateTime,@Param( "fieldAndValues" ) Map<String, Object> fieldAndValues);
+    int saveAll( @Param( "entities" ) Collection<Entity> entities );
 
-        int remove(@Param( "id" ) String id,@Param( "deleteTime" ) long deleteTime);
+    int update( Entity entity );
 
-        int removeAll(@Param( "ids" ) Collection<String> ids,@Param( "deleteTime" ) long deleteTime);
+    int specificUpdate(
+        @Param( "id" ) String id,
+        @Param( "updateTime" ) ${timeType} updateTime,
+        @Param( "fieldAndValues" ) Map<String, Object> fieldAndValues
+    );
 
-        int physicalDelete(@Param( "id" ) String id);
+    int remove( @Param( "id" ) String id, @Param( "deleteTime" ) ${timeType} deleteTime );
 
-        int physicalDeleteAll(@Param( "ids" ) Collection<String> ids);
+    int removeAll( @Param( "ids" ) Collection<String> ids, @Param( "deleteTime" ) ${timeType} deleteTime );
+
+    int physicalDelete( @Param( "id" ) String id );
+
+    int physicalDeleteAll( @Param( "ids" ) Collection<String> ids );
 }

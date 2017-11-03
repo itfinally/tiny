@@ -10,7 +10,6 @@ import top.itfinally.core.repository.mapper.BaseMapper;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.*;
-import java.util.Collection;
 
 public abstract class AbstractDao<Entity extends BaseEntity<Entity>, Mapper extends BaseMapper<Entity>>
         implements BaseMapper<Entity> {
@@ -74,9 +73,7 @@ public abstract class AbstractDao<Entity extends BaseEntity<Entity>, Mapper exte
         Mapper mapper = session.getMapper( baseMapperCls );
 
         try {
-            for ( Entity entity : entities ) {
-                mapper.update( entity.setUpdateTime( System.currentTimeMillis() ) );
-            }
+            entities.forEach( entity -> mapper.update( entity.setUpdateTime( System.currentTimeMillis() ) ) );
 
             int effectRow = session.flushStatements().size();
             session.commit();

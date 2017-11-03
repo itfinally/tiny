@@ -1,7 +1,18 @@
-package top.itfinally.core.repository.po;
+package top.itfinally.builder.repository.po;
 
-/**
- * Created by finally on 17/11/2.
- */
-public class AEntity {
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Table;
+
+@Table( name = "t_a" )
+public class AEntity extends BaseEntity {
+    private String a;
+
+    @Column
+    public String getA() {
+        return a;
+    }
+
+    public void setA( String a ) {
+        this.a = a;
+    }
 }

@@ -1,22 +1,27 @@
 package top.itfinally.builder.bootstrap;
 
+import java.io.File;
+import java.net.URL;
+
 public class BuilderConfigure {
-
-    // The Builder scanning path
-    private String scanBasePackage;
-
-    // Generate with this package name
+    private String scanPackage;
     private String packageName;
+    private String targetFolder;
 
-    // Write file to ${rooPath}
-    private String rootPath;
+    private String baseMapperResourcePath;
+    private String abstractDaoResourcePath;
 
-    public String getBackScanPath() {
-        return backScanPath;
+    private Class<?> baseEntity;
+
+    private boolean forceCreation;
+    private boolean mapUnderscoreToCamelCase;
+
+    public String getScanPackage() {
+        return scanPackage;
     }
 
-    public BuilderConfigure setBackScanPath( String backScanPath ) {
-        this.backScanPath = backScanPath;
+    public BuilderConfigure setScanPackage( String scanPackage ) {
+        this.scanPackage = scanPackage;
         return this;
     }
 
@@ -29,21 +34,75 @@ public class BuilderConfigure {
         return this;
     }
 
-    public String getBaseEntity() {
+    public String getTargetFolder() {
+        return targetFolder;
+    }
+
+    public BuilderConfigure setTargetFolder( String targetFolder ) {
+        this.targetFolder = targetFolder;
+        return this;
+    }
+
+    public Class<?> getBaseEntity() {
         return baseEntity;
     }
 
-    public BuilderConfigure setBaseEntity( String baseEntity ) {
+    public BuilderConfigure setBaseEntity( Class<?> baseEntity ) {
         this.baseEntity = baseEntity;
         return this;
     }
 
-    public String getRootPath() {
-        return rootPath;
+    public boolean isForceCreation() {
+        return forceCreation;
     }
 
-    public BuilderConfigure setRootPath( String rootPath ) {
-        this.rootPath = rootPath;
+    public BuilderConfigure setForceCreation( boolean forceCreation ) {
+        this.forceCreation = forceCreation;
+        return this;
+    }
+
+    public boolean isMapUnderscoreToCamelCase() {
+        return mapUnderscoreToCamelCase;
+    }
+
+    public BuilderConfigure setMapUnderscoreToCamelCase( boolean mapUnderscoreToCamelCase ) {
+        this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
+        return this;
+    }
+
+    public void checking() {
+        this.checkingBaseEntity()
+                .checkingTargetFolder()
+                .checkingPackage( scanPackage, "scanPackage" )
+                .checkingPackage( packageName, "packageName" );
+    }
+
+    private BuilderConfigure checkingBaseEntity() {
+        if ( null == baseEntity ) {
+            throw new NullPointerException( "BaseEntity is not found." );
+        }
+
+        return this;
+    }
+
+    private BuilderConfigure checkingTargetFolder() {
+        if( new File( targetFolder ).isDirectory() ) {
+            throw new IllegalArgumentException( String.format( "Path %s is not a directory.", targetFolder ) );
+        }
+
+        return this;
+    }
+
+    private BuilderConfigure checkingPackage( String name, String field ) {
+        URL url = Thread.currentThread().getContextClassLoader().getResource( packageName );
+        if ( null == url ) {
+            throw new IllegalArgumentException( String.format( "Package '%s' not available, check your '%s' in config.", name, field ) );
+        }
+
+        if ( new File( url.getPath() ).isDirectory() ) {
+            throw new IllegalArgumentException( String.format( "Package '%s' is not a directory, check your '%s' in config.", name, field ) );
+        }
+
         return this;
     }
 }
