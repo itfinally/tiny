@@ -9,6 +9,7 @@ import top.itfinally.builder.annotation.Table;
 import top.itfinally.builder.entity.ColumnMetaData;
 import top.itfinally.builder.entity.EntityMetaData;
 import top.itfinally.builder.entity.TableMetaData;
+import top.itfinally.core.util.CollectionUtils;
 import top.itfinally.core.util.FileScanUtils;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -42,7 +43,7 @@ public class TableScanner {
     public TableScanner( String scanPackage, String entityEndWith, boolean mapUnderscoreToCamelCase ) {
         this.scanPackage = scanPackage;
         this.entityEndWith = entityEndWith;
-        this.columnScanner = new ColumnScanner( mapUnderscoreToCamelCase );
+        this.columnScanner = new ColumnScanner( entityEndWith, mapUnderscoreToCamelCase );
     }
 
     public Map<String, TableMetaData> doScan() throws IllegalStateException, NullPointerException {
@@ -76,7 +77,7 @@ public class TableScanner {
                     parentAnalysis( cls.getSuperclass() );
                 } );
 
-        return resultMaps;
+        return rebuildId( resultMaps );
     }
 
     private void entityAnalysis( Class<?> cls ) {
@@ -114,6 +115,7 @@ public class TableScanner {
         }
 
         TableMetaData meta = new TableMetaData()
+
                 .setColumns( columns )
 
                 .setTable( table != null )
@@ -166,12 +168,27 @@ public class TableScanner {
         }
 
         Field field = fields.get( 0 );
-        PropertyDescriptor descriptor = descriptors.get( field.getName() );
+        PropertyDescriptor descriptor;
 
-        if ( null == descriptor ) {
-            throw new NullPointerException( String.format(
-                    "Not match field '%s' in class %s", field.getName(), field.getDeclaringClass().getName()
-            ) );
+        if ( !field.getName().startsWith( "is" ) ) {
+            descriptor = descriptors.get( field.getName() );
+
+        } else {
+            char[] nameChar = field.getName().replaceFirst( "^is", "" ).toCharArray();
+
+            // switch A-Z to a-z
+            if( nameChar[ 0 ] < 97 ) {
+                nameChar[ 0 ] += 32;
+            }
+
+            descriptor = descriptors.get( new String( nameChar ) );
+
+            if ( null == descriptor ) {
+                throw new NullPointerException( String.format(
+                        "Not match descriptor for field '%s' in class '%s'.",
+                        field.getName(), field.getDeclaringClass()
+                ) );
+            }
         }
 
         return columnAnalysis(
@@ -212,5 +229,44 @@ public class TableScanner {
 
         entityMetaDataCache.put( cls, entityMetaData );
         return entityMetaData;
+    }
+
+    private Map<String, TableMetaData> rebuildId( Map<String, TableMetaData> metaDataMap ) {
+        return metaDataMap.entrySet().stream().collect( Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> {
+                    TableMetaData metaData = entry.getValue();
+                    List<ColumnMetaData> columns = metaData.getColumns();
+
+                    if ( null == metaData.getExtendEntity() ) {
+                        return new TableMetaData( metaData ).setIdColumn(
+                                checkingAndGetId( entry.getValue().getThisEntity().getThisCls(), columns )
+                        );
+                    }
+
+                    TableMetaData parentMetaData = metaDataMap.get( metaData.getExtendEntity().getName() );
+                    List<ColumnMetaData> allColumns = CollectionUtils.merge( metaData.getColumns(), parentMetaData.getColumns() );
+
+                    return new TableMetaData( metaData ).setIdColumn(
+                            checkingAndGetId( entry.getValue().getThisEntity().getThisCls(), allColumns )
+                    );
+                }
+        ) );
+    }
+
+    private ColumnMetaData checkingAndGetId( Class<?> cls, List<ColumnMetaData> columns ) {
+        List<ColumnMetaData> ids = columns.stream()
+                .filter( ColumnMetaData::isId )
+                .collect( Collectors.toList() );
+
+        if ( ids.isEmpty() ) {
+            throw new IllegalStateException( "Table require id." );
+        }
+
+        if ( ids.size() != 1 ) {
+            throw new IllegalStateException( String.format( "Duplicate id in entity %s.", cls.getSimpleName() ) );
+        }
+
+        return ids.get( 0 );
     }
 }

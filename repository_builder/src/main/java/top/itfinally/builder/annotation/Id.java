@@ -3,8 +3,7 @@ package top.itfinally.builder.annotation;
 import java.lang.annotation.*;
 
 @Documented
-@Target( ElementType.TYPE )
+@Target( { ElementType.METHOD, ElementType.FIELD } )
 @Retention( RetentionPolicy.RUNTIME )
-public @interface Table {
-    String name();
+public @interface Id {
 }

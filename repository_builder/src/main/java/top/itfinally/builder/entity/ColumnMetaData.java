@@ -6,16 +6,10 @@ public class ColumnMetaData {
     private String column;
     private String property;
     private Class<?> javaType;
-    private Class<?> collection;
-    private Class<?> association;
 
-    public ColumnMetaData() {
-    }
-
-    public ColumnMetaData( String property, String column ) {
-        this.property = property;
-        this.column = column;
-    }
+    private boolean isId;
+    private String joinKey;
+    private String joinType;
 
     public String getColumn() {
         return column;
@@ -44,21 +38,30 @@ public class ColumnMetaData {
         return this;
     }
 
-    public Class<?> getCollection() {
-        return collection;
+    public boolean isId() {
+        return isId;
     }
 
-    public ColumnMetaData setCollection( Class<?> collection ) {
-        this.collection = collection;
+    public ColumnMetaData setId( boolean id ) {
+        isId = id;
         return this;
     }
 
-    public Class<?> getAssociation() {
-        return association;
+    public String getJoinKey() {
+        return joinKey;
     }
 
-    public ColumnMetaData setAssociation( Class<?> association ) {
-        this.association = association;
+    public ColumnMetaData setJoinKey( String joinKey ) {
+        this.joinKey = joinKey;
+        return this;
+    }
+
+    public String getJoinType() {
+        return joinType;
+    }
+
+    public ColumnMetaData setJoinType( String joinType ) {
+        this.joinType = joinType;
         return this;
     }
 }

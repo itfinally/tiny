@@ -1,0 +1,19 @@
+package ${package}.dao${util.getOffset( ${table.thisEntity.offset} )};
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import ${package}.dao${util.getOffset( ${table.extendEntity.offset} )}.${table.extendEntity.baseName}Dao;
+import ${package}.mapper${util.getOffset( ${table.thisEntity.offset} )}.${table.thisEntity.baseName}Mapper;
+import ${package}.po${util.getOffset( ${table.thisEntity.offset} )}.${table.thisEntity.simpleName};
+
+@Repository
+public class ${table.thisEntity.baseName}Dao extends ${table.extendEntity.baseName}Dao<${table.thisEntity.simpleName}, ${table.thisEntity.baseName}Mapper> {
+    private ${table.thisEntity.baseName}Mapper ${util.lowerFirstChar( ${table.thisEntity.baseName} )}Mapper;
+
+    @Override
+    @Autowired
+    protected void setBaseMapper( ${table.thisEntity.baseName}Mapper baseMapper ) {
+        this.${util.lowerFirstChar( ${table.thisEntity.baseName} )}Mapper = baseMapper;
+        super.setBaseMapper( baseMapper );
+    }
+}

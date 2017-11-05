@@ -1,8 +1,10 @@
 package top.itfinally.builder.core;
 
+import com.google.common.reflect.Reflection;
 import org.apache.commons.lang3.StringUtils;
 import top.itfinally.builder.annotation.Association;
 import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Id;
 import top.itfinally.builder.annotation.Table;
 import top.itfinally.builder.entity.ColumnMetaData;
 
@@ -11,9 +13,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 class ColumnScanner {
-    private boolean mapUnderscoreToCamelCase;
+    private final String entityEndWith;
+    private final boolean mapUnderscoreToCamelCase;
 
-    ColumnScanner( boolean mapUnderscoreToCamelCase ) {
+    ColumnScanner( String entityEndWith, boolean mapUnderscoreToCamelCase ) {
+        this.entityEndWith = entityEndWith;
         this.mapUnderscoreToCamelCase = mapUnderscoreToCamelCase;
     }
 
@@ -21,18 +25,22 @@ class ColumnScanner {
         Method writeMethod = descriptor.getWriteMethod();
         Method readMethod = descriptor.getReadMethod();
 
+        boolean isId = writeMethod.getAnnotation( Id.class ) != null ||
+                readMethod.getAnnotation( Id.class ) != null ||
+                field.getAnnotation( Id.class ) != null;
+
         if ( writeMethod.getAnnotation( Association.class ) != null ||
                 readMethod.getAnnotation( Association.class ) != null ||
                 field.getAnnotation( Association.class ) != null ) {
 
-            return association( field, descriptor );
+            return association( field, descriptor ).setId( isId );
         }
 
         if ( writeMethod.getAnnotation( Column.class ) != null ||
                 readMethod.getAnnotation( Column.class ) != null ||
                 field.getAnnotation( Column.class ) != null ) {
 
-            return column( field, descriptor );
+            return column( field, descriptor ).setId( isId );
         }
 
         return null;
@@ -106,7 +114,8 @@ class ColumnScanner {
         }
 
         return new ColumnMetaData()
-                .setAssociation( join )
+                .setJoinKey( join.getName() )
+                .setJoinType( "association" )
                 .setJavaType( field.getType() )
                 .setProperty( StringUtils.isBlank( propertyName ) ? field.getName() : propertyName )
                 .setColumn( StringUtils.isBlank( columnName ) ? caseToUnderscore( field.getName() ) : column.column() );
@@ -116,6 +125,16 @@ class ColumnScanner {
         return !mapUnderscoreToCamelCase ? camel : camel
                 .replaceAll( "[A-Z]+", "_$0" )
                 .toLowerCase()
-                .replaceFirst( "_", "" );
+                .replaceAll( "^_", "" );
+    }
+
+    private String extractEntityName( String clsSimpleName ) {
+        String lowerEntityName = clsSimpleName.toLowerCase();
+
+        if ( lowerEntityName.endsWith( entityEndWith.toLowerCase() ) ) {
+            return clsSimpleName.substring( 0, clsSimpleName.length() - entityEndWith.length() );
+        }
+
+        return clsSimpleName;
     }
 }

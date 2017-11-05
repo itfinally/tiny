@@ -1,10 +1,4 @@
-#if ( ${table.thisEntity.offset} != "" )
-package ${package}.dao.${table.thisEntity.offset};
-
-#else
-package ${package}.dao;
-
-#end
+package ${package}.dao${util.getOffset( ${table.thisEntity.offset} )};
 
 import com.google.common.reflect.TypeToken;
 import org.apache.ibatis.session.SqlSession;
@@ -12,18 +6,12 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-#if ( ${table.thisEntity.offset} != "" )
-import ${package}.mapper.${table.thisEntity.offset}.BaseMapper;
-
-#else
-import ${package}.mapper.BaseMapper;
-
-#end
+import ${package}.mapper${util.getOffset( ${table.thisEntity.offset} )}.${table.thisEntity.baseName}Mapper;
 import ${table.thisEntity.name};
 
 import java.util.*;
 
-public abstract class AbstractDao<Entity extends ${table.thisEntity.simpleName}<Entity>, Mapper extends BaseMapper<Entity>>
+public abstract class ${table.thisEntity.baseName}Dao<Entity extends ${table.thisEntity.simpleName}<Entity>, Mapper extends ${table.thisEntity.baseName}Mapper<Entity>>
         implements BaseMapper<Entity> {
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -73,10 +61,13 @@ public abstract class AbstractDao<Entity extends ${table.thisEntity.simpleName}<
 
     @Override
     public int update( Entity entity ) {
+        #if( "Date" == ${timeUnit} )
+        return baseMapper.update( entity.setUpdateTime( new Date() ) );
+        #else
         return baseMapper.update( entity.setUpdateTime( System.currentTimeMillis() ) );
+        #end
     }
 
-    @SuppressWarnings( "unchecked" )
     public int updateAll( Collection<Entity> entities ) {
         SqlSession session = sessionFactory.openSession();
 
@@ -85,7 +76,7 @@ public abstract class AbstractDao<Entity extends ${table.thisEntity.simpleName}<
         Mapper mapper = session.getMapper( baseMapperCls );
 
         try {
-            #if( "Date" == ${timeType} )
+            #if( "Date" == ${timeUnit} )
             entities.forEach( entity -> mapper.update( entity.setUpdateTime( new Date() ) ) );
             #else
             entities.forEach( entity -> mapper.update( entity.setUpdateTime( System.currentTimeMillis() ) ) );
@@ -109,17 +100,17 @@ public abstract class AbstractDao<Entity extends ${table.thisEntity.simpleName}<
     }
 
     @Override
-    public int specificUpdate( String id, ${timeType} updateTime, Map<String, Object> fieldAndValues ) {
+    public int specificUpdate( String id, ${timeUnit} updateTime, Map<String, Object> fieldAndValues ) {
         return baseMapper.specificUpdate( id, updateTime, fieldAndValues );
     }
 
     @Override
-    public int remove( String id, ${timeType} deleteTime ) {
+    public int remove( String id, ${timeUnit} deleteTime ) {
         return baseMapper.remove( id, deleteTime );
     }
 
     @Override
-    public int removeAll( Collection<String> ids, ${timeType} deleteTime ) {
+    public int removeAll( Collection<String> ids, ${timeUnit} deleteTime ) {
         return baseMapper.removeAll( ids, deleteTime );
     }
 

@@ -7,10 +7,12 @@ public class BuilderConfigure {
     private String scanPackage;
     private String packageName;
     private String targetFolder;
+    private String entityEndWith;
 
     private String baseMapperResourcePath;
     private String abstractDaoResourcePath;
 
+    private Class<?> timeUnit;
     private Class<?> baseEntity;
 
     private boolean forceCreation;
@@ -40,6 +42,42 @@ public class BuilderConfigure {
 
     public BuilderConfigure setTargetFolder( String targetFolder ) {
         this.targetFolder = targetFolder;
+        return this;
+    }
+
+    public String getEntityEndWith() {
+        return entityEndWith;
+    }
+
+    public BuilderConfigure setEntityEndWith( String entityEndWith ) {
+        this.entityEndWith = entityEndWith;
+        return this;
+    }
+
+    public String getBaseMapperResourcePath() {
+        return baseMapperResourcePath;
+    }
+
+    public BuilderConfigure setBaseMapperResourcePath( String baseMapperResourcePath ) {
+        this.baseMapperResourcePath = baseMapperResourcePath;
+        return this;
+    }
+
+    public String getAbstractDaoResourcePath() {
+        return abstractDaoResourcePath;
+    }
+
+    public BuilderConfigure setAbstractDaoResourcePath( String abstractDaoResourcePath ) {
+        this.abstractDaoResourcePath = abstractDaoResourcePath;
+        return this;
+    }
+
+    public Class<?> getTimeUnit() {
+        return timeUnit;
+    }
+
+    public BuilderConfigure setTimeUnit( Class<?> timeUnit ) {
+        this.timeUnit = timeUnit;
         return this;
     }
 
@@ -86,7 +124,8 @@ public class BuilderConfigure {
     }
 
     private BuilderConfigure checkingTargetFolder() {
-        if( new File( targetFolder ).isDirectory() ) {
+        File file = new File( targetFolder );
+        if( file.exists() && !file.isDirectory() ) {
             throw new IllegalArgumentException( String.format( "Path %s is not a directory.", targetFolder ) );
         }
 
@@ -94,12 +133,15 @@ public class BuilderConfigure {
     }
 
     private BuilderConfigure checkingPackage( String name, String field ) {
-        URL url = Thread.currentThread().getContextClassLoader().getResource( packageName );
+        URL url = Thread.currentThread()
+                .getContextClassLoader()
+                .getResource( name.replaceAll( "\\.", File.separator ) );
+
         if ( null == url ) {
             throw new IllegalArgumentException( String.format( "Package '%s' not available, check your '%s' in config.", name, field ) );
         }
 
-        if ( new File( url.getPath() ).isDirectory() ) {
+        if ( !new File( url.getPath() ).isDirectory() ) {
             throw new IllegalArgumentException( String.format( "Package '%s' is not a directory, check your '%s' in config.", name, field ) );
         }
 

@@ -1,27 +1,9 @@
-#if ( ${table.thisEntity.offset} != "" )
-package ${package}.mapper.${table.thisEntity.offset};
-
-#else
-package ${package}.mapper;
-
-#end
+package ${package}.mapper${util.getOffset( ${table.thisEntity.offset} )};
 
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Component;
-#if ( ${table.extendEntity.offset} != "" )
-import ${package}.mapper.${table.extendEntity.offset}.${table.extendEntity.baseName}Mapper;
-
-#else
-import ${package}.mapper.${table.extendEntity.baseName}Mapper;
-
-#end
-#if ( ${table.thisEntity.offset} != "" )
-import ${package}.po.${table.thisEntity.offset}.${table.thisEntity.simpleName};
-
-#else
-import ${package}.po.${table.thisEntity.simpleName};
-
-#end
+import ${package}.mapper${util.getOffset( ${table.extendEntity.offset} )}.${table.extendEntity.baseName}Mapper;
+import ${package}.po${util.getOffset( ${table.thisEntity.offset} )}.${table.thisEntity.simpleName};
 
 @Mapper
 @Component

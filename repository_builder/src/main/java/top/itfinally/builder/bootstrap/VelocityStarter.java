@@ -33,6 +33,8 @@ public class VelocityStarter implements ApplicationListener<ContextRefreshedEven
             Velocity.setProperty( "input.encoding", "utf-8" );
             Velocity.setProperty( "output.encoding", "utf-8" );
             Velocity.setProperty( RuntimeConstants.RESOURCE_LOADER, "classpath" );
+            Velocity.setProperty( "velocimacro.permissions.allow.inline", "true" );
+            Velocity.setProperty( "velocimacro.permissions.allow.inline.local.scope", "true" );
             Velocity.setProperty( "classpath.resource.loader.class", ClasspathResourceLoader.class.getName() );
             Velocity.init();
         }

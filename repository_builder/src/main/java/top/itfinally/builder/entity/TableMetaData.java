@@ -9,9 +9,23 @@ public class TableMetaData {
 
     private String tableName;
 
+    private ColumnMetaData idColumn;
     private EntityMetaData thisEntity;
     private EntityMetaData extendEntity;
     private List<ColumnMetaData> columns;
+
+    public TableMetaData() {
+    }
+
+    public TableMetaData( TableMetaData metaData ) {
+        this.isMeta = metaData.isMeta;
+        this.isTable = metaData.isTable;
+        this.columns = metaData.columns;
+        this.idColumn = metaData.idColumn;
+        this.tableName = metaData.tableName;
+        this.thisEntity = metaData.thisEntity;
+        this.extendEntity = metaData.extendEntity;
+    }
 
     public boolean isMeta() {
         return isMeta;
@@ -40,6 +54,15 @@ public class TableMetaData {
         return this;
     }
 
+    public ColumnMetaData getIdColumn() {
+        return idColumn;
+    }
+
+    public TableMetaData setIdColumn( ColumnMetaData idColumn ) {
+        this.idColumn = idColumn;
+        return this;
+    }
+
     public EntityMetaData getThisEntity() {
         return thisEntity;
     }
@@ -65,17 +88,5 @@ public class TableMetaData {
     public TableMetaData setColumns( List<ColumnMetaData> columns ) {
         this.columns = columns;
         return this;
-    }
-
-    @Override
-    public String toString() {
-        return "TableMetaData{" +
-                "isMeta=" + isMeta +
-                ", isTable=" + isTable +
-                ", tableName='" + tableName + '\'' +
-                ", thisEntity=" + thisEntity +
-                ", extendEntity=" + extendEntity +
-                ", columns=" + columns +
-                '}';
     }
 }
