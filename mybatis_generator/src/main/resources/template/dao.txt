@@ -1,0 +1,19 @@
+package ${table.thisEntity.daoPackage};
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import ${table.thisEntity.mapperName};
+import ${table.extendEntity.daoName};
+import ${table.thisEntity.name};
+
+@Repository
+public class ${table.thisEntity.daoSimpleName} extends ${table.extendEntity.daoSimpleName}<${table.thisEntity.simpleName}, ${table.thisEntity.mapperSimpleName}> {
+    private ${table.thisEntity.mapperSimpleName} ${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )};
+
+    @Override
+    @Autowired
+    protected void setBaseMapper( ${table.thisEntity.mapperSimpleName} baseMapper ) {
+        this.${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )} = baseMapper;
+        super.setBaseMapper( baseMapper );
+    }
+}

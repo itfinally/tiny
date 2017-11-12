@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>admin</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0</version>
+
+    <name>admin</name>
+    <url>https://www.itfinally.com</url>
+
+    <properties>
+        <kaptcha.version>2.3.2</kaptcha.version>
+    </properties>
+
+    <parent>
+        <groupId>top.itfinally</groupId>
+        <artifactId>parent</artifactId>
+        <version>1.0</version>
+        <relativePath>../parent/pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.penggle</groupId>
+            <artifactId>kaptcha</artifactId>
+            <version>${kaptcha.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>admin</finalName>
+    </build>
+</project>
