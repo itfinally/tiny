@@ -10,10 +10,9 @@ import top.itfinally.builder.bootstrap.BuilderConfigure;
 import top.itfinally.builder.entity.ColumnInfo;
 import top.itfinally.builder.entity.EntityInfo;
 import top.itfinally.builder.entity.TableInfo;
+import top.itfinally.builder.util.FileScanUtils;
 import top.itfinally.builder.util.TemplateUtils;
-import top.itfinally.core.util.FileScanUtils;
 
-import javax.annotation.concurrent.NotThreadSafe;
 import java.beans.FeatureDescriptor;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -24,7 +23,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@NotThreadSafe
 public class TableScanner {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 

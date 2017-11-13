@@ -2,6 +2,8 @@ package top.itfinally.builder.core;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.app.Velocity;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.itfinally.builder.bootstrap.BuilderConfigure;
@@ -23,6 +25,16 @@ public class FileBuilder {
     private final BuilderConfigure configure;
     private final String separator = File.separator;
     private final Map<String, TableInfo> metaDataMap;
+
+    static {
+        Velocity.setProperty( "input.encoding", "utf-8" );
+        Velocity.setProperty( "output.encoding", "utf-8" );
+        Velocity.setProperty( RuntimeConstants.RESOURCE_LOADER, "classpath" );
+        Velocity.setProperty( "velocimacro.permissions.allow.inline", "true" );
+        Velocity.setProperty( "velocimacro.permissions.allow.inline.local.scope", "true" );
+        Velocity.setProperty( "classpath.resource.loader.class", ClasspathResourceLoader.class.getName() );
+        Velocity.init();
+    }
 
     public FileBuilder( BuilderConfigure configure, Map<String, TableInfo> metaDataMap ) {
         this.configure = configure;
@@ -101,6 +113,11 @@ public class FileBuilder {
     }
 
     private void write( String path, String content ) {
+        File file = new File( path );
+        if ( file.exists() && file.isFile() && !configure.isForceCreation() ) {
+            return;
+        }
+
         try ( BufferedOutputStream out = new BufferedOutputStream( new FileOutputStream( path ) ) ) {
             out.write( content.getBytes() );
 

@@ -88,9 +88,10 @@ class Main {
         .setScanPackage( "扫描路径, 填写你的实体类根目录" )
         .setPackageName( "填写生成的类的 package , 要与 targetFolder 的路径保持重合" )
         .setBaseEntity( "抽象实体的类对象" )
-        .setAbstractDaoCls( "抽象 dao 类, 设置后所有生成的 dao 都会继承该类" )
-        .setBaseMapperCls( "基础 mapper 类, 同上" )
-        .setTimeUnit( "时间类型, 必须与抽象实体使用的时间类型一致, 仅支持 Date.class 与 long.class" );
+        .setAbstractDaoCls( "抽象 dao 类, 设置后所有生成的 dao 都会继承该类, 可选" )
+        .setBaseMapperCls( "基础 mapper 类, 同上, 可选" )
+        .setTimeUnit( "时间类型, 必须与抽象实体使用的时间类型一致, 仅支持 Date.class 与 long.class, 默认 long.class, 可选" )
+        .setEntityEndWith( "实体类结尾的单词, 比如 AEntity, BEntity 等, 默认是 Entity, 可选" );
         
         // 检查必要的配置
         configure.checking();

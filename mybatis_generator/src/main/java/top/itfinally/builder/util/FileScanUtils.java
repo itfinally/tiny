@@ -1,10 +1,9 @@
-package top.itfinally.core.util;
-
-import com.google.common.collect.Lists;
+package top.itfinally.builder.util;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,7 +21,7 @@ public final class FileScanUtils {
 
         File fileOrDirectory = new File( path );
         if ( isFile( fileOrDirectory ) ) {
-            return Lists.newArrayList( path );
+            return Collections.singletonList( path );
         }
 
         return doScanning( mergePaths( path, list( fileOrDirectory ) ), Stream.empty() )

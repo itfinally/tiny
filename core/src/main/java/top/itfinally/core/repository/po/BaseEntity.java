@@ -1,11 +1,15 @@
 package top.itfinally.core.repository.po;
 
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Id;
+import top.itfinally.builder.annotation.MetaData;
 import top.itfinally.core.enumerate.DataStatusEnum;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+@MetaData
 public class BaseEntity<Entity extends BaseEntity> implements Serializable {
     protected String id;
     protected int status;
@@ -31,6 +35,8 @@ public class BaseEntity<Entity extends BaseEntity> implements Serializable {
         this.id = id;
     }
 
+    @Id
+    @Column
     public String getId() {
         return id;
     }
@@ -41,6 +47,7 @@ public class BaseEntity<Entity extends BaseEntity> implements Serializable {
         return ( Entity ) this;
     }
 
+    @Column
     public long getCreateTime() {
         return createTime;
     }
@@ -51,6 +58,7 @@ public class BaseEntity<Entity extends BaseEntity> implements Serializable {
         return ( Entity ) this;
     }
 
+    @Column
     public long getUpdateTime() {
         return updateTime;
     }
@@ -61,6 +69,7 @@ public class BaseEntity<Entity extends BaseEntity> implements Serializable {
         return ( Entity ) this;
     }
 
+    @Column
     public long getDeleteTime() {
         return deleteTime;
     }
@@ -71,6 +80,7 @@ public class BaseEntity<Entity extends BaseEntity> implements Serializable {
         return ( Entity ) this;
     }
 
+    @Column
     public int getStatus() {
         return status;
     }

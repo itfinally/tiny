@@ -10,6 +10,7 @@
 
     <properties>
         <kaptcha.version>2.3.2</kaptcha.version>
+        <itfinally-security.version>1.0</itfinally-security.version>
     </properties>
 
     <parent>
