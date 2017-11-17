@@ -6,7 +6,8 @@ import top.itfinally.builder.entity.ColumnInfo;
 import java.util.List;
 
 public class TemplateUtils {
-    private TemplateUtils() {}
+    private TemplateUtils() {
+    }
 
     public static String getMapperName( String packageName, String offset, String baseName ) {
         if ( StringUtils.isNotBlank( offset ) ) {
@@ -85,7 +86,12 @@ public class TemplateUtils {
         StringBuilder builder = new StringBuilder();
 
         columns.forEach( column -> {
-            builder.append( String.format( "#{%s%s}", prefix, column.getProperty() ) );
+            if ( null == column.getJoinType() ) {
+                builder.append( String.format( "#{%s%s}", prefix, column.getProperty() ) );
+
+            } else {
+                builder.append( String.format( "#{%s%s.id}", prefix, column.getProperty() ) );
+            }
 
             if ( index[ 0 ] + 1 < columns.size() ) {
                 builder.append( ", " );
@@ -120,7 +126,12 @@ public class TemplateUtils {
                 isFirst[ 0 ] = !isFirst[ 0 ];
             }
 
-            builder.append( String.format( "%s = #{%s}", column.getColumn(), column.getProperty() ) );
+            if( null == column.getJoinType() ) {
+                builder.append( String.format( "%s = #{%s}", column.getColumn(), column.getProperty() ) );
+
+            } else {
+                builder.append( String.format( "%s = #{%s.id}", column.getColumn(), column.getProperty() ) );
+            }
 
             if ( index[ 0 ] + 1 < columns.size() ) {
                 builder.append( ", " );

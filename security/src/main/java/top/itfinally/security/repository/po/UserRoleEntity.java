@@ -1,9 +1,12 @@
 package top.itfinally.security.repository.po;
 
+import top.itfinally.builder.annotation.Association;
+import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
+@Table( name = "security_user_role" )
 public class UserRoleEntity extends BaseEntity<UserRoleEntity> {
     private UserAuthorityEntity userAuthority;
     private RoleEntity role;
@@ -15,6 +18,7 @@ public class UserRoleEntity extends BaseEntity<UserRoleEntity> {
         super( id );
     }
 
+    @Association( property = "userAuthority", column = "authority_id", join = UserAuthorityEntity.class )
     public UserAuthorityEntity getUserAuthority() {
         return userAuthority;
     }
@@ -24,6 +28,7 @@ public class UserRoleEntity extends BaseEntity<UserRoleEntity> {
         return this;
     }
 
+    @Association( property = "role", column = "role_id", join = RoleEntity.class )
     public RoleEntity getRole() {
         return role;
     }

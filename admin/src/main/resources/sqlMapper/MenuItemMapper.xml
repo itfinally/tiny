@@ -9,6 +9,14 @@
         <result property="isLeaf" column="is_leaf" javaType="boolean"/>
     </resultMap>
 
+    <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
+
+    <select id="query" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_item
+        WHERE id = #{id}
+    </select>
+
     <select id="queryAll" resultMap="menuItemEntity">
         select * from menu_item where 1 = 1
         <if test="status != -1001">
@@ -107,4 +115,10 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="queryRootItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_item
+        WHERE is_root = TRUE
+    </select>
 </mapper>

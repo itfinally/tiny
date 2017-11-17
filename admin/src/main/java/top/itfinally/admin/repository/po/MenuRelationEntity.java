@@ -1,32 +1,33 @@
 package top.itfinally.admin.repository.po;
 
+import top.itfinally.builder.annotation.Association;
 import top.itfinally.builder.annotation.Column;
 import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 @Table( name = "menu_relationship" )
 public class MenuRelationEntity extends BaseEntity<MenuRelationEntity> {
-    private String parentId;
-    private String childId;
     private int gap;
+    private MenuItemEntity parent;
+    private MenuItemEntity child;
 
-    @Column
-    public String getParentId() {
-        return parentId;
+    @Association( property = "parent", column = "parent_id", join = MenuItemEntity.class )
+    public MenuItemEntity getParent() {
+        return parent;
     }
 
-    public MenuRelationEntity setParentId( String parentId ) {
-        this.parentId = parentId;
+    public MenuRelationEntity setParent( MenuItemEntity parent ) {
+        this.parent = parent;
         return this;
     }
 
-    @Column
-    public String getChildId() {
-        return childId;
+    @Association( property = "child", column = "child_id", join = MenuItemEntity.class )
+    public MenuItemEntity getChild() {
+        return child;
     }
 
-    public MenuRelationEntity setChildId( String childId ) {
-        this.childId = childId;
+    public MenuRelationEntity setChild( MenuItemEntity child ) {
+        this.child = child;
         return this;
     }
 

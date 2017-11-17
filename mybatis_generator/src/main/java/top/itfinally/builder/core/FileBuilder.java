@@ -90,7 +90,7 @@ public class FileBuilder {
 
         mkdirs( path );
 
-        write( String.format( "%s%s%s.xml", path, separator, tableInfo.getThisEntity().getSimpleName() ),
+        write( String.format( "%s%s%s.xml", path, separator, tableInfo.getThisEntity().getMapperSimpleName() ),
                 renderEngine.render( template, tableInfo ) );
     }
 

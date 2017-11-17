@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!-- 指定实体类关联时进行延迟加载 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+
+        <!--
+        发现自动映射未知列的行为时的处理方式, 这里的实现是枚举类, 必须大写
+        NONE    -> 不做处理
+        WARNING -> 输入提醒日记
+        FAILING -> 抛 SqlSessionException 异常
+        -->
+        <setting name="autoMappingUnknownColumnBehavior" value="FAILING"/>
+
+        <!--
+        指定 sql 执行器, 这里的实现是枚举类, 必须大写
+        SIMPLE  -> 普通执行器
+        REUSE   -> 重用预处理语句
+        BATCH   -> 重用语句并且进行批量更新
+        -->
+        <setting name="defaultExecutorType" value="REUSE"/>
+
+        <!-- 数据库响应超时时间, 单位是秒 -->
+        <setting name="defaultStatementTimeout" value="30"/>
+
+        <!-- 开启下划线与驼峰写法的转换 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+
+        <!-- 指定 mybatis 日记的前缀 -->
+        <setting name="logPrefix" value="mybatis"/>
+
+        <!-- 指定 mybatis 日记的实现 -->
+        <setting name="logImpl" value="LOG4J2"/>
+    </settings>
+
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="DB2" value="db2"/>
+        <property name="MySQL" value="mysql"/>
+        <property name="Oracle" value="oracle"/>
+        <property name="SQL Server" value="sqlServer"/>
+    </databaseIdProvider>
+
+</configuration>

@@ -5,7 +5,10 @@ import org.springframework.stereotype.Component;
 import top.itfinally.core.repository.mapper.BaseMapper;
 import top.itfinally.admin.repository.po.MenuItemEntity;
 
+import java.util.List;
+
 @Mapper
 @Component
 public interface MenuItemMapper extends BaseMapper<MenuItemEntity> {
+    List<MenuItemEntity> queryRootItem();
 }

@@ -4,10 +4,20 @@
 <mapper namespace="top.itfinally.admin.repository.mapper.MenuRelationMapper">
     <resultMap id="menuRelationEntity" type="top.itfinally.admin.repository.po.MenuRelationEntity"
                extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
-        <result property="parentId" column="parent_id" javaType="java.lang.String"/>
-        <result property="childId" column="child_id" javaType="java.lang.String"/>
         <result property="gap" column="gap" javaType="int"/>
+        <association property="parent" column="parent_id"
+                     select="top.itfinally.admin.repository.mapper.MenuItemMapper.query"/>
+        <association property="child" column="child_id"
+                     select="top.itfinally.admin.repository.mapper.MenuItemMapper.query"/>
     </resultMap>
+
+    <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
+
+    <select id="query" resultMap="menuRelationEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE id = #{id}
+    </select>
 
     <select id="queryAll" resultMap="menuRelationEntity">
         select * from menu_relationship where 1 = 1
@@ -34,23 +44,24 @@
 
     <insert id="save">
         INSERT INTO menu_relationship (
-            parent_id, child_id, gap, id, status, create_time,
+            gap, parent_id, child_id, id, status, create_time,
             update_time, delete_time
 
         ) VALUES (
-            #{parentId}, #{childId}, #{gap}, #{id}, #{status}, #{createTime},
+            #{gap}, #{parent.id}, #{child.id}, #{id}, #{status}, #{createTime},
             #{updateTime}, #{deleteTime}
         );
     </insert>
 
     <insert id="saveAll">
         INSERT INTO menu_relationship (
-        parent_id, child_id, gap, id, status, create_time,
+        gap, parent_id, child_id, id, status, create_time,
         update_time, delete_time
 
         ) VALUES
         <foreach collection="entities" item="entity" open="(" separator="), (" close=")">
-            #{entity.parentId}, #{entity.childId}, #{entity.gap}, #{entity.id}, #{entity.status}, #{entity.createTime},
+            #{entity.gap}, #{entity.parent.id}, #{entity.child.id}, #{entity.id}, #{entity.status},
+            #{entity.createTime},
             #{entity.updateTime}, #{entity.deleteTime}
         </foreach>
     </insert>
@@ -58,9 +69,9 @@
     <update id="update">
         UPDATE menu_relationship
         SET
-            parent_id   = #{parentId},
-            child_id    = #{childId},
             gap         = #{gap},
+            parent_id   = #{parent.id},
+            child_id    = #{child.id},
             status      = #{status},
             update_time = #{updateTime},
             delete_time = #{deleteTime}
@@ -107,4 +118,74 @@
             #{id}
         </foreach>
     </delete>
+
+    <select id="queryParentItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE child_id = #{itemId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryDirectParentItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE child_id = #{itemId} AND gap = 1
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryMultiDirectParentItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE gap = 1
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+        AND child_id IN
+        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="queryChildItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE parent_id = #{itemId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryDirectChildItem" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_relationship
+        WHERE parent_id = #{itemId} AND gap = 1
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <update id="removeChildItem">
+        UPDATE menu_relationship
+        SET
+            update_time = #{deleteTime},
+            delete_time = #{deleteTime},
+            status      = -1
+        WHERE parent_id = #{itemId}
+    </update>
+
+    <update id="removeMultiChildItem">
+        UPDATE menu_relationship
+        SET
+        update_time = #{deleteTime},
+        delete_time = #{deleteTime},
+        status = -1
+        WHERE parent_id in
+        <foreach collection="parentIds" item="item" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

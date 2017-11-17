@@ -1,25 +1,31 @@
 package top.itfinally.security.repository.po;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+@Table( name = "security_user_details" )
 public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> implements UserDetails {
     // Indicates whether the user's account has expired.
+    @Column
     private boolean isNonExpired = true;
 
     // Indicates whether the user is locked or unlocked.
+    @Column
     private boolean isNonLocked = true;
 
     // Indicates whether the user's credentials (password) has expired.
+    @Column
     private boolean isCredentialsNonExpired = true;
 
     // Indicates whether the user is enabled or disabled.
+    @Column
     private boolean isEnable = true;
 
     // user 通过后期查询注入, 不再关注用户的具体信息

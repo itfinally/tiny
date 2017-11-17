@@ -17,6 +17,12 @@
         #end
     </resultMap>
 
+    <cache-ref namespace="${table.extendEntity.mapperName}"/>
+
+    <select id="query" resultMap="${util.lowerFirstChar( ${table.thisEntity.simpleName} )}">
+        select * from ${table.tableName} where id = #{id}
+    </select>
+
     <select id="queryAll" resultMap="${util.lowerFirstChar( ${table.thisEntity.simpleName} )}">
             select * from ${table.tableName} where 1 = 1
             <if test="status != -1001">

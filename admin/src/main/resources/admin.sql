@@ -32,3 +32,17 @@ CREATE TABLE menu_relationship (
   UNIQUE KEY relationship(parent_id, child_id, gap)
 )
   DEFAULT CHARSET utf8mb4;
+
+CREATE TABLE menu_scope (
+  id           VARCHAR(64) PRIMARY KEY,
+  create_time  LONG        NOT NULL,
+  update_time  LONG        NOT NULL,
+  delete_time  LONG,
+  status       INT(3) DEFAULT 1,
+
+  menu_item_id VARCHAR(64) NOT NULL,
+  role_id      VARCHAR(64) NOT NULL,
+
+  UNIQUE KEY role_menu_item(menu_item_id, role_id)
+)
+  DEFAULT CHARSET utf8mb4;

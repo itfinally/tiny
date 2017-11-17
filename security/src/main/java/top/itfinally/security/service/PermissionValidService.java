@@ -60,7 +60,7 @@ public class PermissionValidService implements PermissionEvaluator {
                 .filter( role -> {
 
                     // Admin has super power by default
-                    if ( "ADMIN".equals( role.getName() ) ) {
+                    if ( "ADMIN".equals( role.getName().toUpperCase() ) ) {
                         return true;
                     }
 

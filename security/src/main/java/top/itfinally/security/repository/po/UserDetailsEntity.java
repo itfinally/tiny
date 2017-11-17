@@ -1,5 +1,7 @@
 package top.itfinally.security.repository.po;
 
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
@@ -23,6 +25,7 @@ public abstract class UserDetailsEntity<Entity extends UserDetailsEntity> extend
 
     public abstract Entity setAuthorityId( String authorityId );
 
+    @Table( name = "security_default_user" )
     public static class Default extends UserDetailsEntity<Default> {
         private String account;
         private String password;
@@ -36,6 +39,7 @@ public abstract class UserDetailsEntity<Entity extends UserDetailsEntity> extend
             super( id );
         }
 
+        @Column
         @Override
         public String getAccount() {
             return account;
@@ -46,6 +50,7 @@ public abstract class UserDetailsEntity<Entity extends UserDetailsEntity> extend
             return this;
         }
 
+        @Column
         @Override
         public String getPassword() {
             return password;
@@ -56,6 +61,7 @@ public abstract class UserDetailsEntity<Entity extends UserDetailsEntity> extend
             return this;
         }
 
+        @Column
         @Override
         public String getNickname() {
             return nickname;
@@ -66,6 +72,7 @@ public abstract class UserDetailsEntity<Entity extends UserDetailsEntity> extend
             return this;
         }
 
+        @Column
         @Override
         public String getAuthorityId() {
             return authorityId;

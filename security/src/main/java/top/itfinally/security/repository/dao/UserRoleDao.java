@@ -2,8 +2,10 @@ package top.itfinally.security.repository.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import top.itfinally.core.exception.SqlOperationException;
 import top.itfinally.core.repository.dao.AbstractDao;
+import top.itfinally.core.util.CollectionUtils;
 import top.itfinally.security.repository.po.RoleEntity;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
 import top.itfinally.security.repository.po.UserRoleEntity;
@@ -11,10 +13,8 @@ import top.itfinally.security.repository.mapper.RoleMapper;
 import top.itfinally.security.repository.mapper.UserAuthorityMapper;
 import top.itfinally.security.repository.mapper.UserRoleMapper;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 import static top.itfinally.core.repository.QueryEnum.NOT_PAGING;
@@ -106,5 +106,62 @@ public class UserRoleDao extends AbstractDao<UserRoleEntity, UserRoleMapper> {
 
     public List<UserRoleEntity> queryByAuthorityId( String authorityId ) {
         return userRoleMapper.queryByAuthorityId( authorityId );
+    }
+
+    @Transactional
+    public int grantRolesTo( String authorityId, List<String> roleIds ) {
+        UserAuthorityEntity userAuthority = new UserAuthorityEntity( authorityId );
+
+        Map<String, String> mapping = new HashMap<>();
+        List<String> existRoles = new ArrayList<>();
+        List<String> normalRoles = new ArrayList<>();
+        List<UserRoleEntity> notExistRole = new ArrayList<>();
+        List<UserRoleEntity> userRoleEntities = queryByAuthorityId( authorityId );
+
+        userRoleEntities.forEach( entity -> {
+            String roleId = entity.getRole().getId(),
+                    entityId = entity.getId();
+
+            existRoles.add( roleId );
+            mapping.put( roleId, entityId );
+
+            if ( entity.getStatus() == NORMAL.getStatus() ) {
+                normalRoles.add( entityId );
+            }
+        } );
+
+        List<String> updates = roleIds.stream().filter( id -> {
+            boolean isExist = existRoles.contains( id );
+
+            if ( !isExist ) {
+                notExistRole.add( new UserRoleEntity()
+                        .setUserAuthority( userAuthority )
+                        .setRole( new RoleEntity( id ) )
+                );
+            }
+
+            return isExist;
+        } ).map( mapping::get ).collect( Collectors.toList() );
+
+        List<String> deletes = CollectionUtils.complement(
+                updates, CollectionUtils.union( normalRoles, updates )
+        );
+
+        int[] effectRow = new int[]{ 0 };
+        if ( !notExistRole.isEmpty() ) {
+            effectRow[ 0 ] += saveAll( notExistRole );
+        }
+
+        if ( !updates.isEmpty() ) {
+            userRoleEntities.stream()
+                    .filter( entity -> updates.contains( entity.getId() ) )
+                    .forEach( entity -> effectRow[ 0 ] += update( entity.setStatus( NORMAL.getStatus() ) ) );
+        }
+
+        if ( !deletes.isEmpty() ) {
+            effectRow[ 0 ] += removeAll( deletes, System.currentTimeMillis() );
+        }
+
+        return effectRow[ 0 ];
     }
 }

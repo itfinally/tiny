@@ -1,9 +1,12 @@
 package top.itfinally.security.repository.po;
 
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
+@Table( name = "security_permission" )
 public class PermissionEntity extends BaseEntity<PermissionEntity> {
     private String name;
     private String description;
@@ -15,6 +18,7 @@ public class PermissionEntity extends BaseEntity<PermissionEntity> {
         super( id );
     }
 
+    @Column
     public String getName() {
         return name.toLowerCase();
     }
@@ -24,6 +28,7 @@ public class PermissionEntity extends BaseEntity<PermissionEntity> {
         return this;
     }
 
+    @Column
     public String getDescription() {
         return description;
     }

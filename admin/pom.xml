@@ -26,6 +26,12 @@
             <artifactId>kaptcha</artifactId>
             <version>${kaptcha.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>top.itfinally</groupId>
+            <artifactId>security</artifactId>
+            <version>${itfinally-security.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

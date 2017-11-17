@@ -1,4 +1,6 @@
-package top.itfinally.core.exception;
+package top.itfinally.security.exception;
+
+import top.itfinally.core.exception.BaseBusinessException;
 
 public class UserNotFoundException extends BaseBusinessException {
     public UserNotFoundException() {

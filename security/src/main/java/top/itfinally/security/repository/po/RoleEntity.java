@@ -1,11 +1,13 @@
 package top.itfinally.security.repository.po;
 
 import org.springframework.security.core.GrantedAuthority;
+import top.itfinally.builder.annotation.Column;
+import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
-
+@Table( name = "security_role" )
 public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthority {
     private String name;
     private String description;
@@ -17,8 +19,9 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
         super( id );
     }
 
+    @Column
     public String getName() {
-        return name.toUpperCase();
+        return name;
     }
 
     @Override
@@ -34,6 +37,7 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
         return this;
     }
 
+    @Column
     public String getDescription() {
         return description;
     }

@@ -6,6 +6,8 @@ import top.itfinally.admin.repository.mapper.MenuRelationMapper;
 import top.itfinally.core.repository.dao.AbstractDao;
 import top.itfinally.admin.repository.po.MenuRelationEntity;
 
+import java.util.List;
+
 @Repository
 public class MenuRelationDao extends AbstractDao<MenuRelationEntity, MenuRelationMapper> {
     private MenuRelationMapper menuRelationMapper;
@@ -15,5 +17,29 @@ public class MenuRelationDao extends AbstractDao<MenuRelationEntity, MenuRelatio
     protected void setBaseMapper( MenuRelationMapper baseMapper ) {
         this.menuRelationMapper = baseMapper;
         super.setBaseMapper( baseMapper );
+    }
+
+    public List<MenuRelationEntity> queryParentItem( String itemId, int status ) {
+        return menuRelationMapper.queryParentItem( itemId, status );
+    }
+
+    public MenuRelationEntity queryDirectParentItem( String itemId, int status ) {
+        return menuRelationMapper.queryDirectParentItem( itemId, status );
+    }
+
+    public List<MenuRelationEntity> queryChildItem( String itemId, int status ) {
+        return menuRelationMapper.queryChildItem( itemId, status );
+    }
+
+    public List<MenuRelationEntity> queryDirectChildItem( String itemId, int status ) {
+        return menuRelationMapper.queryDirectChildItem( itemId, status );
+    }
+
+    public int removeChildItem( String itemId, long deleteTime ) {
+        return menuRelationMapper.removeChildItem( itemId, deleteTime );
+    }
+
+    public int removeMultiChildItem( List<String> itemIds, long deleteTime ) {
+        return menuRelationMapper.removeMultiChildItem( itemIds, deleteTime );
     }
 }

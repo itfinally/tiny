@@ -12,6 +12,8 @@ import top.itfinally.builder.util.TemplateUtils;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.IllegalFormatException;
 
 class ColumnScanner {
     private final BuilderConfigure configure;
@@ -114,11 +116,9 @@ class ColumnScanner {
             throw new IllegalArgumentException( "Joined target must be table." );
         }
 
-        String mapperName = TemplateUtils.getMapperName(
-                configure.getPackageName(),
-                TemplateUtils.getOffset( configure.getScanPackage(), join ),
-                TemplateUtils.getBaseName( join.getSimpleName(), configure.getEntityEndWith() )
-        );
+        String mapperName = column.mapper() != Object.class ?
+                column.mapper().getName() :
+                getMapperName( join, configure.getScanPackage() );
 
         return new ColumnInfo()
                 .setColumn( StringUtils.isBlank( columnName ) ? caseToUnderscore( field.getName() ) : column.column() )
@@ -130,7 +130,19 @@ class ColumnScanner {
     }
 
     private String caseToUnderscore( String camel ) {
-        return camel.replaceAll( "[A-Z]+", "_$0" )
-                .toLowerCase().replaceAll( "^_", "" );
+        return camel.replaceAll( "[A-Z]+", "_$0" ).toLowerCase().replaceAll( "^_", "" );
+    }
+
+    private String getMapperName( Class<?> join, String scanPackage ) {
+        if ( join.getName().startsWith( scanPackage ) ) {
+            return TemplateUtils.getMapperName(
+                    configure.getPackageName(),
+                    TemplateUtils.getOffset( configure.getScanPackage(), join ),
+                    TemplateUtils.getBaseName( join.getSimpleName(), configure.getEntityEndWith() )
+            );
+        }
+
+        // Cannot predict the mapper name from other package, so throws the exception to warning.
+        throw new IllegalArgumentException( "entity '%s' is not in scan package, try attribute 'mapper' in @Association" );
     }
 }

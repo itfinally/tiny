@@ -10,6 +10,13 @@ public class MenuItemEntity extends BaseEntity<MenuItemEntity> {
     private boolean isRoot;
     private boolean isLeaf;
 
+    public MenuItemEntity() {
+    }
+
+    public MenuItemEntity( String id ) {
+        super( id );
+    }
+
     @Column
     public String getName() {
         return name;

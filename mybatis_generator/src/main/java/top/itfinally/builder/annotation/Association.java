@@ -11,4 +11,7 @@ public @interface Association {
     String column() default "";
 
     Class<?> join();
+
+    // use it to declare mapper if mapper class already exist
+    Class<?> mapper() default Object.class;
 }
