@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class RestUrlScanHelper {
+public final class RestUrlScanHelper {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
     private final LocalVariableTableParameterNameDiscoverer discoverer;
     private final RegExpUtils.RegExp subPackageClassMatcher;

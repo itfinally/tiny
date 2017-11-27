@@ -12,14 +12,11 @@ import top.itfinally.security.repository.po.UserAuthorityEntity;
 import top.itfinally.security.repository.po.UserDetailsEntity;
 import top.itfinally.security.service.AuthorizationService;
 import top.itfinally.security.service.UserDetailService;
-import top.itfinally.security.service.UserManagerService;
 import top.itfinally.security.web.vo.UserAuthorityVoBean;
 
 @RestController
 @RequestMapping( "/user" )
 public class UserManagerController {
-
-    private UserManagerService userManagerService;
 
     private UserDetailService userDetailService;
 
@@ -45,12 +42,6 @@ public class UserManagerController {
         return this;
     }
 
-    @Autowired
-    public UserManagerController setUserManagerService( UserManagerService userManagerService ) {
-        this.userManagerService = userManagerService;
-        return this;
-    }
-
     @ResponseBody
     @GetMapping( "/get_own_authority_details" )
     public BaseResponseVoBean getOwnDetails() {
@@ -59,18 +50,5 @@ public class UserManagerController {
 
         return new SingleResponseVoBean<>( ResponseStatusEnum.SUCCESS )
                 .setResult( new UserAuthorityVoBean( user ) );
-    }
-
-    @ResponseBody
-    @GetMapping( "/create_user" )
-    @Transactional
-    public BaseResponseVoBean createUser() {
-        UserDetailsEntity user = new UserDetailsEntity.Default()
-                .setAccount( "testing2" )
-                .setPassword( passwordEncoder.encode( "950116" ) )
-                .setNickname( "Bug2" );
-
-        userDetailService.save( user );
-        return authorizationService.register( user.getId() );
     }
 }

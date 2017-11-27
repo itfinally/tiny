@@ -34,12 +34,14 @@ public class MenuService {
         return this;
     }
 
-    public SingleResponseVoBean<Integer> addedRootMenu( String name, boolean isRoot, boolean isLeaf ) {
-        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( menuItemDao.addedRootMenu( name, isRoot, isLeaf ) );
+    public SingleResponseVoBean<MenuItemVoBean> addedRootMenu( String name, boolean isLeaf ) {
+        return new SingleResponseVoBean<MenuItemVoBean>( SUCCESS )
+                .setResult( new MenuItemVoBean( menuItemDao.addedRootMenu( name, isLeaf ) ) );
     }
 
-    public SingleResponseVoBean<Integer> addedMenu( String parentId, String name, boolean isRoot, boolean isLeaf ) {
-        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( menuItemDao.addedMenu( parentId, name, isRoot, isLeaf ) );
+    public SingleResponseVoBean<MenuItemVoBean> addedMenu( String parentId, String name, boolean isLeaf ) {
+        return new SingleResponseVoBean<MenuItemVoBean>( SUCCESS )
+                .setResult( new MenuItemVoBean( menuItemDao.addedMenu( parentId, name, isLeaf ) ) );
     }
 
     public SingleResponseVoBean<Integer> removeMenuItem( String itemId ) {
@@ -54,7 +56,9 @@ public class MenuService {
         List<MenuItemEntity> rootMenuItems = menuItemDao.queryRootMenuItem();
         Set<String> rootItemIds = rootMenuItems.stream().map( BaseEntity::getId ).collect( Collectors.toSet() );
 
-        List<MenuItemVoBean> menuItemVoBeans = breadthTraversal( new HashMap<>( 32 ), rootMenuItems )
+        List<MenuItemVoBean> menuItemVoBeans = breadthTraversal(
+                new HashMap<>( 32 ), new HashMap<>( 32 ), rootMenuItems
+        )
                 .entrySet().stream()
                 .filter( entry -> rootItemIds.contains( entry.getKey() ) )
                 .map( Map.Entry::getValue )
@@ -63,19 +67,35 @@ public class MenuService {
         return new CollectionResponseVoBean<MenuItemVoBean>( SUCCESS ).setResult( menuItemVoBeans );
     }
 
-    private Map<String, MenuItemVoBean> breadthTraversal( Map<String, MenuItemVoBean> itemRecords, List<MenuItemEntity> menuItems ) {
+    private Map<String, MenuItemVoBean> breadthTraversal(
+            Map<String, MenuItemVoBean> itemRecords, Map<String, String> relations, List<MenuItemEntity> menuItems
+    ) {
         List<MenuItemEntity> nextRound = new ArrayList<>();
 
         menuItems.forEach( item -> {
             List<MenuRelationEntity> childItems = menuRelationDao.queryDirectChildItem( item.getId(), NORMAL.getStatus() );
 
+            if ( item.isRoot() ) {
+                itemRecords.put( item.getId(), new MenuItemVoBean( item ) );
+
+            } else {
+                // getting parent item from grandparent item and put it to item records map
+                // so that they are same instance, it will be keep easy to traverse the menu tree
+                MenuItemVoBean parentItem = itemRecords.get( relations.get( item.getId() ) );
+                boolean ignore = parentItem.getChildes().stream().anyMatch( childItem -> {
+                    if ( childItem.getId().equals( item.getId() ) ) {
+                        itemRecords.put( item.getId(), childItem );
+                        return true;
+                    }
+
+                    return false;
+                } );
+            }
+
             childItems.stream().filter( relation -> relation.getGap() != 0 ).forEach( relation -> {
                 String parentId = relation.getParent().getId();
 
-                if ( !itemRecords.containsKey( parentId ) ) {
-                    throw new IllegalStateException();
-                }
-
+                relations.put( relation.getChild().getId(), parentId );
                 itemRecords.get( parentId ).getChildes().add( new MenuItemVoBean( relation.getChild() ) );
             } );
 
@@ -84,10 +104,8 @@ public class MenuService {
                     .map( MenuRelationEntity::getChild )
                     .collect( Collectors.toList() )
             );
-
-            itemRecords.put( item.getId(), new MenuItemVoBean( item ) );
         } );
 
-        return nextRound.isEmpty() ? itemRecords : breadthTraversal( itemRecords, nextRound );
+        return nextRound.isEmpty() ? itemRecords : breadthTraversal( itemRecords, relations, nextRound );
     }
 }

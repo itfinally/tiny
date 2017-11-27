@@ -5,7 +5,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.itfinally.core.enumerate.ResponseStatusEnum;
-import top.itfinally.core.util.CollectionUtils;
 import top.itfinally.core.vo.CollectionResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
 import top.itfinally.security.exception.UserNotFoundException;
@@ -17,7 +16,6 @@ import top.itfinally.security.web.vo.RoleVoBean;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 import static top.itfinally.core.enumerate.ResponseStatusEnum.EMPTY_RESULT;
 import static top.itfinally.core.enumerate.ResponseStatusEnum.SUCCESS;
 import static top.itfinally.core.repository.QueryEnum.NOT_PAGING;

@@ -119,7 +119,7 @@
         </foreach>
     </delete>
 
-    <select id="queryParentItem" resultMap="menuItemEntity">
+    <select id="queryParentItem" resultMap="menuRelationEntity">
         SELECT *
         FROM menu_relationship
         WHERE child_id = #{itemId}
@@ -128,7 +128,7 @@
         </if>
     </select>
 
-    <select id="queryDirectParentItem" resultMap="menuItemEntity">
+    <select id="queryDirectParentItem" resultMap="menuRelationEntity">
         SELECT *
         FROM menu_relationship
         WHERE child_id = #{itemId} AND gap = 1
@@ -137,7 +137,7 @@
         </if>
     </select>
 
-    <select id="queryMultiDirectParentItem" resultMap="menuItemEntity">
+    <select id="queryMultiDirectParentItem" resultMap="menuRelationEntity">
         SELECT *
         FROM menu_relationship
         WHERE gap = 1
@@ -150,7 +150,7 @@
         </foreach>
     </select>
 
-    <select id="queryChildItem" resultMap="menuItemEntity">
+    <select id="queryChildItem" resultMap="menuRelationEntity">
         SELECT *
         FROM menu_relationship
         WHERE parent_id = #{itemId}
@@ -159,7 +159,7 @@
         </if>
     </select>
 
-    <select id="queryDirectChildItem" resultMap="menuItemEntity">
+    <select id="queryDirectChildItem" resultMap="menuRelationEntity">
         SELECT *
         FROM menu_relationship
         WHERE parent_id = #{itemId} AND gap = 1

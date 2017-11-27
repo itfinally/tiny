@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static top.itfinally.core.enumerate.ResponseStatusEnum.SERVER_ERROR;
+
 @Component
 public class AdminManagerFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger( getClass() );
@@ -71,7 +73,6 @@ public class AdminManagerFilter extends OncePerRequestFilter {
             }
         }
 
-
         Object result;
 
         try {
@@ -79,8 +80,7 @@ public class AdminManagerFilter extends OncePerRequestFilter {
 
         } catch ( Exception allException ) {
             logger.error( "Raise a exception from request" + request.getRequestURI(), allException );
-            result = new BaseResponseVoBean<>( ResponseStatusEnum.SERVER_ERROR )
-                    .setMessage( allException.getMessage() );
+            result = new BaseResponseVoBean<>( SERVER_ERROR ).setMessage( allException.getMessage() );
         }
 
         response.getWriter().write( jsonMapper.writeValueAsString( result ) );

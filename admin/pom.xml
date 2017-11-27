@@ -9,7 +9,6 @@
     <url>https://www.itfinally.com</url>
 
     <properties>
-        <kaptcha.version>2.3.2</kaptcha.version>
         <itfinally-security.version>1.0</itfinally-security.version>
     </properties>
 
@@ -21,12 +20,6 @@
     </parent>
 
     <dependencies>
-        <dependency>
-            <groupId>com.github.penggle</groupId>
-            <artifactId>kaptcha</artifactId>
-            <version>${kaptcha.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>top.itfinally</groupId>
             <artifactId>security</artifactId>

@@ -1,16 +1,12 @@
 package top.itfinally.security.configure;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,10 +22,7 @@ import top.itfinally.security.web.component.AccessForbiddenHandler;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-@EnableWebSecurity
-@Order( SecurityProperties.ACCESS_OVERRIDE_ORDER )
-@EnableGlobalMethodSecurity( prePostEnabled = true )
-public class SecurityConfigure extends WebSecurityConfigurerAdapter {
+public class BaseSecurityConfigure extends WebSecurityConfigurerAdapter {
 
     private AbstractAuthenticationProcessingFilter jwtAuthenticationProcessingFilter;
     private AuthenticationEntryPoint unAuthorizationEntryPoint;
@@ -45,38 +38,38 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public SecurityConfigure setJwtAuthenticationProcessingFilter( AbstractAuthenticationProcessingFilter jwtAuthenticationProcessingFilter ) {
+    public BaseSecurityConfigure setJwtAuthenticationProcessingFilter( AbstractAuthenticationProcessingFilter jwtAuthenticationProcessingFilter ) {
         this.jwtAuthenticationProcessingFilter = jwtAuthenticationProcessingFilter;
         return this;
     }
 
     @Autowired
-    public SecurityConfigure setUnAuthorizationEntryPoint( AccessForbiddenHandler forbiddenEntryPoint ) {
+    public BaseSecurityConfigure setUnAuthorizationEntryPoint( AccessForbiddenHandler forbiddenEntryPoint ) {
         this.unAuthorizationEntryPoint = forbiddenEntryPoint;
         this.accessDeniedHandler = forbiddenEntryPoint;
         return this;
     }
 
     @Autowired
-    public SecurityConfigure setJwtAuthorizationFilter( OncePerRequestFilter jwtAuthorizationFilter ) {
+    public BaseSecurityConfigure setJwtAuthorizationFilter( OncePerRequestFilter jwtAuthorizationFilter ) {
         this.jwtAuthorizationFilter = jwtAuthorizationFilter;
         return this;
     }
 
     @Autowired
-    public SecurityConfigure setPermissionValidService( PermissionEvaluator permissionValidService ) {
+    public BaseSecurityConfigure setPermissionValidService( PermissionEvaluator permissionValidService ) {
         this.permissionValidService = permissionValidService;
         return this;
     }
 
     @Autowired
-    public SecurityConfigure setAdminAuthenticationFilter( OncePerRequestFilter adminManagerFilter ) {
+    public BaseSecurityConfigure setAdminAuthenticationFilter( OncePerRequestFilter adminManagerFilter ) {
         this.adminManagerFilter = adminManagerFilter;
         return this;
     }
 
     @Autowired
-    public SecurityConfigure setUserDetailsService( UserDetailsService userDetailsService ) {
+    public BaseSecurityConfigure setUserDetailsService( UserDetailsService userDetailsService ) {
         this.userDetailsService = userDetailsService;
         return this;
     }
@@ -104,6 +97,7 @@ public class SecurityConfigure extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers( HttpMethod.OPTIONS ).permitAll()
                 .regexMatchers( "^/authorization/(get_roles|get_permissions)" ).permitAll()
+                .antMatchers( "/valid/get_valid_image/**" ).permitAll()
                 .antMatchers( "/authorization/**" ).hasRole( "ADMIN" )
                 .anyRequest().authenticated();
     }

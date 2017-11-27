@@ -38,7 +38,7 @@ public abstract class AccessForbiddenHandler implements AuthenticationEntryPoint
     }
 
     private void handler( HttpServletResponse response, Object result ) throws IOException {
-        response.setHeader( "Content-Type", "application/json;charset=UTF-8" );
+        response.setContentType( "application/json;charset=UTF-8" );
         response.getWriter().write( jsonMapper.writeValueAsString( result ) );
     }
 

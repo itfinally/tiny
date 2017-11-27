@@ -21,7 +21,7 @@
     <Appenders>
         <Console name="developLog" target="SYSTEM_OUT" follow="true">
             <PatternLayout charset="${encoding}" pattern="${logPattern}"/>
-            <ThresholdFilter level="debug" onMatch="accept" onMismatch="deny"/>
+            <ThresholdFilter level="info" onMatch="accept" onMismatch="deny"/>
         </Console>
 
         <RollingFile name="warnFile" fileName="${logPath}/warn.log" filePattern="${logPath}/warn_%d{yyyy-MM-dd}.log">

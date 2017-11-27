@@ -7,18 +7,14 @@ import top.itfinally.admin.exception.NoSuchMenuItemException;
 import top.itfinally.admin.repository.mapper.MenuItemMapper;
 import top.itfinally.admin.repository.mapper.MenuRelationMapper;
 import top.itfinally.admin.repository.po.MenuRelationEntity;
-import top.itfinally.core.enumerate.DataStatusEnum;
 import top.itfinally.core.repository.dao.AbstractDao;
 import top.itfinally.admin.repository.po.MenuItemEntity;
-import top.itfinally.core.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 
 @Repository
@@ -60,20 +56,22 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
     }
 
     @Transactional
-    public int addedRootMenu( String name, boolean isRoot, boolean isLeaf ) {
-        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( isRoot ).setLeaf( isLeaf );
+    public MenuItemEntity addedRootMenu( String name, boolean isLeaf ) {
+        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( true ).setLeaf( isLeaf );
+        addedMenuItem( menuItem.getId(), menuItem );
 
-        return addedMenuItem( menuItem.getId(), menuItem );
+        return menuItem;
     }
 
     @Transactional
-    public int addedMenu( String parentId, String name, boolean isRoot, boolean isLeaf ) throws NoSuchMenuItemException {
-        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( isRoot ).setLeaf( isLeaf );
+    public MenuItemEntity addedMenu( String parentId, String name, boolean isLeaf ) throws NoSuchMenuItemException {
+        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( false ).setLeaf( isLeaf );
+        addedMenuItem( parentId, menuItem );
 
-        return addedMenuItem( parentId, menuItem );
+        return menuItem;
     }
 
-    private int addedMenuItem( String parentId, MenuItemEntity menuItem ) throws NoSuchMenuItemException, IllegalStateException {
+    private void addedMenuItem( String parentId, MenuItemEntity menuItem ) throws NoSuchMenuItemException, IllegalStateException {
         List<MenuRelationEntity> parentItems = menuRelationMapper.queryParentItem( parentId, NOT_STATUS_FLAG.getVal() );
         List<MenuRelationEntity> relationEntities = new ArrayList<>();
 
@@ -90,7 +88,7 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
                             .setDeleteTime( item.getDeleteTime() )
 
                             .setChild( new MenuItemEntity( menuItem.getId() ) )
-                            .setParent( new MenuItemEntity( item.getId() ) )
+                            .setParent( new MenuItemEntity( item.getParent().getId() ) )
                             .setGap( item.getGap() + 1 ) )
                     .collect( Collectors.toList() )
             );
@@ -103,11 +101,8 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
                 .setGap( 0 )
         );
 
-        int effectRow = 0;
-        effectRow += menuRelationMapper.saveAll( relationEntities );
-        effectRow += menuItemMapper.save( menuItem );
-
-        return effectRow;
+        menuRelationMapper.saveAll( relationEntities );
+        menuItemMapper.save( menuItem );
     }
 
     private boolean isLeafItem( String itemId ) {

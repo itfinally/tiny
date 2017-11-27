@@ -10,7 +10,7 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CollectionUtils {
+public final class CollectionUtils {
     private CollectionUtils() {
     }
 

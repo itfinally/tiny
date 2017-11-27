@@ -3,7 +3,7 @@ package top.itfinally.core.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RegExpUtils {
+public final class RegExpUtils {
     public static final int NO_OPTION = 0x00;
 
     private RegExpUtils() {

@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-public class DateUtils {
+public final class DateUtils {
     private static final ZoneOffset SYS_TIME_OFFSET = ZoneId.systemDefault()
             .getRules().getOffset( Instant.now() );
 

@@ -12,10 +12,10 @@ import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.stereotype.Component;
 import top.itfinally.core.enumerate.ResponseStatusEnum;
-import top.itfinally.core.vo.BaseResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
 import top.itfinally.security.service.JwtTokenService;
+import top.itfinally.security.service.KaptchaService;
 import top.itfinally.security.service.UserDetailCachingService;
 
 import javax.servlet.FilterChain;
@@ -30,6 +30,7 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
     private UserDetailCachingService userDetailCachingService;
     private AccessForbiddenHandler accessForbiddenHandler;
     private JwtTokenService jwtTokenService;
+    private KaptchaService kaptchaService;
 
     protected JwtAuthenticationProcessingFilter() {
         super( "/verifies/login" );
@@ -59,9 +60,16 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
         return this;
     }
 
+    @Autowired
+    public JwtAuthenticationProcessingFilter setKaptchaService( KaptchaService kaptchaService ) {
+        this.kaptchaService = kaptchaService;
+        return this;
+    }
+
     @Override
     public Authentication attemptAuthentication( HttpServletRequest request, HttpServletResponse response ) throws AuthenticationException, IOException, ServletException {
-        String token = request.getHeader( "Authorization" );
+        String token = request.getHeader( "Authorization" ),
+                validCode = request.getParameter( "validCode" );
 
         if ( StringUtils.isBlank( token ) || !token.startsWith( "Basic " ) ) {
             throw new BadCredentialsException( "Missing token in request headers." );
@@ -74,20 +82,33 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
         }
 
         String[] entry = token.split( ":" );
+        if ( kaptchaService.requireValid( entry[ 0 ] ) && !kaptchaService.valid( entry[ 0 ], validCode ) ) {
+            throw new BadCredentialsException( "Wrong valid code." );
+        }
+
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 entry[ 0 ], entry[ 1 ]
         );
 
-        return getAuthenticationManager().authenticate( authToken );
+        try {
+            return getAuthenticationManager().authenticate( authToken );
+
+        } catch ( AuthenticationException ex ) {
+            kaptchaService.count( entry[ 0 ] );
+            throw ex;
+        }
     }
 
     @Override
-    protected void successfulAuthentication( HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult ) throws IOException, ServletException {
+    protected void successfulAuthentication(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult
+    ) throws IOException, ServletException {
+
         UserAuthorityEntity userAuthority = ( UserAuthorityEntity ) authResult.getPrincipal();
         String token = jwtTokenService.create( userAuthority.getUsername() );
         userDetailCachingService.caching( userAuthority.getUsername(), userAuthority );
 
-        response.setHeader( "Content-Type", "application/json;charset=UTF-8" );
+        response.setContentType( "application/json;charset=UTF-8" );
         response.getWriter().write( jsonMapper.writeValueAsString(
                 new SingleResponseVoBean<>( ResponseStatusEnum.SUCCESS ).setResult( token )
         ) );

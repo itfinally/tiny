@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.itfinally.security.repository.mapper.PermissionMapper">
-    <resultMap id="permissionEntity" type="PermissionEntity"
+    <resultMap id="permissionEntity" type="top.itfinally.security.repository.po.PermissionEntity"
                extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
         <result property="name" column="name" javaType="String"/>
         <result property="description" column="description" javaType="String"/>
