@@ -167,25 +167,4 @@
             and status = #{status}
         </if>
     </select>
-
-    <update id="removeChildItem">
-        UPDATE menu_relationship
-        SET
-            update_time = #{deleteTime},
-            delete_time = #{deleteTime},
-            status      = -1
-        WHERE parent_id = #{itemId}
-    </update>
-
-    <update id="removeMultiChildItem">
-        UPDATE menu_relationship
-        SET
-        update_time = #{deleteTime},
-        delete_time = #{deleteTime},
-        status = -1
-        WHERE parent_id in
-        <foreach collection="parentIds" item="item" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-    </update>
 </mapper>

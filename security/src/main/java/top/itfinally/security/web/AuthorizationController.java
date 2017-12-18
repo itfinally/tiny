@@ -18,10 +18,6 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.BAD_REQUEST;
 @RequestMapping( "/authorization" )
 public class AuthorizationController {
 
-    public static void main( String[] args ) {
-        System.out.println( new RestUrlScanHelper( AuthorizationController.class ).doScanForPackage() );
-    }
-
     private AuthorizationService authorizationService;
 
     @Autowired

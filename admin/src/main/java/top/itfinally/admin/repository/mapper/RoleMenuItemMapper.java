@@ -13,6 +13,8 @@ import java.util.List;
 public interface RoleMenuItemMapper extends BaseMapper<RoleMenuItemEntity> {
     List<RoleMenuItemEntity> queryRoleMenuItem( @Param( "roleId" ) String roleId );
 
+    List<RoleMenuItemEntity> queryMenuItemRoles( @Param( "menuId" ) String menuId );
+
     List<RoleMenuItemEntity> queryRoleMenuItemChain(
             @Param( "status" ) int status,
             @Param( "roleId" ) String roleId,

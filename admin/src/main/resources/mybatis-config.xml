@@ -5,7 +5,8 @@
 <configuration>
     <settings>
         <!-- 指定实体类关联时进行延迟加载 -->
-        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- 同时使用懒加载和缓存似乎会出现问题 -->
+        <setting name="lazyLoadingEnabled" value="false"/>
 
         <!--
         发现自动映射未知列的行为时的处理方式, 这里的实现是枚举类, 必须大写

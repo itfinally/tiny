@@ -7,14 +7,15 @@ import top.itfinally.admin.exception.NoSuchMenuItemException;
 import top.itfinally.admin.repository.mapper.MenuItemMapper;
 import top.itfinally.admin.repository.mapper.MenuRelationMapper;
 import top.itfinally.admin.repository.po.MenuRelationEntity;
+import top.itfinally.core.enumerate.DataStatusEnum;
 import top.itfinally.core.repository.dao.AbstractDao;
 import top.itfinally.admin.repository.po.MenuItemEntity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static top.itfinally.core.enumerate.DataStatusEnum.DELETE;
+import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 
 @Repository
@@ -114,31 +115,100 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
         return item.isLeaf();
     }
 
+    // In remove case, remove node in first, if node is folder, then find all child and remove
+
     @Transactional
     public int removeMenuItem( String itemId ) {
-        int effectRow = 0;
-
+        MenuItemEntity item = menuItemMapper.query( itemId );
         long now = System.currentTimeMillis();
+        int[] effectiveRow = new int[]{ 0 };
 
-        effectRow += menuItemMapper.remove( itemId, now );
-        effectRow += menuRelationMapper.removeChildItem( itemId, now );
+        effectiveRow[ 0 ] += menuItemMapper.remove( itemId, now );
 
-        return effectRow;
+        if ( item.isLeaf() ) {
+            return effectiveRow[ 0 ];
+        }
+
+        menuRelationMapper.queryChildItem( itemId, NOT_STATUS_FLAG.getVal() ).stream()
+                .filter( relation -> relation.getGap() > 0 )
+                .map( MenuRelationEntity::getChild )
+                .forEach( child -> effectiveRow[ 0 ] += menuItemMapper.remove( child.getId(), now ) );
+
+        return effectiveRow[ 0 ];
     }
 
     @Transactional
     public int removeMultiMenuItem( List<String> itemIds ) {
-        int effectRow = 0;
-
+        List<String> folders = new ArrayList<>( 16 );
         long now = System.currentTimeMillis();
+        int[] effectiveRow = new int[]{ 0 };
 
-        effectRow += menuItemMapper.removeAll( itemIds, now );
-        effectRow += menuRelationMapper.removeMultiChildItem( itemIds, now );
+        itemIds.forEach( id -> {
+            MenuItemEntity item = menuItemMapper.query( id );
+            effectiveRow[ 0 ] += menuItemMapper.remove( id, now );
 
-        return effectRow;
+            if ( !item.isLeaf() ) {
+                folders.add( item.getId() );
+            }
+        } );
+
+        folders.forEach( id -> menuRelationMapper.queryChildItem( id, NOT_STATUS_FLAG.getVal() ).stream()
+                .filter( relation -> relation.getGap() > 0 )
+                .map( MenuRelationEntity::getChild )
+                .forEach( child -> effectiveRow[ 0 ] += menuItemMapper.remove( child.getId(), now ) ) );
+
+        return effectiveRow[ 0 ];
+    }
+
+    // In recover case, recover node in first, if node is leaf, then find all parent and recover.
+
+    @Transactional
+    public int recoverItem( String itemId ) {
+        MenuItemEntity item = menuItemMapper.query( itemId );
+        long now = System.currentTimeMillis();
+        int[] effectiveRow = new int[]{ 0 };
+
+        menuItemMapper.update( item.setStatus( NORMAL.getStatus() ).setDeleteTime( -1 ).setUpdateTime( now ) );
+
+        menuRelationMapper.queryParentItem( itemId, NOT_STATUS_FLAG.getVal() ).stream()
+                .filter( relation -> relation.getGap() > 0 && relation.getParent().getStatus() == DELETE.getStatus() )
+                .map( MenuRelationEntity::getParent )
+
+                .forEach( parent -> effectiveRow[ 0 ] += menuItemMapper.update( parent
+                        .setStatus( NORMAL.getStatus() ).setDeleteTime( -1 ).setUpdateTime( now ) ) );
+
+        return effectiveRow[ 0 ];
+    }
+
+    @Transactional
+    public int recoverMultiItem( List<String> childIds ) {
+        List<String> leafs = new ArrayList<>();
+        long now = System.currentTimeMillis();
+        int[] effectiveRow = new int[]{ 0 };
+
+        childIds.forEach( id -> {
+            MenuItemEntity item = menuItemMapper.query( id );
+            effectiveRow[ 0 ] += menuItemMapper.update( item.setStatus( NORMAL.getStatus() )
+                    .setDeleteTime( -1 ).setUpdateTime( now ) );
+
+            leafs.add( item.getId() );
+        } );
+
+        leafs.forEach( id -> menuRelationMapper.queryParentItem( id, NOT_STATUS_FLAG.getVal() ).stream()
+                .filter( relation -> relation.getGap() > 0 && relation.getParent().getStatus() == DELETE.getStatus() )
+                .map( MenuRelationEntity::getParent )
+
+                .forEach( parent -> effectiveRow[ 0 ] += menuItemMapper.update( parent.setStatus( NORMAL.getStatus() )
+                        .setDeleteTime( -1 ).setUpdateTime( now ) ) ) );
+
+        return effectiveRow[ 0 ];
     }
 
     public List<MenuItemEntity> queryRootMenuItem() {
         return menuItemMapper.queryRootItem();
+    }
+
+    public boolean isUniqueName( String name ) {
+        return menuItemMapper.queryByName( name ) == null;
     }
 }

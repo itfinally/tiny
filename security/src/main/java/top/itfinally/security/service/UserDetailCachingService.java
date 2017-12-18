@@ -5,9 +5,11 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import top.itfinally.security.exception.UserNotFoundException;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
 
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.naming.AuthenticationException;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +28,9 @@ public abstract class UserDetailCachingService {
                     @Override
                     @ParametersAreNonnullByDefault
                     public UserAuthorityEntity load( String s ) throws Exception {
-                        return null;
+
+                        // no cache , just redirect to login
+                        throw new AuthenticationException();
                     }
                 } );
 

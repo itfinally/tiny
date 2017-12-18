@@ -121,4 +121,11 @@
         FROM menu_item
         WHERE is_root = TRUE
     </select>
+
+    <select id="queryByName" resultMap="menuItemEntity">
+        SELECT *
+        FROM menu_item
+        WHERE name = #{name}
+        LIMIT 1;
+    </select>
 </mapper>

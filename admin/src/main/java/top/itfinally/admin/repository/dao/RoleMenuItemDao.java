@@ -50,6 +50,18 @@ public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuIte
         super.setBaseMapper( baseMapper );
     }
 
+    public List<MenuItemEntity> queryRoleMenuItem( String roleId ) {
+        return roleMenuItemMapper.queryRoleMenuItem( roleId ).stream()
+                .map( RoleMenuItemEntity::getMenuItem )
+                .collect( Collectors.toList() );
+    }
+
+    public List<RoleEntity> queryMenuItemRoles( String menuId ) {
+        return roleMenuItemMapper.queryMenuItemRoles( menuId ).stream()
+                .map( RoleMenuItemEntity::getRole )
+                .collect( Collectors.toList() );
+    }
+
     @Transactional
     public int changeRoleMenu( List<String> menuItemIds, RoleEntity role ) {
         if ( menuItemIds.stream().anyMatch( itemId -> this.isUnreachableOrUnauthorized( itemId, role.getId() ) ) ) {

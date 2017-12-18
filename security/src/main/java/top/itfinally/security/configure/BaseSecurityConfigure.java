@@ -76,7 +76,9 @@ public class BaseSecurityConfigure extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure( HttpSecurity http ) throws Exception {
-        http.addFilterBefore( jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class )
+        http.cors().and()
+
+                .addFilterBefore( jwtAuthenticationProcessingFilter, UsernamePasswordAuthenticationFilter.class )
                 .addFilterBefore( jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class )
                 .addFilterBefore( adminManagerFilter, HeaderWriterFilter.class )
 
@@ -95,7 +97,7 @@ public class BaseSecurityConfigure extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .authorizeRequests()
-                .antMatchers( HttpMethod.OPTIONS ).permitAll()
+                .antMatchers( HttpMethod.OPTIONS, "/**" ).permitAll()
                 .regexMatchers( "^/authorization/(get_roles|get_permissions)" ).permitAll()
                 .antMatchers( "/valid/get_valid_image/**" ).permitAll()
                 .antMatchers( "/authorization/**" ).hasRole( "ADMIN" )

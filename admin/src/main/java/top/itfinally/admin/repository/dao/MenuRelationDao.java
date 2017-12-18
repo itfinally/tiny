@@ -34,12 +34,4 @@ public class MenuRelationDao extends AbstractDao<MenuRelationEntity, MenuRelatio
     public List<MenuRelationEntity> queryDirectChildItem( String itemId, int status ) {
         return menuRelationMapper.queryDirectChildItem( itemId, status );
     }
-
-    public int removeChildItem( String itemId, long deleteTime ) {
-        return menuRelationMapper.removeChildItem( itemId, deleteTime );
-    }
-
-    public int removeMultiChildItem( List<String> itemIds, long deleteTime ) {
-        return menuRelationMapper.removeMultiChildItem( itemIds, deleteTime );
-    }
 }

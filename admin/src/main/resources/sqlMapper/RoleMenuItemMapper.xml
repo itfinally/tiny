@@ -123,6 +123,12 @@
         WHERE role_id = #{roleId}
     </select>
 
+    <select id="queryMenuItemRoles" resultMap="roleMenuItemEntity">
+        SELECT *
+        FROM menu_scope
+        WHERE menu_item_id = #{menuId}
+    </select>
+
     <select id="queryRoleMenuItemChain" resultMap="roleMenuItemEntity">
         SELECT *
         FROM menu_scope

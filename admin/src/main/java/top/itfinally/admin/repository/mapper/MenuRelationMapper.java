@@ -18,8 +18,4 @@ public interface MenuRelationMapper extends BaseMapper<MenuRelationEntity> {
     List<MenuRelationEntity> queryChildItem( @Param( "itemId" ) String itemId, @Param( "status" ) int status );
 
     List<MenuRelationEntity> queryDirectChildItem( @Param( "itemId" ) String itemId, @Param( "status" ) int status );
-
-    int removeChildItem( @Param( "itemId" ) String itemId, @Param( "deleteTime" ) long deleteTime );
-
-    int removeMultiChildItem( @Param( "parentIds" ) List<String> parentIds, @Param( "deleteTime" ) long deleteTime );
 }

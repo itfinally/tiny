@@ -28,7 +28,7 @@ public class KaptchaService {
                 @Override
                 @ParametersAreNonnullByDefault
                 public AtomicInteger load( String key ) throws Exception {
-                    return new AtomicInteger();
+                    return new AtomicInteger( 0 );
                 }
             } );
 
