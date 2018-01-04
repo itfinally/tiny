@@ -1,6 +1,8 @@
 package top.itfinally.admin.repository.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import top.itfinally.admin.repository.mapper.MenuItemMapper;
@@ -10,14 +12,15 @@ import top.itfinally.admin.repository.po.MenuItemEntity;
 import top.itfinally.admin.repository.po.MenuRelationEntity;
 import top.itfinally.admin.repository.po.RoleMenuItemEntity;
 import top.itfinally.core.repository.dao.AbstractDao;
-import top.itfinally.core.repository.po.BaseEntity;
-import top.itfinally.core.util.CollectionUtils;
 import top.itfinally.security.repository.po.RoleEntity;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static top.itfinally.core.enumerate.DataStatusEnum.DELETE;
 import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
+import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 
 @Repository
 public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuItemMapper> {
@@ -51,80 +54,81 @@ public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuIte
     }
 
     public List<MenuItemEntity> queryRoleMenuItem( String roleId ) {
-        return roleMenuItemMapper.queryRoleMenuItem( roleId ).stream()
+        return roleMenuItemMapper.queryByRoleId( roleId, NORMAL.getStatus() ).stream()
                 .map( RoleMenuItemEntity::getMenuItem )
                 .collect( Collectors.toList() );
     }
 
+    public List<MenuItemEntity> queryMenuItems( List<String> roleIds ) {
+        return roleMenuItemMapper.queryByMultiRoleIds( roleIds, NORMAL.getStatus() ).stream()
+                .map( RoleMenuItemEntity::getMenuItem ).distinct().collect( Collectors.toList() );
+    }
+
     public List<RoleEntity> queryMenuItemRoles( String menuId ) {
-        return roleMenuItemMapper.queryMenuItemRoles( menuId ).stream()
-                .map( RoleMenuItemEntity::getRole )
-                .collect( Collectors.toList() );
+        return roleMenuItemMapper.queryByMenuId( menuId, NORMAL.getStatus() ).stream()
+                .map( RoleMenuItemEntity::getRole ).collect( Collectors.toList() );
     }
 
     @Transactional
-    public int changeRoleMenu( List<String> menuItemIds, RoleEntity role ) {
-        if ( menuItemIds.stream().anyMatch( itemId -> this.isUnreachableOrUnauthorized( itemId, role.getId() ) ) ) {
+    public int addRoleMenu( String menuItemId, List<String> roleIds ) {
+        List<MenuRelationEntity> parents = menuRelationMapper.queryParentItem( menuItemId, NOT_STATUS_FLAG.getVal() );
+        List<String> menuItemIds = parents.stream().map( item -> item.getParent().getId() ).distinct().collect( Collectors.toList() );
+
+        if ( isUnreachable( parents ) || roleIds.stream().anyMatch( id -> isUnauthorized( parents, id ) ) ) {
             throw new IllegalStateException( "An unreachable item appears, operation abort." );
         }
 
-        List<RoleMenuItemEntity> roleMenuItems = roleMenuItemMapper.queryRoleMenuItem( role.getId() );
-
-        Map<String, String> mapping = new HashMap<>( roleMenuItems.size() );
-        Set<String> existRoleItemIds = new HashSet<>( roleMenuItems.size() );
-        List<String> normalRoleItems = new ArrayList<>( roleMenuItems.size() );
-        List<RoleMenuItemEntity> notExistRoleItems = new ArrayList<>( roleMenuItems.size() );
-
-        roleMenuItems.forEach( entity -> {
-            String itemId = entity.getMenuItem().getId(), entityId = entity.getId();
-
-            existRoleItemIds.add( entityId );
-            mapping.put( itemId, entityId );
-
-            if ( entity.getStatus() == NORMAL.getStatus() ) {
-                normalRoleItems.add( entityId );
-            }
-        } );
-
-        Set<String> updates = menuItemIds.stream().filter( itemId -> {
-            boolean isExist = existRoleItemIds.contains( itemId );
-
-            if ( !isExist ) {
-                notExistRoleItems.add( new RoleMenuItemEntity()
-                        .setMenuItem( new MenuItemEntity( itemId ) )
-                        .setRole( role )
-                );
-            }
-
-            return isExist;
-        } ).map( mapping::get ).collect( Collectors.toSet() );
-
-        List<String> deletes = CollectionUtils.complement(
-                updates, CollectionUtils.union( normalRoleItems, updates )
-        );
-
-        int[] effectRow = new int[]{ 0 };
-
-        if ( !notExistRoleItems.isEmpty() ) {
-            effectRow[ 0 ] += saveAll( notExistRoleItems );
-        }
-
-        if ( !deletes.isEmpty() ) {
-            effectRow[ 0 ] += removeAll( deletes, System.currentTimeMillis() );
-        }
-
-        if ( !updates.isEmpty() ) {
-            roleMenuItems.stream()
-                    .filter( entity -> updates.contains( entity.getId() ) )
-                    .forEach( entity -> effectRow[ 0 ] += update( entity.setStatus( NORMAL.getStatus() ) ) );
-        }
-
-        return effectRow[ 0 ];
+        return changeRoleMenu( roleIds, menuItemIds, item -> item.setStatus( NORMAL.getStatus() ).setDeleteTime( -1 ) );
     }
 
-    private boolean isUnreachableOrUnauthorized( String itemId, String roleId ) {
-        List<MenuRelationEntity> itemChain = menuRelationMapper.queryParentItem( itemId, NORMAL.getStatus() );
-        return isUnreachable( itemChain ) || isUnauthorized( itemChain, roleId );
+    @Transactional
+    public int removeRoleMenu( String menuItemId, List<String> roleIds ) {
+        long now = System.currentTimeMillis();
+        List<String> menuItemIds = menuRelationMapper.queryChildItem( menuItemId, NOT_STATUS_FLAG.getVal() )
+                .stream().map( item -> item.getChild().getId() ).distinct().collect( Collectors.toList() );
+
+        List<MenuRelationEntity> parents = menuRelationMapper.queryParentItem( menuItemId, NOT_STATUS_FLAG.getVal() );
+        if ( isUnreachable( parents ) || roleIds.stream().anyMatch( id -> isUnauthorized( parents, id ) ) ) {
+            throw new IllegalStateException( "An unreachable item appears, operation abort." );
+        }
+
+        return changeRoleMenu( roleIds, menuItemIds, item -> item.setStatus( DELETE.getStatus() )
+                .setUpdateTime( now ).setDeleteTime( now ) );
+    }
+
+    private int changeRoleMenu( List<String> roleIds, List<String> menuItemIds, Function<RoleMenuItemEntity, RoleMenuItemEntity> decorator ) {
+        int[] effectiveRow = new int[]{ 0 };
+        roleIds.forEach( roleId -> {
+            Map<String, RoleMenuItemEntity> exists = roleMenuItemMapper
+
+                    .queryRoleMenuItemChain( NOT_STATUS_FLAG.getVal(), roleId, menuItemIds )
+
+                    .stream().collect( Collectors.toMap( item -> item.getMenuItem().getId(), item -> item ) );
+
+            List<RoleMenuItemEntity> theNews = menuItemIds.stream()
+
+                    .filter( item -> !exists.containsKey( item ) )
+
+                    .map( itemId -> decorator.apply( new RoleMenuItemEntity()
+                            .setRole( new RoleEntity( roleId ) )
+                            .setMenuItem( new MenuItemEntity( itemId ) ) ) )
+
+                    .collect( Collectors.toList() );
+
+            // add
+            if ( !theNews.isEmpty() ) {
+                effectiveRow[ 0 ] += roleMenuItemMapper.saveAll( theNews );
+            }
+
+            // update
+            menuItemIds.stream().filter( exists::containsKey )
+
+                    .map( itemId -> decorator.apply( exists.get( itemId ) ) )
+
+                    .forEach( item -> effectiveRow[ 0 ] += roleMenuItemMapper.update( item ) );
+        } );
+
+        return effectiveRow[ 0 ];
     }
 
     // if this item is reachable, it should be able to trace to the root item
@@ -144,29 +148,37 @@ public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuIte
         }
 
         // from large to small
-        itemChain.sort( ( a, b ) -> a.getGap() > b.getGap() ? -1 : 1 );
-        MenuItemEntity item = itemChain.get( 0 ).getParent();
-        if ( null == item || !item.isRoot() ) {
+        Map<Integer, MenuRelationEntity> itemFloorChain = new HashMap<>();
+        itemChain.forEach( item -> itemFloorChain.put( item.getGap(), item ) );
+
+        List<Integer> gaps = new ArrayList<>( itemFloorChain.keySet() );
+        gaps.sort( ( a, b ) -> a > b ? -1 : 1 );
+
+        int last = itemFloorChain.size() - 1;
+        if ( !itemFloorChain.containsKey( last ) || !itemFloorChain.get( last ).getParent().isRoot() ) {
             return true;
         }
 
-        int[] count = new int[]{ itemChain.get( 0 ).getGap() };
-        return itemChain.stream().skip( 1 ).anyMatch( innerItem -> {
-            if ( count[ 0 ] - 1 == innerItem.getGap() ) {
-                count[ 0 ] = innerItem.getGap();
-                return false;
+        int[] count = new int[]{ gaps.get( 0 ) };
+        return gaps.stream().skip( 1 ).anyMatch( gap -> {
+            MenuRelationEntity relation = itemFloorChain.get( gap );
+            if ( count[ 0 ] - 1 != relation.getGap() ) {
+                return true;
             }
 
-            return true;
+            count[ 0 ] = gap;
+            return false;
         } );
     }
 
     // if item chain is not recorded under specified role, also illegal operation too.
     private boolean isUnauthorized( List<MenuRelationEntity> itemChain, String roleId ) {
-        return roleMenuItemMapper.queryRoleMenuItemChain(
-                NORMAL.getStatus(), roleId,
-                itemChain.stream().map( item -> item.getParent().getId() ).collect( Collectors.toList() )
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        ).size() == itemChain.size();
+        return auth.getAuthorities().stream().noneMatch( role -> "ROLE_ADMIN".equals( role.getAuthority() ) )
+
+                && roleMenuItemMapper.queryRoleMenuItemChain( NORMAL.getStatus(), roleId, itemChain.stream()
+                .map( item -> item.getParent().getId() ).collect( Collectors.toList() ) )
+                .size() != itemChain.size();
     }
 }

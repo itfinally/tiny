@@ -11,11 +11,11 @@
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
     <select id="query" resultMap="permissionEntity">
-        select * from security_permission where id = #{id}
+        select * from v1_security_permission where id = #{id}
     </select>
 
     <select id="queryAll" resultMap="permissionEntity">
-        select * from security_permission where 1 = 1
+        select * from v1_security_permission where 1 = 1
         <if test="status != -1001">
             and status = #{status}
         </if>
@@ -25,7 +25,7 @@
     </select>
 
     <select id="queryBySpecificId" resultMap="permissionEntity">
-        select * from security_permission where id in
+        select * from v1_security_permission where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -38,7 +38,7 @@
     </select>
 
     <insert id="save">
-        INSERT INTO security_permission (
+        INSERT INTO v1_security_permission (
             id, create_time, update_time, delete_time, status, name, description
 
         ) VALUES (
@@ -47,7 +47,7 @@
     </insert>
 
     <insert id="saveAll">
-        INSERT INTO security_permission (
+        INSERT INTO v1_security_permission (
         id, create_time, update_time, delete_time, status, name, description
 
         ) VALUES
@@ -63,7 +63,7 @@
     </insert>
 
     <update id="update">
-        UPDATE security_permission
+        UPDATE v1_security_permission
         SET
             update_time = #{updateTime},
             delete_time = #{deleteTime},
@@ -74,7 +74,7 @@
     </update>
 
     <update id="specificUpdate">
-        update security_permission set update_time = #{updateTime}
+        update v1_security_permission set update_time = #{updateTime}
         <foreach collection="fieldAndValues.entrySet()" index="key" item="value" open="," separator=",">
             ${key} = #{value}
         </foreach>
@@ -82,7 +82,7 @@
     </update>
 
     <update id="remove">
-        UPDATE security_permission
+        UPDATE v1_security_permission
         SET
             update_time = #{deleteTime},
             delete_time = #{deleteTime},
@@ -91,7 +91,7 @@
     </update>
 
     <update id="removeAll">
-        update security_permission set
+        update v1_security_permission set
         update_time = #{deleteTime},
         delete_time = #{deleteTime},
         status = -1
@@ -102,12 +102,12 @@
     </update>
 
     <delete id="physicalDelete">
-        DELETE FROM security_permission
+        DELETE FROM v1_security_permission
         WHERE id = #{id}
     </delete>
 
     <delete id="physicalDeleteAll">
-        delete from security_permission where id in
+        delete from v1_security_permission where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -115,10 +115,10 @@
 
     <select id="queryByRoleId" resultMap="permissionEntity">
         SELECT *
-        FROM security_permission
+        FROM v1_security_permission
         WHERE id IN (
         SELECT permission_id
-        FROM security_role_permission
+        FROM v1_security_role_permission
         WHERE role_id = #{roleId} and status = 1
         )
         <if test="status != -1001">

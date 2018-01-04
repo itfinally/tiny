@@ -268,7 +268,7 @@ spring security 给出的必须的字段很明确, 就是一个用户的用户�
 如果觉得这个就OK的话, 可以直接使用, 对应的数据表是 `security_default_user`.
 
 如果是自己重新实现( 多数情况下都是 ) UserDetailService, 意味着对应的实体也要重新实现,
-对应的用户实体是 `top.itfinally.security.repository.po.UserDetailsEntity`, 而且在设计用户注册时必须注入 `top.itfinally.security.service.AuthorizationService` 
+对应的用户实体是 `top.itfinally.security.repository.po.AbstractUserDetailsEntity`, 而且在设计用户注册时必须注入 `top.itfinally.security.service.AuthorizationService` 
 并且传入注册用户的 id( 注意不是 authorityId ) 调用 register 方法, 否则拦截器永远拒绝该用户的访问.
 
 注册的流程大概如下:

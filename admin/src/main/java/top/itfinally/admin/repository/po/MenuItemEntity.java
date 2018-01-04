@@ -4,7 +4,7 @@ import top.itfinally.builder.annotation.Column;
 import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
-@Table( name = "menu_item" )
+@Table( name = "v1_menu_item" )
 public class MenuItemEntity extends BaseEntity<MenuItemEntity> {
     private String name;
     private boolean isRoot;

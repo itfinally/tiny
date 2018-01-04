@@ -5,7 +5,7 @@ import top.itfinally.builder.annotation.Column;
 import top.itfinally.builder.annotation.Table;
 import top.itfinally.core.repository.po.BaseEntity;
 
-@Table( name = "menu_relationship" )
+@Table( name = "v1_menu_relationship" )
 public class MenuRelationEntity extends BaseEntity<MenuRelationEntity> {
     private int gap;
     private MenuItemEntity parent;

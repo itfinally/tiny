@@ -5,6 +5,20 @@
 #   delete_time long,
 #   status int( 3 ) default 1,
 
+CREATE TABLE v1_user_details (
+  id           VARCHAR(64) PRIMARY KEY,
+  create_time  LONG                    NOT NULL,
+  update_time  LONG                    NOT NULL,
+  delete_time  LONG,
+  status       INT(3)      DEFAULT 1,
+
+  account      VARCHAR(128) UNIQUE KEY NOT NULL,
+  password     VARCHAR(128)            NOT NULL,
+  nickname     VARCHAR(256)            NOT NULL,
+  authority_id VARCHAR(64) DEFAULT ''
+)
+  DEFAULT CHARSET utf8mb4;
+
 CREATE TABLE menu_item (
   id          VARCHAR(64) PRIMARY KEY,
   create_time LONG       NOT NULL,

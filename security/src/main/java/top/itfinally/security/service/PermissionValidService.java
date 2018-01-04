@@ -60,7 +60,7 @@ public class PermissionValidService implements PermissionEvaluator {
                 .filter( role -> {
 
                     // Admin has super power by default
-                    if ( "ADMIN".equals( role.getName().toUpperCase() ) ) {
+                    if ( "ROLE_ADMIN".equals( role.getAuthority() ) ) {
                         return true;
                     }
 
@@ -81,11 +81,7 @@ public class PermissionValidService implements PermissionEvaluator {
 
     @Override
     public boolean hasPermission( Authentication authentication, Serializable targetId, String targetType, Object permission ) {
-        if ( "anonymousUser".equals( authentication.getPrincipal() ) ) {
-            return false;
-        }
-
-        return true;
+        return !"anonymousUser".equals( authentication.getPrincipal() );
     }
 
     public void refreshRolePermission( String roleId ) {

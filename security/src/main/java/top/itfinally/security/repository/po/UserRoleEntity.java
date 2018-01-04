@@ -6,7 +6,7 @@ import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
-@Table( name = "security_user_role" )
+@Table( name = "v1_security_user_role" )
 public class UserRoleEntity extends BaseEntity<UserRoleEntity> {
     private UserAuthorityEntity userAuthority;
     private RoleEntity role;

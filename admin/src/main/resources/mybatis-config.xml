@@ -5,7 +5,7 @@
 <configuration>
     <settings>
         <!-- 指定实体类关联时进行延迟加载 -->
-        <!-- 同时使用懒加载和缓存似乎会出现问题 -->
+        <!-- 同时使用懒加载和缓存会出现问题 -->
         <setting name="lazyLoadingEnabled" value="false"/>
 
         <!--

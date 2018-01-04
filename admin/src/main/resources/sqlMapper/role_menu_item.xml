@@ -14,12 +14,12 @@
 
     <select id="query" resultMap="roleMenuItemEntity">
         SELECT *
-        FROM menu_scope
+        FROM v1_menu_scope
         WHERE id = #{id}
     </select>
 
     <select id="queryAll" resultMap="roleMenuItemEntity">
-        select * from menu_scope where 1 = 1
+        select * from v1_menu_scope where 1 = 1
         <if test="status != -1001">
             and status = #{status}
         </if>
@@ -29,7 +29,7 @@
     </select>
 
     <select id="queryBySpecificId" resultMap="roleMenuItemEntity">
-        select * from menu_scope where id in
+        select * from v1_menu_scope where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -42,7 +42,7 @@
     </select>
 
     <insert id="save">
-        INSERT INTO menu_scope (
+        INSERT INTO v1_menu_scope (
             role_id, menu_item_id, id, status, create_time, update_time,
             delete_time
 
@@ -53,7 +53,7 @@
     </insert>
 
     <insert id="saveAll">
-        INSERT INTO menu_scope (
+        INSERT INTO v1_menu_scope (
         role_id, menu_item_id, id, status, create_time, update_time,
         delete_time
 
@@ -66,7 +66,7 @@
     </insert>
 
     <update id="update">
-        UPDATE menu_scope
+        UPDATE v1_menu_scope
         SET
             role_id      = #{role.id},
             menu_item_id = #{menuItem.id},
@@ -78,7 +78,7 @@
     </update>
 
     <update id="specificUpdate">
-        update menu_scope set update_time = #{updateTime}
+        update v1_menu_scope set update_time = #{updateTime}
         <foreach collection="fieldAndValues.entrySet()" index="key" item="value" open="," separator=",">
             ${key} = #{value}
         </foreach>
@@ -86,7 +86,7 @@
     </update>
 
     <update id="remove">
-        UPDATE menu_scope
+        UPDATE v1_menu_scope
         SET
             update_time = #{deleteTime},
             delete_time = #{deleteTime},
@@ -95,7 +95,7 @@
     </update>
 
     <update id="removeAll">
-        update menu_scope set
+        update v1_menu_scope set
         update_time = #{deleteTime},
         delete_time = #{deleteTime},
         status = -1
@@ -106,32 +106,50 @@
     </update>
 
     <delete id="physicalDelete">
-        DELETE FROM menu_scope
+        DELETE FROM v1_menu_scope
         WHERE id = #{id}
     </delete>
 
     <delete id="physicalDeleteAll">
-        delete from menu_scope where id in
+        delete from v1_menu_scope where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>
 
-    <select id="queryRoleMenuItem" resultMap="roleMenuItemEntity">
+    <select id="queryByRoleId" resultMap="roleMenuItemEntity">
         SELECT *
-        FROM menu_scope
+        FROM v1_menu_scope
         WHERE role_id = #{roleId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
-    <select id="queryMenuItemRoles" resultMap="roleMenuItemEntity">
+    <select id="queryByMenuId" resultMap="roleMenuItemEntity">
         SELECT *
-        FROM menu_scope
+        FROM v1_menu_scope
         WHERE menu_item_id = #{menuId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryByMultiRoleIds" resultMap="roleMenuItemEntity">
+        SELECT *
+        FROM v1_menu_scope
+        WHERE role_id IN
+        <foreach collection="roleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
     <select id="queryRoleMenuItemChain" resultMap="roleMenuItemEntity">
         SELECT *
-        FROM menu_scope
+        FROM v1_menu_scope
         WHERE role_id = #{roleId}
         <if test="status != -1001">
             and status = #{status}

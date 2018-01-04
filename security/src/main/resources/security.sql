@@ -5,12 +5,13 @@
 --   delete_time long,
 --   status int( 3 ) default 1,
 
--- 通过 security_permission 绑定资源 ( 通过 security 的注解进行绑定, 只能通过修改代码进行修改 )
+-- 通过 security_permission 绑定资源 ( 通过 security 的注解进行绑定, 只能通过修改代码修改访问权限限制 )
 -- 然后提供 authority - permission 的绑定
 -- 以及 user - authority 的绑定
 
 -- security_user 作为 user 在 security 方面的一个补集
 -- 与 user 是一对一关系
+
 CREATE TABLE security_user_details (
   id                         VARCHAR(64) PRIMARY KEY,
   create_time                LONG NOT NULL,
@@ -22,23 +23,8 @@ CREATE TABLE security_user_details (
   is_non_locked              TINYINT(1) DEFAULT 0,
   is_credentials_non_expired TINYINT(1) DEFAULT 0,
   is_enable                  TINYINT(1) DEFAULT 0
-
 )
   DEFAULT CHARSET utf8mb4;
-
-
-CREATE TABLE security_default_user (
-  id           VARCHAR(64) PRIMARY KEY,
-  create_time  LONG                    NOT NULL,
-  update_time  LONG                    NOT NULL,
-  delete_time  LONG,
-  status       INT(3)      DEFAULT 1,
-
-  account      VARCHAR(128) UNIQUE KEY NOT NULL,
-  password     VARCHAR(128)            NOT NULL,
-  nickname     VARCHAR(256)            NOT NULL,
-  authority_id VARCHAR(64) DEFAULT ''
-);
 
 -- user 与 role 的中间表, 记录 user 与 role 的关系
 CREATE TABLE security_user_role (
@@ -55,7 +41,6 @@ CREATE TABLE security_user_role (
   role_id      VARCHAR(64) NOT NULL,
 
   UNIQUE KEY user_authority(authority_id, role_id)
-
 )
   DEFAULT CHARSET utf8mb4;
 
@@ -69,7 +54,6 @@ CREATE TABLE security_role (
 
   name        VARCHAR(128) UNIQUE NOT NULL,
   description VARCHAR(256) UNIQUE NOT NULL
-
 )
   DEFAULT CHARSET utf8mb4;
 
@@ -85,7 +69,6 @@ CREATE TABLE security_role_permission (
   permission_id VARCHAR(64) NOT NULL,
 
   UNIQUE KEY authority_permission(role_id, permission_id)
-
 )
   DEFAULT CHARSET utf8mb4;
 
@@ -99,6 +82,5 @@ CREATE TABLE security_permission (
 
   name        VARCHAR(128) UNIQUE NOT NULL,
   description VARCHAR(256) UNIQUE NOT NULL
-
 )
   DEFAULT CHARSET utf8mb4;

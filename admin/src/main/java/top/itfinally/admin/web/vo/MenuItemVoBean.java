@@ -6,11 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MenuItemVoBean implements Serializable {
-    private String id;
+public class MenuItemVoBean extends BaseVoBean {
     private String name;
-
-    private int status;
 
     private boolean isLeaf;
     private boolean isRoot;
@@ -21,20 +18,10 @@ public class MenuItemVoBean implements Serializable {
     }
 
     public MenuItemVoBean( MenuItemEntity menuItem ) {
-        this.id = menuItem.getId();
+        super( menuItem );
         this.name = menuItem.getName();
-        this.status = menuItem.getStatus();
         this.isLeaf = menuItem.isLeaf();
         this.isRoot = menuItem.isRoot();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public MenuItemVoBean setId( String id ) {
-        this.id = id;
-        return this;
     }
 
     public String getName() {
@@ -43,15 +30,6 @@ public class MenuItemVoBean implements Serializable {
 
     public MenuItemVoBean setName( String name ) {
         this.name = name;
-        return this;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public MenuItemVoBean setStatus( int status ) {
-        this.status = status;
         return this;
     }
 

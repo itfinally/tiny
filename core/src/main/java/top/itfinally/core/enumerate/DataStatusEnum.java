@@ -1,5 +1,7 @@
 package top.itfinally.core.enumerate;
 
+import java.util.Arrays;
+
 public enum DataStatusEnum {
     NORMAL( 1, "正常" ),
     DELETE( -1, "已逻辑删除" );
@@ -36,5 +38,9 @@ public enum DataStatusEnum {
         }
 
         return true;
+    }
+
+    public static boolean contains( int status ) {
+        return Arrays.stream( values() ).anyMatch( item -> item.getStatus() == status );
     }
 }

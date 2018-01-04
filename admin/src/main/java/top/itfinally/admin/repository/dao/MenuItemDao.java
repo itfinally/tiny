@@ -7,7 +7,6 @@ import top.itfinally.admin.exception.NoSuchMenuItemException;
 import top.itfinally.admin.repository.mapper.MenuItemMapper;
 import top.itfinally.admin.repository.mapper.MenuRelationMapper;
 import top.itfinally.admin.repository.po.MenuRelationEntity;
-import top.itfinally.core.enumerate.DataStatusEnum;
 import top.itfinally.core.repository.dao.AbstractDao;
 import top.itfinally.admin.repository.po.MenuItemEntity;
 
@@ -116,7 +115,6 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
     }
 
     // In remove case, remove node in first, if node is folder, then find all child and remove
-
     @Transactional
     public int removeMenuItem( String itemId ) {
         MenuItemEntity item = menuItemMapper.query( itemId );

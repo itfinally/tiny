@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-@Table( name = "security_user_details" )
+@Table( name = "v1_security_user_details" )
 public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> implements UserDetails {
     // Indicates whether the user's account has expired.
     @Column
@@ -28,12 +28,10 @@ public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> impleme
     @Column
     private boolean isEnable = true;
 
-    // user 通过后期查询注入, 不再关注用户的具体信息
-    // 在实现上 mybatis 难以做到抽象继承
-    private UserDetailsEntity user;
+    // user inject by 'UserDetailService', not reference in table 'user_authority'
+    private AbstractUserDetailsEntity user;
 
-    // 不参与数据库查询, security_user 表不包含这个字段
-    // 后期查询直接调用 setter 注入
+    // user inject by 'UserDetailService', not reference in table 'user_authority'
     private List<RoleEntity> authorities;
 
     public UserAuthorityEntity() {
@@ -112,11 +110,11 @@ public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> impleme
     }
 
     @SuppressWarnings( "unchecked" )
-    public <User extends UserDetailsEntity> User getUser() {
+    public <User extends AbstractUserDetailsEntity> User getUser() {
         return ( User ) user;
     }
 
-    public UserAuthorityEntity setUser( UserDetailsEntity user ) {
+    public UserAuthorityEntity setUser( AbstractUserDetailsEntity user ) {
         this.user = user;
         return this;
     }

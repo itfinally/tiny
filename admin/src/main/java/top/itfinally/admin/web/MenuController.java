@@ -4,15 +4,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import top.itfinally.admin.service.MenuService;
+import top.itfinally.core.component.WebApiViewComponent;
 import top.itfinally.core.vo.BaseResponseVoBean;
 
 import java.util.*;
 
 import static top.itfinally.core.enumerate.ResponseStatusEnum.ILLEGAL_REQUEST;
 
+@ResponseBody
 @RestController
 @RequestMapping( "/menu" )
-public class MenuController {
+public class MenuController extends WebApiViewComponent {
     private MenuService menuService;
 
     @Autowired
@@ -21,7 +23,6 @@ public class MenuController {
         return this;
     }
 
-    @ResponseBody
     @PostMapping( "/added_root_menu" )
     public BaseResponseVoBean addedRootMenu(
             @RequestParam( "name" ) String name,
@@ -34,7 +35,6 @@ public class MenuController {
         return menuService.addedRootMenu( name, isLeaf );
     }
 
-    @ResponseBody
     @PostMapping( "/added_menu" )
     public BaseResponseVoBean addedMenu(
             @RequestParam( "parentId" ) String parentId,
@@ -48,7 +48,6 @@ public class MenuController {
         return menuService.addedMenu( parentId, name, isLeaf );
     }
 
-    @ResponseBody
     @PostMapping( "/remove_menu_item" )
     public BaseResponseVoBean removeMenuItem( @RequestParam( "itemId" ) String itemId ) {
         if ( StringUtils.isBlank( itemId ) ) {
@@ -58,7 +57,6 @@ public class MenuController {
         return menuService.removeMenuItem( itemId );
     }
 
-    @ResponseBody
     @PostMapping( "/remove_multi_menu_item" )
     public BaseResponseVoBean removeMultiMenuItem( @RequestBody List<String> itemIds ) {
         if ( null == itemIds || itemIds.isEmpty() ) {
@@ -68,7 +66,6 @@ public class MenuController {
         return menuService.removeMultiMenuItem( itemIds );
     }
 
-    @ResponseBody
     @PostMapping( "/recover_menu_item" )
     public BaseResponseVoBean recoverMenuItem( @RequestParam( "itemId" ) String itemId ) {
         if ( StringUtils.isBlank( itemId ) ) {
@@ -78,7 +75,6 @@ public class MenuController {
         return menuService.recoverMenuItem( itemId );
     }
 
-    @ResponseBody
     @PostMapping( "/recover_menu_multi_item" )
     public BaseResponseVoBean recoverMenuMultiItem( @RequestBody List<String> itemIds ) {
         if ( null == itemIds || itemIds.isEmpty() ) {
@@ -88,7 +84,6 @@ public class MenuController {
         return menuService.recoverMenuMultiItem( itemIds );
     }
 
-    @ResponseBody
     @PostMapping( "/rename" )
     public BaseResponseVoBean rename( @RequestParam( "menuId" ) String menuId, @RequestParam( "name" ) String name ) {
         if ( StringUtils.isBlank( menuId ) ) {
@@ -102,20 +97,8 @@ public class MenuController {
         return menuService.rename( menuId, name );
     }
 
-    @ResponseBody
     @GetMapping( "/get_menu_tree" )
     public BaseResponseVoBean getMenuTree() {
         return menuService.getMenuTree();
     }
-
-    @ResponseBody
-    @GetMapping( "/query_menu_item_roles/{menuId}" )
-    public BaseResponseVoBean queryMenuItemRoles( @PathVariable( "menuId" ) String menuId ) {
-        if ( StringUtils.isBlank( menuId ) ) {
-            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu id" );
-        }
-
-        return menuService.queryMenuItemRoles( menuId );
-    }
-
 }

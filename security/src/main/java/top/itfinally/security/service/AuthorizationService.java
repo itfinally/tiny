@@ -24,8 +24,8 @@ import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 @Service
 public class AuthorizationService {
 
+    private AbstractUserDetailService abstractUserDetailService;
     private PermissionValidService permissionValidService;
-    private UserDetailService userDetailService;
     private RolePermissionDao rolePermissionDao;
     private UserAuthorityDao userAuthorityDao;
     private PermissionDao permissionDao;
@@ -33,14 +33,14 @@ public class AuthorizationService {
     private RoleDao roleDao;
 
     @Autowired
-    public AuthorizationService setPermissionValidService( PermissionValidService permissionValidService ) {
-        this.permissionValidService = permissionValidService;
+    public AuthorizationService setAbstractUserDetailService( AbstractUserDetailService abstractUserDetailService ) {
+        this.abstractUserDetailService = abstractUserDetailService;
         return this;
     }
 
     @Autowired
-    public AuthorizationService setUserDetailService( UserDetailService userDetailService ) {
-        this.userDetailService = userDetailService;
+    public AuthorizationService setPermissionValidService( PermissionValidService permissionValidService ) {
+        this.permissionValidService = permissionValidService;
         return this;
     }
 
@@ -74,31 +74,12 @@ public class AuthorizationService {
         return this;
     }
 
-    @Transactional
-    @PreAuthorize( "hasPermission( null, 'register_user' )" )
-    public SingleResponseVoBean<Integer> register( String userId ) {
-        UserDetailsEntity user = userDetailService.loadUserById( userId );
-        UserAuthorityEntity userAuthority = new UserAuthorityEntity();
-
-        if ( null == user ) {
-            throw new UserNotFoundException( String.format( "User not found, %s is not exists.", userId ) );
-        }
-
-        int effectRow = 0;
-        effectRow += userAuthorityDao.save( userAuthority );
-        effectRow += userDetailService.update( user.setAuthorityId( userAuthority.getId() ) );
-
-        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( effectRow );
-    }
-
     public SingleResponseVoBean<Integer> addRole( RoleEntity role ) {
-        return new SingleResponseVoBean<Integer>( SUCCESS )
-                .setResult( roleDao.save( role ) );
+        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( roleDao.save( role ) );
     }
 
     public SingleResponseVoBean<Integer> addPermission( PermissionEntity permission ) {
-        return new SingleResponseVoBean<Integer>( SUCCESS )
-                .setResult( permissionDao.save( permission ) );
+        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( permissionDao.save( permission ) );
     }
 
     public SingleResponseVoBean<Integer> grantPermissionsTo( String roleId, List<String> permissionIds ) {
@@ -113,9 +94,7 @@ public class AuthorizationService {
     }
 
     public CollectionResponseVoBean<RoleVoBean> getRoles() {
-        List<RoleEntity> roles = roleDao.queryAll(
-                NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal()
-        );
+        List<RoleEntity> roles = roleDao.queryAll( NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal() );
 
         ResponseStatusEnum status = roles.isEmpty() ? EMPTY_RESULT : SUCCESS;
         return new CollectionResponseVoBean<RoleVoBean>( status )
@@ -123,9 +102,7 @@ public class AuthorizationService {
     }
 
     public CollectionResponseVoBean<PermissionVoBean> getPermissions() {
-        List<PermissionEntity> permissions = permissionDao.queryAll(
-                NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal()
-        );
+        List<PermissionEntity> permissions = permissionDao.queryAll( NOT_PAGING.getVal(), NOT_PAGING.getVal(), NOT_STATUS_FLAG.getVal() );
 
         ResponseStatusEnum status = permissions.isEmpty() ? EMPTY_RESULT : SUCCESS;
         return new CollectionResponseVoBean<PermissionVoBean>( status )

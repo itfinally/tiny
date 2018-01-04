@@ -2,11 +2,12 @@ package top.itfinally.core.vo;
 
 import top.itfinally.core.enumerate.BaseResponseStatus;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 public class CollectionResponseVoBean<T> extends BaseResponseVoBean<CollectionResponseVoBean> {
-    private Collection<T> result;
+    private Collection<T> result = new ArrayList<>();
 
     public CollectionResponseVoBean() {
     }

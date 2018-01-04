@@ -72,4 +72,8 @@ public class RoleDao extends AbstractDao<RoleEntity, RoleMapper> {
 
         return super.removeAll( ids, deleteTime );
     }
+
+    public List<RoleEntity> queryByPriority( int priority ) {
+        return roleMapper.queryByPriority( priority );
+    }
 }

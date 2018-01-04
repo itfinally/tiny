@@ -13,11 +13,11 @@
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
     <select id="query" resultMap="userRoleEntity">
-        select * from security_user_role where id = #{id}
+        select * from v1_security_user_role where id = #{id}
     </select>
 
     <select id="queryAll" resultMap="userRoleEntity">
-        select * from security_user_role where 1 = 1
+        select * from v1_security_user_role where 1 = 1
         <if test="status != -1001">
             and status = #{status}
         </if>
@@ -27,7 +27,7 @@
     </select>
 
     <select id="queryBySpecificId" resultMap="userRoleEntity">
-        select * from security_user_role where id in
+        select * from v1_security_user_role where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -40,7 +40,7 @@
     </select>
 
     <insert id="save">
-        INSERT INTO security_user_role (
+        INSERT INTO v1_security_user_role (
             id, create_time, update_time, delete_time, status, authority_id, role_id
 
         ) VALUES (
@@ -49,7 +49,7 @@
     </insert>
 
     <insert id="saveAll">
-        INSERT INTO security_user_role (
+        INSERT INTO v1_security_user_role (
         id, create_time, update_time, delete_time, status, authority_id, role_id
 
         ) VALUES
@@ -65,7 +65,7 @@
     </insert>
 
     <update id="update">
-        UPDATE security_user_role
+        UPDATE v1_security_user_role
         SET
             update_time  = #{updateTime},
             delete_time  = #{deleteTime},
@@ -76,7 +76,7 @@
     </update>
 
     <update id="specificUpdate">
-        update security_user_role set update_time = #{updateTime}
+        update v1_security_user_role set update_time = #{updateTime}
         <foreach collection="fieldAndValues.entrySet()" index="key" item="value" open="," separator=",">
             ${key} = #{value}
         </foreach>
@@ -84,7 +84,7 @@
     </update>
 
     <update id="remove">
-        UPDATE security_user_role
+        UPDATE v1_security_user_role
         SET
         update_time = #{deleteTime},
         delete_time = #{deleteTime},
@@ -93,7 +93,7 @@
     </update>
 
     <update id="removeAll">
-        update security_user_role set
+        update v1_security_user_role set
         update_time = #{deleteTime},
         delete_time = #{deleteTime},
         status = -1
@@ -104,12 +104,12 @@
     </update>
 
     <delete id="physicalDelete">
-        DELETE FROM security_user_role
+        DELETE FROM v1_security_user_role
         WHERE id = #{id}
     </delete>
 
     <delete id="physicalDeleteAll">
-        delete from security_user_role where id in
+        delete from v1_security_user_role where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -117,13 +117,13 @@
 
     <select id="queryByAuthorityId" resultMap="userRoleEntity">
         SELECT *
-        FROM security_user_role
+        FROM v1_security_user_role
         WHERE authority_id = #{authorityId}
     </select>
 
     <select id="hasUserAuthority" resultType="boolean">
         SELECT 1
-        FROM security_user_role
+        FROM v1_security_user_role
         WHERE authority_id = #{authorityId}
         <if test="status != -1001">
             and status = #{status}
@@ -133,7 +133,7 @@
 
     <select id="hasAllUserAuthority" resultType="boolean">
         SELECT 1
-        FROM security_user_role
+        FROM v1_security_user_role
         WHERE authority_id IN
         <foreach collection="authorityIds" item="id" open="(" separator="," close=")">
             #{id}
@@ -146,7 +146,7 @@
 
     <select id="hasRole" resultType="boolean">
         SELECT 1
-        FROM security_user_role
+        FROM v1_security_user_role
         WHERE role_id = #{roleId}
         <if test="status != -1001">
             and status = #{status}
@@ -156,7 +156,7 @@
 
     <select id="hasAllRole" resultType="boolean">
         SELECT 1
-        FROM security_user_role
+        FROM v1_security_user_role
         WHERE role_id IN
         <foreach collection="roleIds" item="id" open="(" separator="," close=")">
             #{id}

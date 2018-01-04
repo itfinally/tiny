@@ -103,4 +103,8 @@ public class KaptchaService {
 
         return true;
     }
+
+    public void clear( String account ) {
+        loginCounter.refresh( account );
+    }
 }

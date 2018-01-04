@@ -23,16 +23,12 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.SUCCESS;
 
 @Service
 public class AdminManagerService {
-    private static final String account = "admin";
-    private static final String password = "admin";
-
     private RoleDao roleDao;
     private UserRoleDao userRoleDao;
     private PermissionDao permissionDao;
     private UserAuthorityDao userAuthorityDao;
-    private UserDetailService userDetailsService;
-
-    private PasswordEncoder passwordEncoder;
+    private AbstractUserDetailService abstractUserDetailService;
+    private AbstractCreatedAdminService abstractCreatedAdminService;
 
     @Autowired
     public AdminManagerService setRoleDao( RoleDao roleDao ) {
@@ -59,21 +55,23 @@ public class AdminManagerService {
     }
 
     @Autowired
-    public AdminManagerService setUserDetailsService( UserDetailService userDetailsService ) {
-        this.userDetailsService = userDetailsService;
+    public AdminManagerService setAbstractUserDetailService( AbstractUserDetailService abstractUserDetailService ) {
+        this.abstractUserDetailService = abstractUserDetailService;
         return this;
     }
 
     @Autowired
-    public AdminManagerService setPasswordEncoder( PasswordEncoder passwordEncoder ) {
-        this.passwordEncoder = passwordEncoder;
+    public AdminManagerService setAbstractCreatedAdminService( AbstractCreatedAdminService abstractCreatedAdminService ) {
+        this.abstractCreatedAdminService = abstractCreatedAdminService;
         return this;
     }
 
     @Transactional
     public SingleResponseVoBean<Integer> createAdminAccount() {
+        AbstractUserDetailsEntity admin = abstractCreatedAdminService.getAdmin();
+
         try {
-            UserDetails user = userDetailsService.loadUserByUsername( account );
+            UserDetails user = abstractUserDetailService.loadUserByUsername( admin.getAccount() );
 
             if ( user != null ) {
                 for ( GrantedAuthority authority : user.getAuthorities() ) {
@@ -96,28 +94,21 @@ public class AdminManagerService {
         }
 
         effectRow += userAuthorityDao.save( authority );
-        effectRow += userDetailsService.save( new UserDetailsEntity.Default()
-                .setAccount( account )
-                .setPassword( passwordEncoder.encode( password ) )
-                .setNickname( "超级管理员" )
-                .setAuthorityId( authority.getId() )
-        );
-        effectRow += userRoleDao.save( new UserRoleEntity()
-                .setUserAuthority( authority )
-                .setRole( role )
-        );
+        effectRow += abstractUserDetailService.save( admin.setAuthorityId( authority.getId() ) );
+        effectRow += userRoleDao.save( new UserRoleEntity().setUserAuthority( authority ).setRole( role ) );
 
         return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( effectRow );
     }
 
     public SingleResponseVoBean<Integer> lockAdminAccount() {
-        UserAuthorityEntity user = ( UserAuthorityEntity ) userDetailsService.loadUserByUsername( account );
+        AbstractUserDetailsEntity admin = abstractCreatedAdminService.getAdmin();
+        UserAuthorityEntity user = ( UserAuthorityEntity ) abstractUserDetailService.loadUserByUsername( admin.getAccount() );
         if ( null == user ) {
             return new SingleResponseVoBean<Integer>( ResponseStatusEnum.ILLEGAL_REQUEST )
                     .setMessage( "Lock is failed, admin not found." );
         }
 
-        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( userDetailsService.update( user.setNonLocked( false ) ) );
+        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( userAuthorityDao.update( user.setNonLocked( false ) ) );
     }
 
     @Transactional

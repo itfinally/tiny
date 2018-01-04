@@ -6,26 +6,25 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import top.itfinally.security.repository.po.AbstractUserDetailsEntity;
 import top.itfinally.security.repository.po.RoleEntity;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
-import top.itfinally.security.repository.po.UserDetailsEntity;
 import top.itfinally.security.repository.dao.*;
 
 import java.util.List;
 
-public abstract class UserDetailService<User extends UserDetailsEntity> implements UserDetailsService {
+public abstract class AbstractUserDetailService<User extends AbstractUserDetailsEntity<User>> implements UserDetailsService {
     private UserAuthorityDao userAuthorityDao;
     private RoleDao roleDao;
 
     @Autowired
-    public UserDetailService setUserAuthorityDao( UserAuthorityDao userAuthorityDao ) {
+    public AbstractUserDetailService setUserAuthorityDao( UserAuthorityDao userAuthorityDao ) {
         this.userAuthorityDao = userAuthorityDao;
         return this;
     }
 
     @Autowired
-    public UserDetailService setRoleDao( RoleDao roleDao ) {
+    public AbstractUserDetailService setRoleDao( RoleDao roleDao ) {
         this.roleDao = roleDao;
         return this;
     }
@@ -48,6 +47,8 @@ public abstract class UserDetailService<User extends UserDetailsEntity> implemen
         }
 
         List<RoleEntity> roleEntities = roleDao.queryUserRoleByAuthorityId( userAuthority.getId() );
+
+        // inject user and roles
         return userAuthority.setUser( user ).setAuthorities( roleEntities );
     }
 
@@ -55,38 +56,7 @@ public abstract class UserDetailService<User extends UserDetailsEntity> implemen
 
     public abstract User loadUserById( String userId );
 
-    public abstract int save( Object user );
+    public abstract int save( AbstractUserDetailsEntity user );
 
-    public abstract int update( Object user );
-
-    @Service
-    public static class Default extends UserDetailService<UserDetailsEntity.Default> {
-        private DefaultUserDao defaultUserDao;
-
-        @Autowired
-        public Default setDefaultUserDao( DefaultUserDao defaultUserDao ) {
-            this.defaultUserDao = defaultUserDao;
-            return this;
-        }
-
-        @Override
-        public UserDetailsEntity.Default loadUserByAccount( String account ) {
-            return defaultUserDao.queryByAccount( account );
-        }
-
-        @Override
-        public UserDetailsEntity.Default loadUserById( String userId ) {
-            return defaultUserDao.query( userId );
-        }
-
-        @Override
-        public int save( Object user ) {
-            return defaultUserDao.save( ( UserDetailsEntity.Default ) user );
-        }
-
-        @Override
-        public int update( Object user ) {
-            return defaultUserDao.update( ( UserDetailsEntity.Default ) user );
-        }
-    }
+    public abstract int update( AbstractUserDetailsEntity user );
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="top.itfinally.security.repository.mapper.DefaultUserMapper">
-    <resultMap id="defaultUserDetails" type="top.itfinally.security.repository.po.UserDetailsEntity$Default"
+<mapper namespace="top.itfinally.admin.repository.mapper.UserDetailsMapper">
+    <resultMap id="userDetail" type="top.itfinally.admin.repository.po.UserDetailsEntity"
                extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
         <result property="account" column="account" javaType="String"/>
         <result property="password" column="password" javaType="String"/>
@@ -12,12 +12,14 @@
 
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
-    <select id="query" resultMap="defaultUserDetails">
-        select * from security_default_user where id = #{id}
+    <select id="query" resultMap="userDetail">
+        SELECT *
+        FROM v1_user_details
+        WHERE id = #{id}
     </select>
 
-    <select id="queryAll" resultMap="defaultUserDetails">
-        select * from security_default_user where 1 = 1
+    <select id="queryAll" resultMap="userDetail">
+        select * from v1_user_details where 1 = 1
         <if test="status != -1001">
             and status = #{status}
         </if>
@@ -26,8 +28,8 @@
         </if>
     </select>
 
-    <select id="queryBySpecificId" resultMap="defaultUserDetails">
-        select * from security_default_user where id in
+    <select id="queryBySpecificId" resultMap="userDetail">
+        select * from v1_user_details where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
@@ -40,7 +42,7 @@
     </select>
 
     <insert id="save">
-        INSERT INTO security_default_user (
+        INSERT INTO v1_user_details (
             id, create_time, update_time, delete_time, status,
             account, password, nickname, authority_id
 
@@ -51,7 +53,7 @@
     </insert>
 
     <insert id="saveAll">
-        INSERT INTO security_default_user (
+        INSERT INTO v1_user_details (
         id, create_time, update_time, delete_time, status,
         account, password, nickname, authority_id
 
@@ -70,7 +72,7 @@
     </insert>
 
     <update id="update">
-        UPDATE security_default_user
+        UPDATE v1_user_details
         SET
             update_time  = #{updateTime},
             delete_time  = #{deleteTime},
@@ -83,7 +85,7 @@
     </update>
 
     <update id="specificUpdate">
-        update security_default_user set update_time = #{updateTime}
+        update v1_user_details set update_time = #{updateTime}
         <foreach collection="fieldAndValues.entrySet()" index="key" item="value" open="," separator=",">
             ${key} = #{value}
         </foreach>
@@ -91,7 +93,7 @@
     </update>
 
     <update id="remove">
-        UPDATE security_default_user
+        UPDATE v1_user_details
         SET
             update_time = #{deleteTime},
             delete_time = #{deleteTime},
@@ -100,7 +102,7 @@
     </update>
 
     <update id="removeAll">
-        update security_default_user set
+        update v1_user_details set
         update_time = #{deleteTime},
         delete_time = #{deleteTime},
         status = -1
@@ -111,20 +113,74 @@
     </update>
 
     <delete id="physicalDelete">
-        DELETE FROM security_default_user
+        DELETE FROM v1_user_details
         WHERE id = #{id}
     </delete>
 
     <delete id="physicalDeleteAll">
-        delete from security_default_user where id in
+        delete from v1_user_details where id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>
 
-    <select id="queryByAccount" resultMap="defaultUserDetails">
+    <select id="queryByAccount" resultMap="userDetail">
         SELECT *
-        FROM security_default_user
+        FROM v1_user_details
         WHERE account = #{account}
     </select>
+
+    <select id="queryByMultiCondition" resultMap="userDetail">
+        select * from v1_user_details
+        <where>
+            <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
+                and #{condition.createStartTime} &lt; create_time and create_time &gt;= #{condition.createEndingTime}
+            </if>
+            <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
+                and #{condition.updateStartTime} &lt; create_time and create_time &gt;= #{condition.updateEndingTime}
+            </if>
+            <if test="condition.status != -1001">
+                and status = #{condition.status}
+            </if>
+            <if test="condition.nickname != null">
+                and nickname = #{condition.nickname}
+            </if>
+            <if test="condition.id != null">
+                and id = #{condition.id}
+            </if>
+        </where>
+        <if test="beginRow != -1000 and row != -1000">
+            limit #{beginRow}, #{row}
+        </if>
+    </select>
+
+    <select id="countByMultiCondition" resultType="int">
+        select count(id) from v1_user_details
+        <where>
+            <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
+                and #{condition.createStartTime} &lt; create_time and create_time &gt;= #{condition.createEndingTime}
+            </if>
+            <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
+                and #{condition.updateStartTime} &lt; create_time and create_time &gt;= #{condition.updateEndingTime}
+            </if>
+            <if test="condition.status != -1001">
+                and status = #{condition.status}
+            </if>
+            <if test="condition.nickname != null">
+                and nickname = #{condition.nickname}
+            </if>
+            <if test="condition.id != null">
+                and id = #{condition.id}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateUserStatus">
+        UPDATE v1_user_details
+        SET status = #{status}, update_time = #{updateTime}, delete_time = #{deleteTime}
+        where id in
+        <foreach collection="userIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.OncePerRequestFilter;
-import top.itfinally.core.enumerate.ResponseStatusEnum;
 import top.itfinally.core.vo.BaseResponseVoBean;
 import top.itfinally.security.service.AdminManagerService;
 
@@ -28,9 +27,10 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.SERVER_ERROR;
 public class AdminManagerFilter extends OncePerRequestFilter {
     private Logger logger = LoggerFactory.getLogger( getClass() );
     private ObjectMapper jsonMapper = new ObjectMapper();
-    private AdminManagerService adminManagerService;
     private Map<String, Method> methodMapper;
     private WebApplicationContext context;
+
+    private volatile AdminManagerService adminManagerService;
 
     {
         Map<String, Method> methodMapper = new HashMap<>();

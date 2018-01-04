@@ -2,7 +2,8 @@ package top.itfinally.core.repository;
 
 public enum QueryEnum {
     NOT_PAGING( -1000, "取消分页" ),
-    NOT_STATUS_FLAG( -1001, "取消状态" );
+    NOT_STATUS_FLAG( -1001, "取消状态" ),
+    NOT_DATE_LIMIT( -1002, "取消时间限制" );
 
     private int val;
     private String name;

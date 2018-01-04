@@ -7,8 +7,9 @@ import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
-@Table( name = "security_role" )
+@Table( name = "v1_security_role" )
 public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthority {
+    private int priority;
     private String name;
     private String description;
 
@@ -20,14 +21,23 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
     }
 
     @Column
+    public int getPriority() {
+        return priority;
+    }
+
+    public RoleEntity setPriority( int priority ) {
+        this.priority = priority;
+        return this;
+    }
+
+    @Column
     public String getName() {
         return name;
     }
 
-    @Override
-
     // Use default prefix for security, and ignore serializable
     // Only spring security use it.
+    @Override
     public String getAuthority() {
         return "ROLE_" + name.toUpperCase();
     }
@@ -50,13 +60,14 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
     @Override
     public String toString() {
         return "RoleEntity{" +
-                "id='" + id + '\'' +
+                "priority=" + priority +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 ", status=" + status +
+                ", description='" + description + '\'' +
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", deleteTime=" + deleteTime +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -66,12 +77,13 @@ public class RoleEntity extends BaseEntity<RoleEntity> implements GrantedAuthori
         if ( o == null || getClass() != o.getClass() ) return false;
         if ( !super.equals( o ) ) return false;
         RoleEntity that = ( RoleEntity ) o;
-        return Objects.equals( name, that.name ) &&
+        return priority == that.priority &&
+                Objects.equals( name, that.name ) &&
                 Objects.equals( description, that.description );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash( super.hashCode(), name, description );
+        return Objects.hash( super.hashCode(), priority, name, description );
     }
 }

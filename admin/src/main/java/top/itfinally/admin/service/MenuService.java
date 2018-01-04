@@ -15,7 +15,6 @@ import top.itfinally.core.repository.po.BaseEntity;
 import top.itfinally.core.vo.CollectionResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
 import top.itfinally.security.repository.po.RoleEntity;
-import top.itfinally.security.web.vo.RoleVoBean;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -99,7 +98,6 @@ public class MenuService {
         List<MenuItemEntity> rootMenuItems;
         Predicate<MenuItemEntity> nodeFilterFn;
 
-
         // getting full menu tree if role is admin
         if ( passport.getAuthorities().stream().anyMatch( auth -> auth.getAuthority().equals( "ROLE_ADMIN" ) ) ) {
             rootMenuItems = menuItemDao.queryRootMenuItem();
@@ -107,35 +105,33 @@ public class MenuService {
             nodeFilterFn = item -> true;
 
         } else {
-            Set<String> menuItemIds = new HashSet<>();
+            List<String> roleIds = passport.getAuthorities().stream()
+                    .map( role -> ( ( RoleEntity ) role ).getId() ).collect( Collectors.toList() );
 
-            passport.getAuthorities().stream().map( auth -> roleMenuItemDao.queryRoleMenuItem( ( ( RoleEntity ) auth ).getId() ) )
-                    .forEach( item -> menuItemIds.addAll( item.stream().map( BaseEntity::getId ).collect( Collectors.toSet() ) ) );
+            Set<String> availableItems = roleMenuItemDao.queryMenuItems( roleIds )
+                    .stream().map( BaseEntity::getId ).collect( Collectors.toSet() );
 
-            rootMenuItems = menuItemDao.queryRootMenuItem().stream()
-                    .filter( item -> menuItemIds.contains( item.getId() ) )
-                    .collect( Collectors.toList() );
+            nodeFilterFn = item -> item.getStatus() == NORMAL.getStatus() && availableItems.contains( item.getId() );
+
+            rootMenuItems = menuItemDao.queryRootMenuItem().stream().filter( nodeFilterFn ).collect( Collectors.toList() );
 
             rootItemIds = rootMenuItems.stream().map( BaseEntity::getId ).collect( Collectors.toSet() );
 
             if ( rootMenuItems.isEmpty() ) {
                 return new CollectionResponseVoBean<>( EMPTY_RESULT );
             }
-
-            nodeFilterFn = item -> item.getStatus() == NORMAL.getStatus();
         }
 
-
-        List<MenuItemVoBean> menuItemVoBeans = breadthTraversal(
+        Map<String, MenuItemVoBean> menuItems = breadthTraversal(
                 new HashMap<>( 32 ), new HashMap<>( 32 ),
                 rootMenuItems, nodeFilterFn
-        )
-                .entrySet().stream()
-                .filter( entry -> rootItemIds.contains( entry.getKey() ) )
-                .map( Map.Entry::getValue )
-                .collect( Collectors.toList() );
+        );
 
-        return new CollectionResponseVoBean<MenuItemVoBean>( SUCCESS ).setResult( menuItemVoBeans );
+        List<MenuItemVoBean> menuItemVoBeans = rootItemIds.stream().map( menuItems::get )
+                .filter( Objects::nonNull ).collect( Collectors.toList() );
+
+        ResponseStatusEnum status = menuItemVoBeans.isEmpty() ? EMPTY_RESULT : SUCCESS;
+        return new CollectionResponseVoBean<MenuItemVoBean>( status ).setResult( menuItemVoBeans );
     }
 
     private Map<String, MenuItemVoBean> breadthTraversal(
@@ -145,7 +141,9 @@ public class MenuService {
         List<MenuItemEntity> nextRound = new ArrayList<>();
 
         menuItems.forEach( item -> {
-            List<MenuRelationEntity> childItems = menuRelationDao.queryDirectChildItem( item.getId(), NOT_STATUS_FLAG.getVal() );
+            List<MenuRelationEntity> childItems = !item.isLeaf()
+                    ? menuRelationDao.queryDirectChildItem( item.getId(), NOT_STATUS_FLAG.getVal() )
+                    : new ArrayList<>();
 
             if ( item.isRoot() ) {
                 itemRecords.put( item.getId(), new MenuItemVoBean( item ) );
@@ -164,35 +162,37 @@ public class MenuService {
                 } );
             }
 
+            if ( childItems.isEmpty() ) {
+                return;
+            }
+
             childItems.stream().filter( relation -> relation.getGap() > 0 ).forEach( relation -> {
                 String parentId = relation.getParent().getId();
-
-                if ( !relation.getChild().isLeaf() ) {
-                    relations.put( relation.getChild().getId(), parentId );
-                }
+                MenuItemEntity child = relation.getChild();
 
                 // if accessor is admin, pass, even node has been removed.
                 // else depending on node status
-                if ( nodeFilterFn.test( relation.getChild() ) ) {
-                    itemRecords.get( parentId ).getChildes().add( new MenuItemVoBean( relation.getChild() ) );
+                if ( !nodeFilterFn.test( child ) ) {
+                    return;
                 }
+
+                if ( !child.isLeaf() ) {
+                    relations.put( child.getId(), parentId );
+                }
+
+                itemRecords.get( parentId ).getChildes().add( new MenuItemVoBean( child ) );
             } );
 
             nextRound.addAll( childItems.stream()
-                    .filter( relation -> relation.getGap() != 0 && !relation.getChild().isLeaf() )
+                    .filter( relation -> relation.getGap() != 0
+                            && !relation.getChild().isLeaf()
+                            && nodeFilterFn.test( relation.getChild() ) )
+
                     .map( MenuRelationEntity::getChild )
                     .collect( Collectors.toList() )
             );
         } );
 
         return nextRound.isEmpty() ? itemRecords : breadthTraversal( itemRecords, relations, nextRound, nodeFilterFn );
-    }
-
-    public CollectionResponseVoBean<RoleVoBean> queryMenuItemRoles( String menuId ) {
-        List<RoleEntity> roles = roleMenuItemDao.queryMenuItemRoles( menuId );
-        ResponseStatusEnum status = roles.isEmpty() ? SUCCESS : EMPTY_RESULT;
-
-        return new CollectionResponseVoBean<RoleVoBean>( status )
-                .setResult( roles.stream().map( RoleVoBean::new ).collect( Collectors.toList() ) );
     }
 }

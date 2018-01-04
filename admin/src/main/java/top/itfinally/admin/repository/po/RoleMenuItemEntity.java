@@ -8,7 +8,7 @@ import top.itfinally.security.repository.po.RoleEntity;
 
 import java.util.Objects;
 
-@Table( name = "menu_scope" )
+@Table( name = "v1_menu_scope" )
 public class RoleMenuItemEntity extends BaseEntity<RoleMenuItemEntity> {
     private RoleEntity role;
     private MenuItemEntity menuItem;

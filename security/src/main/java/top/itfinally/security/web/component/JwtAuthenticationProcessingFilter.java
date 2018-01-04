@@ -86,9 +86,7 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
             throw new BadCredentialsException( "Wrong valid code." );
         }
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                entry[ 0 ], entry[ 1 ]
-        );
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken( entry[ 0 ], entry[ 1 ] );
 
         try {
             return getAuthenticationManager().authenticate( authToken );
@@ -106,6 +104,8 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
 
         UserAuthorityEntity userAuthority = ( UserAuthorityEntity ) authResult.getPrincipal();
         String token = jwtTokenService.create( userAuthority.getUsername() );
+
+        kaptchaService.clear( userAuthority.getUsername() );
         userDetailCachingService.caching( userAuthority.getUsername(), userAuthority );
 
         response.setContentType( "application/json;charset=UTF-8" );

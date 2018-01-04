@@ -6,7 +6,7 @@ import top.itfinally.core.repository.po.BaseEntity;
 
 import java.util.Objects;
 
-@Table( name = "security_permission" )
+@Table( name = "v1_security_permission" )
 public class PermissionEntity extends BaseEntity<PermissionEntity> {
     private String name;
     private String description;

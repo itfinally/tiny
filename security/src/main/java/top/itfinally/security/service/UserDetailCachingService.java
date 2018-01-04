@@ -3,13 +3,13 @@ package top.itfinally.security.service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.stereotype.Component;
-import top.itfinally.security.exception.UserNotFoundException;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import javax.naming.AuthenticationException;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +30,7 @@ public abstract class UserDetailCachingService {
                     public UserAuthorityEntity load( String s ) throws Exception {
 
                         // no cache , just redirect to login
-                        throw new AuthenticationException();
+                        throw new AccountExpiredException( "Require re-login." );
                     }
                 } );
 
@@ -39,7 +39,7 @@ public abstract class UserDetailCachingService {
             try {
                 return cache.get( account );
 
-            } catch ( ExecutionException e ) {
+            } catch ( Exception e ) {
                 return null;
             }
         }
