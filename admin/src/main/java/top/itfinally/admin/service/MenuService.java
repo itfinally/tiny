@@ -55,9 +55,9 @@ public class MenuService {
                 .setResult( new MenuItemVoBean( menuItemDao.addedRootMenu( name, isLeaf ) ) );
     }
 
-    public SingleResponseVoBean<MenuItemVoBean> addedMenu( String parentId, String name, boolean isLeaf ) {
+    public SingleResponseVoBean<MenuItemVoBean> addedMenu( String parentId, String name, String path, boolean isLeaf ) {
         return new SingleResponseVoBean<MenuItemVoBean>( SUCCESS )
-                .setResult( new MenuItemVoBean( menuItemDao.addedMenu( parentId, name, isLeaf ) ) );
+                .setResult( new MenuItemVoBean( menuItemDao.addedMenu( parentId, name, path, isLeaf ) ) );
     }
 
     public SingleResponseVoBean<Integer> removeMenuItem( String itemId ) {
@@ -76,19 +76,18 @@ public class MenuService {
         return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( menuItemDao.recoverMultiItem( childIds ) );
     }
 
-    public SingleResponseVoBean<Integer> rename( String menuId, String name ) {
-        if ( !menuItemDao.isUniqueName( name ) ) {
-            return new SingleResponseVoBean<Integer>( ILLEGAL_REQUEST )
-                    .setMessage( String.format( "Name '%s' already exists.", name ) );
-        }
-
+    public SingleResponseVoBean<Integer> updateMenu( String menuId, String name, String path ) {
         MenuItemEntity menuItem = menuItemDao.query( menuId );
+
         if ( null == menuItem ) {
-            return new SingleResponseVoBean<Integer>( ILLEGAL_REQUEST )
-                    .setMessage( String.format( "Menu id '%s' is not exists.", menuId ) );
+            return new SingleResponseVoBean<Integer>( ILLEGAL_REQUEST ).setMessage( String.format( "Menu id '%s' is not exists.", menuId ) );
         }
 
-        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( menuItemDao.update( menuItem.setName( name ) ) );
+        if ( !menuItem.getName().equals( name ) && !menuItemDao.isUniqueName( name ) ) {
+            return new SingleResponseVoBean<Integer>( ILLEGAL_REQUEST ).setMessage( String.format( "Name '%s' already exists.", name ) );
+        }
+
+        return new SingleResponseVoBean<Integer>( SUCCESS ).setResult( menuItemDao.update( menuItem.setName( name ).setPath( path ) ) );
     }
 
     public CollectionResponseVoBean<MenuItemVoBean> getMenuTree() {

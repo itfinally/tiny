@@ -9,6 +9,7 @@ import top.itfinally.security.repository.mapper.UserAuthorityMapper;
 import top.itfinally.security.repository.mapper.UserRoleMapper;
 
 import java.util.Collection;
+import java.util.List;
 
 import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 

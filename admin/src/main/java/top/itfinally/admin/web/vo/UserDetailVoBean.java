@@ -1,8 +1,9 @@
 package top.itfinally.admin.web.vo;
 
+import top.itfinally.core.vo.BaseVoBean;
 import top.itfinally.security.repository.po.AbstractUserDetailsEntity;
 
-public class UserDetailVoBean extends BaseVoBean {
+public class UserDetailVoBean extends BaseVoBean<UserDetailVoBean> {
 
     private String account;
     private String nickname;

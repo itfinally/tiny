@@ -5,20 +5,23 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import top.itfinally.admin.repository.dao.RoleEnhancedDao;
 import top.itfinally.admin.repository.dao.RoleMenuItemDao;
+import top.itfinally.admin.support.SecurityUtils;
 import top.itfinally.core.enumerate.ResponseStatusEnum;
 import top.itfinally.core.repository.po.BaseEntity;
 import top.itfinally.core.vo.CollectionResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
-import top.itfinally.security.repository.dao.RoleDao;
 import top.itfinally.security.repository.dao.RolePermissionDao;
 import top.itfinally.security.repository.po.RoleEntity;
 import top.itfinally.security.web.vo.RoleVoBean;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 import static top.itfinally.core.enumerate.ResponseStatusEnum.EMPTY_RESULT;
 import static top.itfinally.core.enumerate.ResponseStatusEnum.SUCCESS;
 
@@ -27,7 +30,7 @@ public class MenuRoleService {
 
     private RolePermissionDao rolePermissionDao;
     private RoleMenuItemDao roleMenuItemDao;
-    private RoleDao roleDao;
+    private RoleEnhancedDao roleEnhancedDao;
 
     @Autowired
     public MenuRoleService setRolePermissionDao( RolePermissionDao rolePermissionDao ) {
@@ -42,34 +45,9 @@ public class MenuRoleService {
     }
 
     @Autowired
-    public MenuRoleService setRoleDao( RoleDao roleDao ) {
-        this.roleDao = roleDao;
+    public MenuRoleService setRoleEnhancedDao( RoleEnhancedDao roleEnhancedDao ) {
+        this.roleEnhancedDao = roleEnhancedDao;
         return this;
-    }
-
-    private RoleEntity getMaxRoleWithGrant() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        List<RoleEntity> roles = auth.getAuthorities().stream()
-                .map( role -> ( RoleEntity ) role )
-
-                // 0, 1, 2, 3, 4
-                .sorted( ( o1, o2 ) -> o1.getPriority() > o2.getPriority() ? 1 : -1 )
-                .collect( Collectors.toList() );
-
-        // getting the maximum role with grant permission
-        RoleEntity[] matchRole = new RoleEntity[]{ null };
-        boolean ignore = roles.stream().anyMatch( role -> {
-            if ( "ROLE_ADMIN".equals( role.getAuthority() ) || rolePermissionDao.queryByRoleId( role.getId() )
-                    .stream().anyMatch( rp -> "grant".equals( rp.getPermission().getName() ) ) ) {
-
-                matchRole[ 0 ] = role;
-                return true;
-            }
-
-            return false;
-        } );
-
-        return matchRole[ 0 ];
     }
 
     @PreAuthorize( "hasPermission( null, 'grant' )" )
@@ -83,7 +61,8 @@ public class MenuRoleService {
 
     @PreAuthorize( "hasPermission( null, 'grant' )" )
     public CollectionResponseVoBean<RoleEntity> queryAvailableRole( String menuId ) {
-        List<RoleEntity> roles = roleDao.queryByPriority( getMaxRoleWithGrant().getPriority() );
+        List<RoleEntity> roles = roleEnhancedDao.queryLowLevelRoles( SecurityUtils.getMaxRoleWithGrant(
+                roleId -> rolePermissionDao.queryByRoleId( roleId, NORMAL.getStatus() ) ).getPriority() );
 
         Set<String> roleIds = roleMenuItemDao.queryMenuItemRoles( menuId ).stream()
                 .map( BaseEntity::getId ).collect( Collectors.toSet() );

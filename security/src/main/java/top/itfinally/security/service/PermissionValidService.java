@@ -3,6 +3,7 @@ package top.itfinally.security.service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
+
 @Service
 @Primary
 public class PermissionValidService implements PermissionEvaluator {
@@ -35,8 +38,8 @@ public class PermissionValidService implements PermissionEvaluator {
             .build( new CacheLoader<String, Set<PermissionEntity>>() {
                 @Override
                 @ParametersAreNonnullByDefault
-                public Set<PermissionEntity> load( String roleId ) throws Exception {
-                    return rolePermissionDao.queryByRoleId( roleId ).stream()
+                public Set<PermissionEntity> load( String roleId ) {
+                    return rolePermissionDao.queryByRoleId( roleId, NORMAL.getStatus() ).stream()
                             .map( RolePermissionEntity::getPermission )
                             .collect( Collectors.toSet() );
                 }
@@ -54,34 +57,35 @@ public class PermissionValidService implements PermissionEvaluator {
             return false;
         }
 
+        if ( null == permission || StringUtils.isBlank( permission.toString() ) ) {
+            throw new IllegalArgumentException( "Permission must not be null. Please check your code!" );
+        }
+
         List<RoleEntity> roles = ( ( UserAuthorityEntity ) authentication.getPrincipal() ).getRoles();
-        return roles.stream()
+        // Admin has super power by default
+        return roles.stream().anyMatch( role -> {
 
-                .filter( role -> {
+            // Admin has super power by default
+            if ( "ROLE_ADMIN".equals( role.getAuthority() ) ) {
+                return true;
+            }
 
-                    // Admin has super power by default
-                    if ( "ROLE_ADMIN".equals( role.getAuthority() ) ) {
-                        return true;
-                    }
+            try {
+                return cache.get( role.getAuthority() ).stream()
+                        .anyMatch( entity -> entity.getName().equals( permission ) );
 
-                    try {
-                        return cache.get( role.getAuthority() ).stream()
-                                .filter( entity -> entity.getName().equals( permission ) )
-                                .count() > 0;
+            } catch ( ExecutionException e ) {
+                logger.error( "Failed to load role's permission, ignore it and return false.", e );
+            }
 
-                    } catch ( ExecutionException e ) {
-                        logger.error( "Failed to load role's permission, ignore it and return false.", e );
-                    }
-
-                    return false;
-                } )
-
-                .count() > 0;
+            return false;
+        } );
     }
 
     @Override
+    // Do not use this api
     public boolean hasPermission( Authentication authentication, Serializable targetId, String targetType, Object permission ) {
-        return !"anonymousUser".equals( authentication.getPrincipal() );
+        return false;
     }
 
     public void refreshRolePermission( String roleId ) {

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import top.itfinally.admin.repository.mapper.UserDetailsMapper;
 import top.itfinally.admin.repository.po.UserDetailsEntity;
-import top.itfinally.core.enumerate.DataStatusEnum;
+import top.itfinally.admin.support.vue.MultiFunctionTableQuery;
 import top.itfinally.core.repository.dao.AbstractDao;
 import top.itfinally.security.repository.mapper.UserAuthorityMapper;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import static top.itfinally.core.enumerate.DataStatusEnum.DELETE;
-import static top.itfinally.core.repository.QueryEnum.NOT_DATE_LIMIT;
 import static top.itfinally.core.repository.QueryEnum.NOT_PAGING;
-import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 
 @Repository
 public class UserDetailsDao extends AbstractDao<UserDetailsEntity, UserDetailsMapper> {
@@ -88,7 +86,7 @@ public class UserDetailsDao extends AbstractDao<UserDetailsEntity, UserDetailsMa
     }
 
     public List<UserDetailsEntity> queryByMultiCondition( Map<String, Object> condition, int beginRow, int row ) {
-        conditionValidator( condition );
+        MultiFunctionTableQuery.conditionValidator( condition );
 
         if ( beginRow < 0 || row < 0 ) {
             beginRow = row = NOT_PAGING.getVal();
@@ -98,40 +96,14 @@ public class UserDetailsDao extends AbstractDao<UserDetailsEntity, UserDetailsMa
     }
 
     public int countByMultiCondition( Map<String, Object> condition ) {
-        conditionValidator( condition );
+        MultiFunctionTableQuery.conditionValidator( condition );
 
         return userDetailsMapper.countByMultiCondition( condition );
     }
 
-    private void conditionValidator( Map<String, Object> condition ) {
-        if ( !( condition.containsKey( "createStartTime" ) && condition.containsKey( "createEndingTime" ) ) ) {
-            condition.put( "createStartTime", NOT_DATE_LIMIT.getVal() );
-            condition.put( "createEndingTime", NOT_DATE_LIMIT.getVal() );
-        }
-
-        if ( !( condition.containsKey( "updateStartTime" ) && condition.containsKey( "updateEndingTime" ) ) ) {
-            condition.put( "updateStartTime", NOT_DATE_LIMIT.getVal() );
-            condition.put( "updateEndingTime", NOT_DATE_LIMIT.getVal() );
-        }
-
-        if ( !condition.containsKey( "status" )
-                && condition.get( "status" ) instanceof Integer
-                && DataStatusEnum.contains( ( int ) condition.get( "status" ) ) ) {
-
-            condition.put( "status", NOT_STATUS_FLAG.getVal() );
-        }
-
-        if ( !condition.containsKey( "status" ) ) {
-            condition.put( "status", NOT_STATUS_FLAG.getVal() );
-        }
-    }
-
     public int updateUserStatus( int status, List<String> userIds ) {
         long now = System.currentTimeMillis();
-
-        return DELETE.getStatus() == status
-                ? userDetailsMapper.updateUserStatus( status, now, now, userIds )
-                : userDetailsMapper.updateUserStatus( status, now, -1, userIds );
+        return userDetailsMapper.updateUserStatus( userIds, status, now, DELETE.getStatus() == status ? now : -1 );
     }
 
     @Transactional

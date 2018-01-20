@@ -3,18 +3,16 @@ package top.itfinally.admin.repository.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
-import top.itfinally.admin.repository.po.UserDetailsEntity;
 import top.itfinally.core.repository.mapper.BaseMapper;
+import top.itfinally.security.repository.po.RoleEntity;
 
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 @Component
-public interface UserDetailsMapper extends BaseMapper<UserDetailsEntity> {
-    UserDetailsEntity queryByAccount( @Param( "account" ) String account );
-
-    List<UserDetailsEntity> queryByMultiCondition(
+public interface RoleEnhancedMapper extends BaseMapper<RoleEntity> {
+    List<RoleEntity> queryByMultiCondition(
             @Param( "condition" ) Map<String, Object> condition,
             @Param( "beginRow" ) int beginRow,
             @Param( "row" ) int row
@@ -22,10 +20,9 @@ public interface UserDetailsMapper extends BaseMapper<UserDetailsEntity> {
 
     int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
 
-    int updateUserStatus(
-            @Param( "userIds" ) List<String> userIds,
-            @Param( "status" ) int status,
-            @Param( "updateTime" ) long updateTime,
-            @Param( "deleteTime" ) long deleteTime
-    );
+    int updateRoleStatus(
+            @Param( "roleIds" ) List<String> roleIds, @Param( "status" ) int status,
+            @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
+
+    List<RoleEntity> queryLowLevelRoles( @Param( "priority" ) int priority );
 }

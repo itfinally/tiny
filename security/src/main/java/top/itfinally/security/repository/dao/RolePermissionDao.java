@@ -102,9 +102,8 @@ public class RolePermissionDao extends AbstractDao<RolePermissionEntity, RolePer
         return super.saveAll( rolePermissionEntities );
     }
 
-
-    public List<RolePermissionEntity> queryByRoleId( String roleId ) {
-        return rolePermissionMapper.queryByRoleId( roleId );
+    public List<RolePermissionEntity> queryByRoleId( String roleId, int status ) {
+        return rolePermissionMapper.queryByRoleId( roleId, status );
     }
 
     @Transactional
@@ -115,7 +114,7 @@ public class RolePermissionDao extends AbstractDao<RolePermissionEntity, RolePer
         Set<String> existPermissions = new HashSet<>();
         List<String> normalPermissions = new ArrayList<>();
         List<RolePermissionEntity> notExistPermission = new ArrayList<>();
-        List<RolePermissionEntity> rolePermissions = queryByRoleId( roleId );
+        List<RolePermissionEntity> rolePermissions = queryByRoleId( roleId, NOT_STATUS_FLAG.getVal() );
 
         rolePermissions.forEach( entity -> {
             String permissionId = entity.getPermission().getId(), entityId = entity.getId();

@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 @Component
 public interface RolePermissionMapper extends BaseMapper<RolePermissionEntity> {
-    List<RolePermissionEntity> queryByRoleId( @Param( "roleId" ) String roleId );
+    List<RolePermissionEntity> queryByRoleId( @Param( "roleId" ) String roleId, @Param( "status" ) int status );
 
     boolean hasPermission( @Param( "permissionId" ) String permissionId, @Param( "status" ) int status );
 

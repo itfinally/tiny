@@ -5,7 +5,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import top.itfinally.admin.repository.mapper.MenuItemMapper;
 import top.itfinally.admin.repository.mapper.MenuRelationMapper;
 import top.itfinally.admin.repository.mapper.RoleMenuItemMapper;
 import top.itfinally.admin.repository.po.MenuItemEntity;
@@ -26,7 +25,6 @@ import static top.itfinally.core.repository.QueryEnum.NOT_STATUS_FLAG;
 public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuItemMapper> {
     private RoleMenuItemMapper roleMenuItemMapper;
     private MenuRelationMapper menuRelationMapper;
-    private MenuItemMapper menuItemMapper;
 
     @Autowired
     public RoleMenuItemDao setRoleMenuItemMapper( RoleMenuItemMapper roleMenuItemMapper ) {
@@ -37,12 +35,6 @@ public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuIte
     @Autowired
     public RoleMenuItemDao setMenuRelationMapper( MenuRelationMapper menuRelationMapper ) {
         this.menuRelationMapper = menuRelationMapper;
-        return this;
-    }
-
-    @Autowired
-    public RoleMenuItemDao setMenuItemMapper( MenuItemMapper menuItemMapper ) {
-        this.menuItemMapper = menuItemMapper;
         return this;
     }
 
@@ -147,11 +139,12 @@ public class RoleMenuItemDao extends AbstractDao<RoleMenuItemEntity, RoleMenuIte
             return null == item || !item.isRoot();
         }
 
-        // from large to small
         Map<Integer, MenuRelationEntity> itemFloorChain = new HashMap<>();
         itemChain.forEach( item -> itemFloorChain.put( item.getGap(), item ) );
 
         List<Integer> gaps = new ArrayList<>( itemFloorChain.keySet() );
+
+        // from large to small
         gaps.sort( ( a, b ) -> a > b ? -1 : 1 );
 
         int last = itemFloorChain.size() - 1;

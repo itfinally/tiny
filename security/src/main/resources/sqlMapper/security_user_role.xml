@@ -13,7 +13,9 @@
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
     <select id="query" resultMap="userRoleEntity">
-        select * from v1_security_user_role where id = #{id}
+        SELECT *
+        FROM v1_security_user_role
+        WHERE id = #{id}
     </select>
 
     <select id="queryAll" resultMap="userRoleEntity">
@@ -86,9 +88,9 @@
     <update id="remove">
         UPDATE v1_security_user_role
         SET
-        update_time = #{deleteTime},
-        delete_time = #{deleteTime},
-        status      = -1
+            update_time = #{deleteTime},
+            delete_time = #{deleteTime},
+            status      = -1
         WHERE id = #{id}
     </update>
 
@@ -119,6 +121,9 @@
         SELECT *
         FROM v1_security_user_role
         WHERE authority_id = #{authorityId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
     <select id="hasUserAuthority" resultType="boolean">

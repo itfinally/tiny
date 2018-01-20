@@ -134,10 +134,10 @@
         select * from v1_user_details
         <where>
             <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
-                and #{condition.createStartTime} &lt; create_time and create_time &gt;= #{condition.createEndingTime}
+                and #{condition.createStartTime} &lt;= create_time and create_time &lt; #{condition.createEndingTime}
             </if>
             <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
-                and #{condition.updateStartTime} &lt; create_time and create_time &gt;= #{condition.updateEndingTime}
+                and #{condition.updateStartTime} &lt;= create_time and create_time &lt; #{condition.updateEndingTime}
             </if>
             <if test="condition.status != -1001">
                 and status = #{condition.status}
@@ -158,10 +158,10 @@
         select count(id) from v1_user_details
         <where>
             <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
-                and #{condition.createStartTime} &lt; create_time and create_time &gt;= #{condition.createEndingTime}
+                and #{condition.createStartTime} &lt;= create_time and create_time &lt; #{condition.createEndingTime}
             </if>
             <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
-                and #{condition.updateStartTime} &lt; create_time and create_time &gt;= #{condition.updateEndingTime}
+                and #{condition.updateStartTime} &lt;= create_time and create_time &lt; #{condition.updateEndingTime}
             </if>
             <if test="condition.status != -1001">
                 and status = #{condition.status}

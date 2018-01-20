@@ -5,6 +5,7 @@
     <resultMap id="menuItemEntity" type="top.itfinally.admin.repository.po.MenuItemEntity"
                extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
         <result property="name" column="name" javaType="java.lang.String"/>
+        <result property="path" column="path" javaType="java.lang.String"/>
         <result property="isRoot" column="is_root" javaType="boolean"/>
         <result property="isLeaf" column="is_leaf" javaType="boolean"/>
     </resultMap>
@@ -43,23 +44,23 @@
     <insert id="save">
         INSERT INTO v1_menu_item (
             name, is_root, is_leaf, id, status, create_time,
-            update_time, delete_time
+            update_time, delete_time, path
 
         ) VALUES (
             #{name}, #{isRoot}, #{isLeaf}, #{id}, #{status}, #{createTime},
-            #{updateTime}, #{deleteTime}
+            #{updateTime}, #{deleteTime}, #{path}
         );
     </insert>
 
     <insert id="saveAll">
         INSERT INTO v1_menu_item (
         name, is_root, is_leaf, id, status, create_time,
-        update_time, delete_time
+        update_time, delete_time, path
 
         ) VALUES
         <foreach collection="entities" item="entity" open="(" separator="), (" close=")">
             #{entity.name}, #{entity.isRoot}, #{entity.isLeaf}, #{entity.id}, #{entity.status}, #{entity.createTime},
-            #{entity.updateTime}, #{entity.deleteTime}
+            #{entity.updateTime}, #{entity.deleteTime}, #{entity.path}
         </foreach>
     </insert>
 
@@ -70,6 +71,7 @@
             is_root     = #{isRoot},
             is_leaf     = #{isLeaf},
             status      = #{status},
+            path        = #{path},
             update_time = #{updateTime},
             delete_time = #{deleteTime}
 

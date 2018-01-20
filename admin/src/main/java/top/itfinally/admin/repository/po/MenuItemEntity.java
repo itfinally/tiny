@@ -7,6 +7,7 @@ import top.itfinally.core.repository.po.BaseEntity;
 @Table( name = "v1_menu_item" )
 public class MenuItemEntity extends BaseEntity<MenuItemEntity> {
     private String name;
+    private String path;
     private boolean isRoot;
     private boolean isLeaf;
 
@@ -24,6 +25,16 @@ public class MenuItemEntity extends BaseEntity<MenuItemEntity> {
 
     public MenuItemEntity setName( String name ) {
         this.name = name;
+        return this;
+    }
+
+    @Column
+    public String getPath() {
+        return path;
+    }
+
+    public MenuItemEntity setPath( String path ) {
+        this.path = path;
         return this;
     }
 

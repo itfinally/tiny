@@ -20,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static top.itfinally.core.enumerate.ResponseStatusEnum.UNAUTHORIZED;
+
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
@@ -62,8 +64,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         if ( null == user ) {
             response.getWriter().write( jsonMapper.writeValueAsString(
-                    new BaseResponseVoBean<>( ResponseStatusEnum.UNAUTHORIZED ).setMessage( "Token expired." )
-            ) );
+                    new BaseResponseVoBean<>( UNAUTHORIZED ).setMessage( "Token expired." ) ) );
 
             return;
         }

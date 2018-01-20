@@ -4,15 +4,18 @@
 <mapper namespace="top.itfinally.security.repository.mapper.RolePermissionMapper">
     <resultMap id="rolePermissionEntity" type="top.itfinally.security.repository.po.RolePermissionEntity"
                extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
-        <association property="role" column="role" select="top.itfinally.security.repository.mapper.RoleMapper.query"/>
-        <association property="permission" column="permission"
+        <association property="role" column="role_id"
+                     select="top.itfinally.security.repository.mapper.RoleMapper.query"/>
+        <association property="permission" column="permission_id"
                      select="top.itfinally.security.repository.mapper.PermissionMapper.query"/>
     </resultMap>
 
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
     <select id="query" resultMap="rolePermissionEntity">
-        select * from v1_security_role_permission where id = #{id}
+        SELECT *
+        FROM v1_security_role_permission
+        WHERE id = #{id}
     </select>
 
     <select id="queryAll" resultMap="rolePermissionEntity">
@@ -85,9 +88,9 @@
     <update id="remove">
         UPDATE v1_security_role_permission
         SET
-        update_time = #{deleteTime},
-        delete_time = #{deleteTime},
-        status      = -1
+            update_time = #{deleteTime},
+            delete_time = #{deleteTime},
+            status      = -1
         WHERE id = #{id}
     </update>
 
@@ -118,6 +121,9 @@
         SELECT *
         FROM v1_security_role_permission
         WHERE role_id = #{roleId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
     <select id="hasPermission" resultType="boolean">

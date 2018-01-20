@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.itfinally.admin.repository.mapper.RoleEnhancedMapper">
+    <resultMap id="roleEntity" type="top.itfinally.security.repository.po.RoleEntity"
+               extends="top.itfinally.core.repository.mapper.BaseMapper.baseEntity">
+        <result property="name" column="name" javaType="String"/>
+        <result property="priority" column="priority" javaType="int"/>
+        <result property="description" column="description" javaType="String"/>
+    </resultMap>
+
+    <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
+
+    <select id="queryByMultiCondition" resultMap="roleEntity">
+        select * from v1_security_role
+        <where>
+            <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
+                and #{condition.createStartTime} &lt;= create_time and create_time &lt; #{condition.createEndingTime}
+            </if>
+            <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
+                and #{condition.updateStartTime} &lt;= create_time and create_time &lt; #{condition.updateEndingTime}
+            </if>
+            <if test="condition.status != -1001">
+                and status = #{condition.status}
+            </if>
+            <if test="condition.id != null">
+                and id = #{condition.id}
+            </if>
+        </where>
+        <if test="beginRow != -1000 and row != -1000">
+            limit #{beginRow}, #{row}
+        </if>
+    </select>
+
+    <select id="countByMultiCondition" resultType="int">
+        select count(id) from v1_security_role
+        <where>
+            <if test="condition.createStartTime != -1002 and condition.createEndingTime != -1002">
+                and #{condition.createStartTime} &lt;= create_time and create_time &lt; #{condition.createEndingTime}
+            </if>
+            <if test="condition.updateStartTime != -1002 and condition.updateEndingTime != -1002">
+                and #{condition.updateStartTime} &lt;= create_time and create_time &lt; #{condition.updateEndingTime}
+            </if>
+            <if test="condition.status != -1001">
+                and status = #{condition.status}
+            </if>
+            <if test="condition.id != null">
+                and id = #{condition.id}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateRoleStatus">
+        UPDATE v1_security_role
+        SET status = #{status}, update_time = #{updateTime}, delete_time = #{deleteTime}
+        WHERE id IN
+        <foreach collection="roleIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="queryLowLevelRoles" resultMap="roleEntity">
+        select * from v1_security_role where priority &lt; #{priority}
+    </select>
+</mapper>

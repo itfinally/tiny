@@ -5,13 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.web.bind.annotation.*;
 import top.itfinally.admin.service.UserDetailService;
+import top.itfinally.admin.support.vue.MultiFunctionTableQuery;
 import top.itfinally.core.component.WebApiViewComponent;
 import top.itfinally.core.enumerate.DataStatusEnum;
 import top.itfinally.core.vo.BaseResponseVoBean;
 import top.itfinally.core.vo.SingleResponseVoBean;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,42 +80,11 @@ public class UserDetailController extends WebApiViewComponent {
             long createStartTime, long createEndingTime, long updateStartTime,
             long updateEndingTime, int status, String nickname, String id
     ) {
-        Map<String, Object> condition = new HashMap<>();
-
-        if ( createStartTime > 0 ) {
-            condition.put( "createStartTime", createStartTime );
-        }
-
-        if ( createEndingTime > 0 ) {
-            condition.put( "createEndingTime", createEndingTime );
-        }
-
-        if ( createStartTime > 0 && createEndingTime <= 0 ) {
-            condition.put( "createEndingTime", System.currentTimeMillis() );
-        }
-
-        if ( updateStartTime > 0 ) {
-            condition.put( "updateStartTime", updateStartTime );
-        }
-
-        if ( updateEndingTime > 0 ) {
-            condition.put( "updateEndingTime", updateEndingTime );
-        }
-
-        if ( updateStartTime > 0 && updateEndingTime <= 0 ) {
-            condition.put( "updateEndingTime", System.currentTimeMillis() );
-        }
-
-        if ( status != 0 ) {
-            condition.put( "status", status );
-        }
+        Map<String, Object> condition = MultiFunctionTableQuery.conditionBuilder( createStartTime, createEndingTime,
+                updateStartTime, updateEndingTime, status, id );
 
         if ( StringUtils.isNotBlank( nickname ) ) {
             condition.put( "nickname", nickname );
-        }
-
-        if ( StringUtils.isNotBlank( id ) ) {
-            condition.put( "id", id );
         }
 
         return condition;
@@ -184,5 +153,18 @@ public class UserDetailController extends WebApiViewComponent {
         }
 
         return userDetailService.register( account, nickname, password );
+    }
+
+    @PostMapping( "/grant_roles_to/{userId}" )
+    public BaseResponseVoBean grantRolesTo( @PathVariable( "userId" ) String userId, @RequestBody List<String> roleIds ) {
+        if ( StringUtils.isBlank( userId ) ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require user id." );
+        }
+
+        if ( null == roleIds ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require roles id." );
+        }
+
+        return userDetailService.grantRolesTo( userId, roleIds );
     }
 }

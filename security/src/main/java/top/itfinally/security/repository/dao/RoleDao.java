@@ -39,8 +39,8 @@ public class RoleDao extends AbstractDao<RoleEntity, RoleMapper> {
         return this;
     }
 
-    public List<RoleEntity> queryUserRoleByAuthorityId( String authorityId ) {
-        return roleMapper.queryUserRoleByAuthorityId( authorityId );
+    public List<RoleEntity> queryRoleByAuthorityId( String authorityId ) {
+        return roleMapper.queryRoleByAuthorityId( authorityId );
     }
 
     public RoleEntity queryByName( String name ) {
@@ -71,9 +71,5 @@ public class RoleDao extends AbstractDao<RoleEntity, RoleMapper> {
         }
 
         return super.removeAll( ids, deleteTime );
-    }
-
-    public List<RoleEntity> queryByPriority( int priority ) {
-        return roleMapper.queryByPriority( priority );
     }
 }

@@ -39,13 +39,22 @@ public class MenuController extends WebApiViewComponent {
     public BaseResponseVoBean addedMenu(
             @RequestParam( "parentId" ) String parentId,
             @RequestParam( "name" ) String name,
+            @RequestParam( "path" ) String path,
             @RequestParam( "isLeaf" ) boolean isLeaf
     ) {
-        if ( StringUtils.isBlank( parentId ) || StringUtils.isBlank( name ) ) {
-            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu name and parent id." );
+        if ( StringUtils.isBlank( parentId ) ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require parent id." );
         }
 
-        return menuService.addedMenu( parentId, name, isLeaf );
+        if ( StringUtils.isBlank( name ) ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu name." );
+        }
+
+        if ( StringUtils.isBlank( path ) ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu path." );
+        }
+
+        return menuService.addedMenu( parentId, name, path, isLeaf );
     }
 
     @PostMapping( "/remove_menu_item" )
@@ -84,17 +93,25 @@ public class MenuController extends WebApiViewComponent {
         return menuService.recoverMenuMultiItem( itemIds );
     }
 
-    @PostMapping( "/rename" )
-    public BaseResponseVoBean rename( @RequestParam( "menuId" ) String menuId, @RequestParam( "name" ) String name ) {
+    @PostMapping( "/update_menu" )
+    public BaseResponseVoBean updateMenu(
+            @RequestParam( "menuId" ) String menuId,
+            @RequestParam( "name" ) String name,
+            @RequestParam( "path" ) String path
+    ) {
         if ( StringUtils.isBlank( menuId ) ) {
-            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu id" );
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require menu id." );
         }
 
         if ( StringUtils.isBlank( name ) ) {
-            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require new name" );
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require new name." );
         }
 
-        return menuService.rename( menuId, name );
+        if ( StringUtils.isBlank( path ) ) {
+            return new BaseResponseVoBean( ILLEGAL_REQUEST ).setMessage( "Require new path." );
+        }
+
+        return menuService.updateMenu( menuId, name, path );
     }
 
     @GetMapping( "/get_menu_tree" )

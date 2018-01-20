@@ -15,11 +15,8 @@ public class SecurityConfigure extends BaseSecurityConfigure {
 
 //    @Override
 //    protected void configure( HttpSecurity http ) throws Exception {
-//        http.cors()
 ////        super.configure( http );
-////
-////        http.anonymous()
-////        .and().
-////        authorizeRequests().anyRequest().permitAll();
+//
+//        http.anonymous().and().authorizeRequests().anyRequest().permitAll();
 //    }
 }

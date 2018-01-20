@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static top.itfinally.core.enumerate.ResponseStatusEnum.SUCCESS;
+
 @Component
 public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationProcessingFilter {
     private final ObjectMapper jsonMapper = new ObjectMapper();
@@ -100,7 +102,7 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
     @Override
     protected void successfulAuthentication(
             HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult
-    ) throws IOException, ServletException {
+    ) throws IOException {
 
         UserAuthorityEntity userAuthority = ( UserAuthorityEntity ) authResult.getPrincipal();
         String token = jwtTokenService.create( userAuthority.getUsername() );
@@ -109,9 +111,7 @@ public class JwtAuthenticationProcessingFilter extends AbstractAuthenticationPro
         userDetailCachingService.caching( userAuthority.getUsername(), userAuthority );
 
         response.setContentType( "application/json;charset=UTF-8" );
-        response.getWriter().write( jsonMapper.writeValueAsString(
-                new SingleResponseVoBean<>( ResponseStatusEnum.SUCCESS ).setResult( token )
-        ) );
+        response.getWriter().write( jsonMapper.writeValueAsString( new SingleResponseVoBean<>( SUCCESS ).setResult( token ) ) );
     }
 
     @Override

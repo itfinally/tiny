@@ -46,7 +46,7 @@ public abstract class AbstractUserDetailService<User extends AbstractUserDetails
             throw new LockedException( String.format( "User '%s' has been locked.", username ) );
         }
 
-        List<RoleEntity> roleEntities = roleDao.queryUserRoleByAuthorityId( userAuthority.getId() );
+        List<RoleEntity> roleEntities = roleDao.queryRoleByAuthorityId( userAuthority.getId() );
 
         // inject user and roles
         return userAuthority.setUser( user ).setAuthorities( roleEntities );

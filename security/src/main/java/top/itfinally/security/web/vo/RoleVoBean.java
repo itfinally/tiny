@@ -6,6 +6,7 @@ import top.itfinally.security.repository.po.RoleEntity;
 public class RoleVoBean extends BaseVoBean<RoleVoBean> {
     private String name;
     private String description;
+    private int priority;
 
     public RoleVoBean() {
     }
@@ -14,6 +15,7 @@ public class RoleVoBean extends BaseVoBean<RoleVoBean> {
         super( entity );
 
         this.name = entity.getName();
+        this.priority = entity.getPriority();
         this.description = entity.getDescription();
     }
 
@@ -32,6 +34,15 @@ public class RoleVoBean extends BaseVoBean<RoleVoBean> {
 
     public RoleVoBean setDescription( String description ) {
         this.description = description;
+        return this;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public RoleVoBean setPriority( int priority ) {
+        this.priority = priority;
         return this;
     }
 

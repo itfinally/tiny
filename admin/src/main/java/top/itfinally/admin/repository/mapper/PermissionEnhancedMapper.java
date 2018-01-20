@@ -3,18 +3,18 @@ package top.itfinally.admin.repository.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
-import top.itfinally.admin.repository.po.UserDetailsEntity;
 import top.itfinally.core.repository.mapper.BaseMapper;
+import top.itfinally.security.repository.po.PermissionEntity;
 
 import java.util.List;
 import java.util.Map;
 
 @Mapper
 @Component
-public interface UserDetailsMapper extends BaseMapper<UserDetailsEntity> {
-    UserDetailsEntity queryByAccount( @Param( "account" ) String account );
 
-    List<UserDetailsEntity> queryByMultiCondition(
+// Cannot use this mapper to call base mapper method.
+public interface PermissionEnhancedMapper extends BaseMapper<PermissionEntity> {
+    List<PermissionEntity> queryByMultiCondition(
             @Param( "condition" ) Map<String, Object> condition,
             @Param( "beginRow" ) int beginRow,
             @Param( "row" ) int row
@@ -22,10 +22,7 @@ public interface UserDetailsMapper extends BaseMapper<UserDetailsEntity> {
 
     int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
 
-    int updateUserStatus(
-            @Param( "userIds" ) List<String> userIds,
-            @Param( "status" ) int status,
-            @Param( "updateTime" ) long updateTime,
-            @Param( "deleteTime" ) long deleteTime
-    );
+    int updatePermissionStatus(
+            @Param( "permissionIds" ) List<String> permissionIds, @Param( "status" ) int status,
+            @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
 }

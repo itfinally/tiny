@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 @Component
 public interface UserRoleMapper extends BaseMapper<UserRoleEntity> {
-    List<UserRoleEntity> queryByAuthorityId( @Param( "authorityId" ) String authorityId );
+    List<UserRoleEntity> queryByAuthorityId( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
 
     boolean hasUserAuthority( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
 

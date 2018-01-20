@@ -57,15 +57,15 @@ public class MenuItemDao extends AbstractDao<MenuItemEntity, MenuItemMapper> {
 
     @Transactional
     public MenuItemEntity addedRootMenu( String name, boolean isLeaf ) {
-        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( true ).setLeaf( isLeaf );
+        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setPath( "" ).setRoot( true ).setLeaf( isLeaf );
         addedMenuItem( menuItem.getId(), menuItem );
 
         return menuItem;
     }
 
     @Transactional
-    public MenuItemEntity addedMenu( String parentId, String name, boolean isLeaf ) throws NoSuchMenuItemException {
-        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setRoot( false ).setLeaf( isLeaf );
+    public MenuItemEntity addedMenu( String parentId, String name, String path, boolean isLeaf ) throws NoSuchMenuItemException {
+        MenuItemEntity menuItem = new MenuItemEntity().setName( name ).setPath( path ).setRoot( false ).setLeaf( isLeaf );
         addedMenuItem( parentId, menuItem );
 
         return menuItem;

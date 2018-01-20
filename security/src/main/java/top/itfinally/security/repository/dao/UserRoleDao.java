@@ -104,8 +104,8 @@ public class UserRoleDao extends AbstractDao<UserRoleEntity, UserRoleMapper> {
         return super.saveAll( userRoleEntities );
     }
 
-    public List<UserRoleEntity> queryByAuthorityId( String authorityId ) {
-        return userRoleMapper.queryByAuthorityId( authorityId );
+    public List<UserRoleEntity> queryByAuthorityId( String authorityId, int status ) {
+        return userRoleMapper.queryByAuthorityId( authorityId, status );
     }
 
     @Transactional
@@ -116,7 +116,7 @@ public class UserRoleDao extends AbstractDao<UserRoleEntity, UserRoleMapper> {
         List<String> existRoles = new ArrayList<>();
         List<String> normalRoles = new ArrayList<>();
         List<UserRoleEntity> notExistRole = new ArrayList<>();
-        List<UserRoleEntity> userRoleEntities = queryByAuthorityId( authorityId );
+        List<UserRoleEntity> userRoleEntities = queryByAuthorityId( authorityId, NOT_STATUS_FLAG.getVal() );
 
         userRoleEntities.forEach( entity -> {
             String roleId = entity.getRole().getId(),

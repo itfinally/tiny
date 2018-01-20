@@ -116,7 +116,7 @@
         </foreach>
     </delete>
 
-    <select id="queryUserRoleByAuthorityId" resultMap="roleEntity">
+    <select id="queryRoleByAuthorityId" resultMap="roleEntity">
         SELECT *
         FROM v1_security_role
         WHERE id IN (

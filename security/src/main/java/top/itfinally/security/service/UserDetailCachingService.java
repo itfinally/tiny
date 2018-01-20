@@ -50,10 +50,6 @@ public abstract class UserDetailCachingService {
                 throw new NullPointerException( "Account and user cannot be null." );
             }
 
-            if( cache.asMap().containsKey( account ) ) {
-                cache.refresh( account );
-            }
-
             cache.put( account, user );
         }
     }
