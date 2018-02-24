@@ -13,7 +13,9 @@
     <cache-ref namespace="top.itfinally.core.repository.mapper.BaseMapper"/>
 
     <select id="query" resultMap="userAuthorityEntity">
-        select * from v1_security_user_details where id = #{id}
+        SELECT *
+        FROM v1_security_user_details
+        WHERE id = #{id}
     </select>
 
     <select id="queryAll" resultMap="userAuthorityEntity">

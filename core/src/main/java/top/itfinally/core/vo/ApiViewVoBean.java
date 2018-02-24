@@ -23,66 +23,66 @@ import java.util.Map;
  *                  }
  */
 public class ApiViewVoBean {
-    private String name;
-    private String fullName;
-    private String description;
+  private String name;
+  private String fullName;
+  private String description;
 
-    private Map<String, List<String>> urls = new HashMap<>();
-    private Map<String, String> args = new HashMap<>();
+  private Map<String, List<String>> urls = new HashMap<>();
+  private Map<String, String> args = new HashMap<>();
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public ApiViewVoBean setName( String name ) {
-        this.name = name;
-        return this;
-    }
+  public ApiViewVoBean setName( String name ) {
+    this.name = name;
+    return this;
+  }
 
-    public String getFullName() {
-        return fullName;
-    }
+  public String getFullName() {
+    return fullName;
+  }
 
-    public ApiViewVoBean setFullName( String fullName ) {
-        this.fullName = fullName;
-        return this;
-    }
+  public ApiViewVoBean setFullName( String fullName ) {
+    this.fullName = fullName;
+    return this;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public ApiViewVoBean setDescription( String description ) {
-        this.description = description;
-        return this;
-    }
+  public ApiViewVoBean setDescription( String description ) {
+    this.description = description;
+    return this;
+  }
 
-    public Map<String, List<String>> getUrls() {
-        return urls;
-    }
+  public Map<String, List<String>> getUrls() {
+    return urls;
+  }
 
-    public ApiViewVoBean setUrls( Map<String, List<String>> urls ) {
-        this.urls = urls;
-        return this;
-    }
+  public ApiViewVoBean setUrls( Map<String, List<String>> urls ) {
+    this.urls = urls;
+    return this;
+  }
 
-    public Map<String, String> getArgs() {
-        return args;
-    }
+  public Map<String, String> getArgs() {
+    return args;
+  }
 
-    public ApiViewVoBean setArgs( Map<String, String> args ) {
-        this.args = args;
-        return this;
-    }
+  public ApiViewVoBean setArgs( Map<String, String> args ) {
+    this.args = args;
+    return this;
+  }
 
-    @Override
-    public String toString() {
-        return "ApiViewVoBean{" +
-                "name='" + name + '\'' +
-                ", fullName='" + fullName + '\'' +
-                ", description='" + description + '\'' +
-                ", urls=" + urls +
-                ", args=" + args +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "ApiViewVoBean{" +
+        "name='" + name + '\'' +
+        ", fullName='" + fullName + '\'' +
+        ", description='" + description + '\'' +
+        ", urls=" + urls +
+        ", args=" + args +
+        '}';
+  }
 }

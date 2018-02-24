@@ -119,10 +119,20 @@
         </foreach>
     </delete>
 
-    <select id="queryParentItem" resultMap="menuRelationEntity">
+    <select id="queryParentItems" resultMap="menuRelationEntity">
         SELECT *
         FROM v1_menu_relationship
         WHERE child_id = #{itemId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryMultiParentItems" resultMap="menuRelationEntity">
+        select * from v1_menu_relationship where child_id in
+        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
         <if test="status != -1001">
             and status = #{status}
         </if>
@@ -137,7 +147,7 @@
         </if>
     </select>
 
-    <select id="queryMultiDirectParentItem" resultMap="menuRelationEntity">
+    <select id="queryMultiDirectParentItems" resultMap="menuRelationEntity">
         SELECT *
         FROM v1_menu_relationship
         WHERE gap = 1
@@ -150,7 +160,7 @@
         </foreach>
     </select>
 
-    <select id="queryChildItem" resultMap="menuRelationEntity">
+    <select id="queryChildItems" resultMap="menuRelationEntity">
         SELECT *
         FROM v1_menu_relationship
         WHERE parent_id = #{itemId}
@@ -159,12 +169,35 @@
         </if>
     </select>
 
-    <select id="queryDirectChildItem" resultMap="menuRelationEntity">
+    <select id="queryMultiChildItems" resultMap="menuRelationEntity">
+        select * from v1_menu_relationship where parent_id in
+        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+    </select>
+
+    <select id="queryDirectChildItems" resultMap="menuRelationEntity">
         SELECT *
         FROM v1_menu_relationship
         WHERE parent_id = #{itemId} AND gap = 1
         <if test="status != -1001">
             and status = #{status}
         </if>
+    </select>
+
+    <select id="queryMultiDirectChildItems" resultMap="menuRelationEntity">
+        SELECT *
+        FROM v1_menu_relationship
+        WHERE gap = 1
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
+        AND parent_id IN
+        <foreach collection="itemIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 </mapper>

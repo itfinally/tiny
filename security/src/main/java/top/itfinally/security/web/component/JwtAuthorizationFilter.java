@@ -8,9 +8,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import top.itfinally.core.enumerate.ResponseStatusEnum;
 import top.itfinally.core.vo.BaseResponseVoBean;
 import top.itfinally.security.repository.po.UserAuthorityEntity;
+import top.itfinally.security.service.AbstractUserDetailService;
 import top.itfinally.security.service.JwtTokenService;
 import top.itfinally.security.service.UserDetailCachingService;
 
@@ -24,57 +24,70 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.UNAUTHORIZED;
 
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
-    private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
-    private ObjectMapper jsonMapper = new ObjectMapper();
-    private UserDetailCachingService userDetailCachingService;
-    private JwtTokenService tokenService;
+  private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
+  private ObjectMapper jsonMapper = new ObjectMapper();
 
-    @Autowired
-    public JwtAuthorizationFilter setUserDetailCachingService( UserDetailCachingService userDetailCachingService ) {
-        this.userDetailCachingService = userDetailCachingService;
-        return this;
+  private UserDetailCachingService userDetailCachingService;
+  private AbstractUserDetailService userDetailService;
+  private JwtTokenService tokenService;
+
+  @Autowired
+  public JwtAuthorizationFilter setUserDetailCachingService( UserDetailCachingService userDetailCachingService ) {
+    this.userDetailCachingService = userDetailCachingService;
+    return this;
+  }
+
+  @Autowired
+  public JwtAuthorizationFilter setUserDetailService( AbstractUserDetailService userDetailService ) {
+    this.userDetailService = userDetailService;
+    return this;
+  }
+
+  @Autowired
+  public JwtAuthorizationFilter setTokenService( JwtTokenService tokenService ) {
+    this.tokenService = tokenService;
+    return this;
+  }
+
+  @Override
+  protected void doFilterInternal( HttpServletRequest request, HttpServletResponse response, FilterChain filterChain )
+      throws ServletException, IOException {
+    String token = request.getHeader( "Authorization" );
+
+    if ( StringUtils.isBlank( token ) || !token.startsWith( "Bearer " ) ) {
+      filterChain.doFilter( request, response );
+      return;
     }
 
-    @Autowired
-    public JwtAuthorizationFilter setTokenService( JwtTokenService tokenService ) {
-        this.tokenService = tokenService;
-        return this;
+    token = token.substring( 6 );
+    String account = tokenService.loadByToken( token );
+
+    if ( StringUtils.isBlank( account ) ) {
+      filterChain.doFilter( request, response );
+      return;
     }
 
-    @Override
-    protected void doFilterInternal( HttpServletRequest request, HttpServletResponse response, FilterChain filterChain )
-            throws ServletException, IOException {
+    UserAuthorityEntity user = userDetailCachingService.loadFromCache( account );
 
-        String token = request.getHeader( "Authorization" );
+    if ( null == user ) {
+      response.getWriter().write( jsonMapper.writeValueAsString(
+          new BaseResponseVoBean<>( UNAUTHORIZED ).setMessage( "Token expired." ) ) );
 
-        if ( StringUtils.isBlank( token ) || !token.startsWith( "Bearer " ) ) {
-            filterChain.doFilter( request, response );
-            return;
-        }
-
-        token = token.substring( 6 );
-        String account = tokenService.loadByToken( token );
-
-        if ( StringUtils.isBlank( account ) ) {
-            filterChain.doFilter( request, response );
-            return;
-        }
-
-        UserAuthorityEntity user = this.userDetailCachingService.loadFromCache( account );
-
-        if ( null == user ) {
-            response.getWriter().write( jsonMapper.writeValueAsString(
-                    new BaseResponseVoBean<>( UNAUTHORIZED ).setMessage( "Token expired." ) ) );
-
-            return;
-        }
-
-        JwtAuthenticationToken authResult = new JwtAuthenticationToken( token, user );
-
-        authResult.setDetails( this.authenticationDetailsSource.buildDetails( request ) );
-
-        SecurityContextHolder.getContext().setAuthentication( authResult );
-
-        filterChain.doFilter( request, response );
+      return;
     }
+
+    // 一旦用户更新权限, 重新加载用户信息
+    if ( userDetailCachingService.isChange( user.getId() ) ) {
+      user = ( UserAuthorityEntity ) userDetailService.loadUserByUsername( user.getUser().getAccount() );
+      userDetailCachingService.caching( account, user );
+    }
+
+    JwtAuthenticationToken authResult = new JwtAuthenticationToken( token, user );
+
+    authResult.setDetails( authenticationDetailsSource.buildDetails( request ) );
+
+    SecurityContextHolder.getContext().setAuthentication( authResult );
+
+    filterChain.doFilter( request, response );
+  }
 }

@@ -11,15 +11,15 @@ import java.util.List;
 @Mapper
 @Component
 public interface RoleMenuItemMapper extends BaseMapper<RoleMenuItemEntity> {
-    List<RoleMenuItemEntity> queryByRoleId( @Param( "roleId" ) String roleId, @Param( "status" ) int status );
+  List<RoleMenuItemEntity> queryByRoleId( @Param( "roleId" ) String roleId, @Param( "status" ) int status );
 
-    List<RoleMenuItemEntity> queryByMenuId( @Param( "menuId" ) String menuId, @Param( "status" ) int status );
+  List<RoleMenuItemEntity> queryByMenuId( @Param( "menuId" ) String menuId, @Param( "status" ) int status );
 
-    List<RoleMenuItemEntity> queryByMultiRoleIds( @Param( "roleIds" ) List<String> roleIds, @Param( "status" ) int status );
+  List<RoleMenuItemEntity> queryByMultiRoleIds( @Param( "roleIds" ) List<String> roleIds, @Param( "status" ) int status );
 
-    List<RoleMenuItemEntity> queryRoleMenuItemChain(
-            @Param( "status" ) int status,
-            @Param( "roleId" ) String roleId,
-            @Param( "menuItemIds" ) List<String> menuItemIds
-    );
+  List<RoleMenuItemEntity> queryRoleMenuItemChain(
+      @Param( "status" ) int status,
+      @Param( "roleId" ) String roleId,
+      @Param( "menuItemIds" ) List<String> menuItemIds
+  );
 }

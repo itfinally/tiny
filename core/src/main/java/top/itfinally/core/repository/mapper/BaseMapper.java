@@ -11,25 +11,25 @@ import java.util.Map;
 
 @Mapper
 public interface BaseMapper<Entity extends BaseEntity> {
-    Entity query( @Param( "id" ) String id );
+  Entity query( @Param( "id" ) String id );
 
-    List<Entity> queryAll( @Param( "beginRow" ) int beginRow, @Param( "row" ) int row, @Param( "status" ) int status );
+  List<Entity> queryAll( @Param( "beginRow" ) int beginRow, @Param( "row" ) int row, @Param( "status" ) int status );
 
-    List<Entity> queryBySpecificId( @Param( "ids" ) Collection<String> ids, @Param( "beginRow" ) int beginRow, @Param( "row" ) int row, @Param( "status" ) int status );
+  List<Entity> queryBySpecificId( @Param( "ids" ) Collection<String> ids, @Param( "beginRow" ) int beginRow, @Param( "row" ) int row, @Param( "status" ) int status );
 
-    int save( Entity entity );
+  int save( Entity entity );
 
-    int saveAll( @Param( "entities" ) Collection<Entity> entities );
+  int saveAll( @Param( "entities" ) Collection<Entity> entities );
 
-    int update( Entity entity );
+  int update( Entity entity );
 
-    int specificUpdate( @Param( "id" ) String id, @Param( "updateTime" ) long updateTime, @Param( "fieldAndValues" ) Map<String, Object> fieldAndValues );
+  int specificUpdate( @Param( "id" ) String id, @Param( "updateTime" ) long updateTime, @Param( "fieldAndValues" ) Map<String, Object> fieldAndValues );
 
-    int remove( @Param( "id" ) String id, @Param( "deleteTime" ) long deleteTime );
+  int remove( @Param( "id" ) String id, @Param( "deleteTime" ) long deleteTime );
 
-    int removeAll( @Param( "ids" ) Collection<String> ids, @Param( "deleteTime" ) long deleteTime );
+  int removeAll( @Param( "ids" ) Collection<String> ids, @Param( "deleteTime" ) long deleteTime );
 
-    int physicalDelete( @Param( "id" ) String id );
+  int physicalDelete( @Param( "id" ) String id );
 
-    int physicalDeleteAll( @Param( "ids" ) Collection<String> ids );
+  int physicalDeleteAll( @Param( "ids" ) Collection<String> ids );
 }

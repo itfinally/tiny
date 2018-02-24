@@ -12,13 +12,13 @@ import java.util.List;
 @Mapper
 @Component
 public interface UserRoleMapper extends BaseMapper<UserRoleEntity> {
-    List<UserRoleEntity> queryByAuthorityId( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
+  List<UserRoleEntity> queryByAuthorityId( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
 
-    boolean hasUserAuthority( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
+  boolean hasUserAuthority( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
 
-    boolean hasAllUserAuthority( @Param( "authorityIds" ) Collection<String> authorityId, @Param( "status" ) int status );
+  boolean hasAllUserAuthority( @Param( "authorityIds" ) Collection<String> authorityId, @Param( "status" ) int status );
 
-    boolean hasRole( @Param( "roleId" ) String roleId, @Param( "status" ) int status );
+  boolean hasRole( @Param( "roleId" ) String roleId, @Param( "status" ) int status );
 
-    boolean hasAllRole( @Param( "roleIds" ) Collection<String> roleIds, @Param( "status" ) int status );
+  boolean hasAllRole( @Param( "roleIds" ) Collection<String> roleIds, @Param( "status" ) int status );
 }

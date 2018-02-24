@@ -8,12 +8,12 @@ import ${table.thisEntity.name};
 
 @Repository
 public class ${table.thisEntity.daoSimpleName} extends ${table.extendEntity.daoSimpleName}<${table.thisEntity.simpleName}, ${table.thisEntity.mapperSimpleName}> {
-    private ${table.thisEntity.mapperSimpleName} ${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )};
+  private ${table.thisEntity.mapperSimpleName} ${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )};
 
-    @Override
-    @Autowired
-    protected void setBaseMapper( ${table.thisEntity.mapperSimpleName} baseMapper ) {
-        this.${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )} = baseMapper;
-        super.setBaseMapper( baseMapper );
-    }
+  @Override
+  @Autowired
+  protected void setBaseMapper( ${table.thisEntity.mapperSimpleName} baseMapper ) {
+    this.${util.lowerFirstChar( ${table.thisEntity.mapperSimpleName} )} = baseMapper;
+    super.setBaseMapper( baseMapper );
+  }
 }

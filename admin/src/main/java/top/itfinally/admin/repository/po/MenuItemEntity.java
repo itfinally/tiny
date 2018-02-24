@@ -6,55 +6,55 @@ import top.itfinally.core.repository.po.BaseEntity;
 
 @Table( name = "v1_menu_item" )
 public class MenuItemEntity extends BaseEntity<MenuItemEntity> {
-    private String name;
-    private String path;
-    private boolean isRoot;
-    private boolean isLeaf;
+  private String name;
+  private String path;
+  private boolean isRoot;
+  private boolean isLeaf;
 
-    public MenuItemEntity() {
-    }
+  public MenuItemEntity() {
+  }
 
-    public MenuItemEntity( String id ) {
-        super( id );
-    }
+  public MenuItemEntity( String id ) {
+    super( id );
+  }
 
-    @Column
-    public String getName() {
-        return name;
-    }
+  @Column
+  public String getName() {
+    return name;
+  }
 
-    public MenuItemEntity setName( String name ) {
-        this.name = name;
-        return this;
-    }
+  public MenuItemEntity setName( String name ) {
+    this.name = name;
+    return this;
+  }
 
-    @Column
-    public String getPath() {
-        return path;
-    }
+  @Column
+  public String getPath() {
+    return path;
+  }
 
-    public MenuItemEntity setPath( String path ) {
-        this.path = path;
-        return this;
-    }
+  public MenuItemEntity setPath( String path ) {
+    this.path = path;
+    return this;
+  }
 
-    @Column
-    public boolean isRoot() {
-        return isRoot;
-    }
+  @Column
+  public boolean isRoot() {
+    return isRoot;
+  }
 
-    public MenuItemEntity setRoot( boolean root ) {
-        isRoot = root;
-        return this;
-    }
+  public MenuItemEntity setRoot( boolean root ) {
+    isRoot = root;
+    return this;
+  }
 
-    public boolean isLeaf() {
-        return isLeaf;
-    }
+  public boolean isLeaf() {
+    return isLeaf;
+  }
 
-    @Column
-    public MenuItemEntity setLeaf( boolean leaf ) {
-        isLeaf = leaf;
-        return this;
-    }
+  @Column
+  public MenuItemEntity setLeaf( boolean leaf ) {
+    isLeaf = leaf;
+    return this;
+  }
 }

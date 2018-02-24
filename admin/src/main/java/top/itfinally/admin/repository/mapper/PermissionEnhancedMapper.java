@@ -14,15 +14,15 @@ import java.util.Map;
 
 // Cannot use this mapper to call base mapper method.
 public interface PermissionEnhancedMapper extends BaseMapper<PermissionEntity> {
-    List<PermissionEntity> queryByMultiCondition(
-            @Param( "condition" ) Map<String, Object> condition,
-            @Param( "beginRow" ) int beginRow,
-            @Param( "row" ) int row
-    );
+  List<PermissionEntity> queryByMultiCondition(
+      @Param( "condition" ) Map<String, Object> condition,
+      @Param( "beginRow" ) int beginRow,
+      @Param( "row" ) int row
+  );
 
-    int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
+  int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
 
-    int updatePermissionStatus(
-            @Param( "permissionIds" ) List<String> permissionIds, @Param( "status" ) int status,
-            @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
+  int updatePermissionStatus(
+      @Param( "permissionIds" ) List<String> permissionIds, @Param( "status" ) int status,
+      @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
 }

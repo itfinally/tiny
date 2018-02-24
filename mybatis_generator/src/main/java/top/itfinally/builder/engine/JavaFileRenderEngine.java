@@ -9,26 +9,26 @@ import top.itfinally.builder.util.TemplateUtils;
 import java.io.StringWriter;
 
 public class JavaFileRenderEngine implements RenderEngine {
-    private final VelocityContext context = new VelocityContext();
-    private final BuilderConfigure configure;
+  private final VelocityContext context = new VelocityContext();
+  private final BuilderConfigure configure;
 
-    public JavaFileRenderEngine( BuilderConfigure configure ) {
-        context.put( UTIL, TemplateUtils.class );
+  public JavaFileRenderEngine( BuilderConfigure configure ) {
+    context.put( UTIL, TemplateUtils.class );
 
-        this.configure = configure;
-    }
+    this.configure = configure;
+  }
 
-    @Override
-    public String render( Template template, TableInfo tableInfo ) {
-        StringWriter writer = new StringWriter();
+  @Override
+  public String render( Template template, TableInfo tableInfo ) {
+    StringWriter writer = new StringWriter();
 
-        TableInfo local = new TableInfo( tableInfo );
-        replaceBaseDao( configure, local );
-        replaceBaseMapper( configure, local );
+    TableInfo local = new TableInfo( tableInfo );
+    replaceBaseDao( configure, local );
+    replaceBaseMapper( configure, local );
 
-        context.put( TABLE, local );
+    context.put( TABLE, local );
 
-        template.merge( context, writer );
-        return writer.toString();
-    }
+    template.merge( context, writer );
+    return writer.toString();
+  }
 }

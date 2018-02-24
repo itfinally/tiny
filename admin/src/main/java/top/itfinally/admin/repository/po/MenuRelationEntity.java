@@ -7,37 +7,37 @@ import top.itfinally.core.repository.po.BaseEntity;
 
 @Table( name = "v1_menu_relationship" )
 public class MenuRelationEntity extends BaseEntity<MenuRelationEntity> {
-    private int gap;
-    private MenuItemEntity parent;
-    private MenuItemEntity child;
+  private int gap;
+  private MenuItemEntity parent;
+  private MenuItemEntity child;
 
-    @Association( property = "parent", column = "parent_id", join = MenuItemEntity.class )
-    public MenuItemEntity getParent() {
-        return parent;
-    }
+  @Association( property = "parent", column = "parent_id", join = MenuItemEntity.class )
+  public MenuItemEntity getParent() {
+    return parent;
+  }
 
-    public MenuRelationEntity setParent( MenuItemEntity parent ) {
-        this.parent = parent;
-        return this;
-    }
+  public MenuRelationEntity setParent( MenuItemEntity parent ) {
+    this.parent = parent;
+    return this;
+  }
 
-    @Association( property = "child", column = "child_id", join = MenuItemEntity.class )
-    public MenuItemEntity getChild() {
-        return child;
-    }
+  @Association( property = "child", column = "child_id", join = MenuItemEntity.class )
+  public MenuItemEntity getChild() {
+    return child;
+  }
 
-    public MenuRelationEntity setChild( MenuItemEntity child ) {
-        this.child = child;
-        return this;
-    }
+  public MenuRelationEntity setChild( MenuItemEntity child ) {
+    this.child = child;
+    return this;
+  }
 
-    @Column
-    public int getGap() {
-        return gap;
-    }
+  @Column
+  public int getGap() {
+    return gap;
+  }
 
-    public MenuRelationEntity setGap( int gap ) {
-        this.gap = gap;
-        return this;
-    }
+  public MenuRelationEntity setGap( int gap ) {
+    this.gap = gap;
+    return this;
+  }
 }

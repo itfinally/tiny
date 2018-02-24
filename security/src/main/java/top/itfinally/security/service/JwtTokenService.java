@@ -14,64 +14,64 @@ import java.util.Map;
 
 public abstract class JwtTokenService {
 
-    protected abstract SignatureAlgorithm getAlgorithm();
+  protected abstract SignatureAlgorithm getAlgorithm();
 
-    protected abstract Key encodeKey();
+  protected abstract Key encodeKey();
 
-    protected abstract Key decodeKey();
+  protected abstract Key decodeKey();
 
-    public String create( String account ) {
-        if ( null == account ) {
-            throw new UserNotFoundException( "Account is empty, cannot generate token" );
-        }
-
-        Map<String, Object> params = new HashMap<>();
-        params.put( "account", account );
-
-        return Jwts.builder()
-                .addClaims( params )
-                .signWith( getAlgorithm(), encodeKey() )
-                .compact();
+  public String create( String account ) {
+    if ( null == account ) {
+      throw new UserNotFoundException( "Account is empty, cannot generate token" );
     }
 
-    public String loadByToken( String token ) {
-        try {
-            Claims body = Jwts.parser()
-                    .setSigningKey( decodeKey() )
-                    .parseClaimsJws( token )
-                    .getBody();
+    Map<String, Object> params = new HashMap<>();
+    params.put( "account", account );
 
-            return ( String ) body.get( "account" );
+    return Jwts.builder()
+        .addClaims( params )
+        .signWith( getAlgorithm(), encodeKey() )
+        .compact();
+  }
 
-        } catch ( RuntimeException ignored ) {
-            return null;
-        }
+  public String loadByToken( String token ) {
+    try {
+      Claims body = Jwts.parser()
+          .setSigningKey( decodeKey() )
+          .parseClaimsJws( token )
+          .getBody();
+
+      return ( String ) body.get( "account" );
+
+    } catch ( RuntimeException ignored ) {
+      return null;
+    }
+  }
+
+  @Component
+  public static class Default extends JwtTokenService {
+    private String randomSecret = "Must to override this secret.";
+
+    @Override
+    protected SignatureAlgorithm getAlgorithm() {
+      return SignatureAlgorithm.HS256;
     }
 
-    @Component
-    public static class Default extends JwtTokenService {
-        private String randomSecret = "Must to override this secret.";
-
-        @Override
-        protected SignatureAlgorithm getAlgorithm() {
-            return SignatureAlgorithm.HS256;
-        }
-
-        @Override
-        protected Key encodeKey() {
-            return generateKey();
-        }
-
-        @Override
-        protected Key decodeKey() {
-            return generateKey();
-        }
-
-        private Key generateKey() {
-            return new SecretKeySpec(
-                    DatatypeConverter.parseBase64Binary( randomSecret ),
-                    getAlgorithm().getJcaName()
-            );
-        }
+    @Override
+    protected Key encodeKey() {
+      return generateKey();
     }
+
+    @Override
+    protected Key decodeKey() {
+      return generateKey();
+    }
+
+    private Key generateKey() {
+      return new SecretKeySpec(
+          DatatypeConverter.parseBase64Binary( randomSecret ),
+          getAlgorithm().getJcaName()
+      );
+    }
+  }
 }

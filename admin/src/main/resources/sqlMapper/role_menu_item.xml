@@ -19,13 +19,15 @@
     </select>
 
     <select id="queryAll" resultMap="roleMenuItemEntity">
-        select * from v1_menu_scope where 1 = 1
-        <if test="status != -1001">
-            and status = #{status}
-        </if>
-        <if test="beginRow != -1000 and row != -1000">
-            limit #{beginRow}, #{row}
-        </if>
+        select * from v1_menu_scope
+        <where>
+            <if test="status != -1001">
+                and status = #{status}
+            </if>
+            <if test="beginRow != -1000 and row != -1000">
+                limit #{beginRow}, #{row}
+            </if>
+        </where>
     </select>
 
     <select id="queryBySpecificId" resultMap="roleMenuItemEntity">

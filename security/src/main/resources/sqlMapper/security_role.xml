@@ -42,16 +42,16 @@
 
     <insert id="save">
         INSERT INTO v1_security_role (
-            id, create_time, update_time, delete_time, status, name, description
+            id, create_time, update_time, delete_time, status, name, description, priority
 
         ) VALUES (
-            #{id}, #{createTime}, #{updateTime}, #{deleteTime}, #{status}, #{name}, #{description}
+            #{id}, #{createTime}, #{updateTime}, #{deleteTime}, #{status}, #{name}, #{description}, #{priority}
         );
     </insert>
 
     <insert id="saveAll">
         INSERT INTO v1_security_role (
-        id, create_time, update_time, delete_time, status, name, description
+        id, create_time, update_time, delete_time, status, name, description, priority
 
         ) VALUES
         <foreach collection="entities" item="entity" open="(" separator="), (" close=")">
@@ -61,7 +61,8 @@
             #{entity.deleteTime},
             #{entity.status},
             #{entity.name},
-            #{entity.description}
+            #{entity.description},
+            #{entity.priority}
         </foreach>
     </insert>
 
@@ -72,6 +73,7 @@
             delete_time = #{deleteTime},
             status      = #{status},
             name        = #{name},
+            priority    = #{priority},
             description = #{description}
         WHERE id = #{id}
     </update>
@@ -120,21 +122,35 @@
         SELECT *
         FROM v1_security_role
         WHERE id IN (
-            SELECT role_id
-            FROM v1_security_user_role
-            WHERE authority_id = #{authorityId} AND status = 1
+        SELECT role_id
+        FROM v1_security_user_role
+        WHERE authority_id = #{authorityId}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
         )
+
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
     <select id="queryByName" resultMap="roleEntity">
         SELECT *
         FROM v1_security_role
         WHERE name = #{name}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 
+    <!-- 0 是最高级, 数值越大优先级越低 -->
     <select id="queryByPriority" resultMap="roleEntity">
         SELECT *
         FROM v1_security_role
         WHERE priority > #{priority}
+        <if test="status != -1001">
+            and status = #{status}
+        </if>
     </select>
 </mapper>

@@ -19,7 +19,7 @@ CREATE TABLE v1_user_details (
 )
   DEFAULT CHARSET utf8mb4;
 
-CREATE TABLE menu_item (
+CREATE TABLE v1_menu_item (
   id          VARCHAR(64) PRIMARY KEY,
   create_time LONG       NOT NULL,
   update_time LONG       NOT NULL,
@@ -27,12 +27,13 @@ CREATE TABLE menu_item (
   status      INT(3) DEFAULT 1,
 
   name        VARCHAR(64) UNIQUE KEY,
+  path        VARCHAR(128) UNIQUE KEY,
   is_root     TINYINT(1) NOT NULL,
   is_leaf     TINYINT(1) NOT NULL
 )
   DEFAULT CHARSET utf8mb4;
 
-CREATE TABLE menu_relationship (
+CREATE TABLE v1_menu_relationship (
   id          VARCHAR(64) PRIMARY KEY,
   create_time LONG        NOT NULL,
   update_time LONG        NOT NULL,
@@ -47,7 +48,7 @@ CREATE TABLE menu_relationship (
 )
   DEFAULT CHARSET utf8mb4;
 
-CREATE TABLE menu_scope (
+CREATE TABLE v1_menu_scope (
   id           VARCHAR(64) PRIMARY KEY,
   create_time  LONG        NOT NULL,
   update_time  LONG        NOT NULL,

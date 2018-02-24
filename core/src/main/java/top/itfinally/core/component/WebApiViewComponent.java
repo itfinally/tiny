@@ -15,26 +15,26 @@ import static top.itfinally.core.enumerate.ResponseStatusEnum.EMPTY_RESULT;
 import static top.itfinally.core.enumerate.ResponseStatusEnum.SUCCESS;
 
 public abstract class WebApiViewComponent {
-    private List<ApiViewVoBean> apiViewVoBeans;
-    private Logger logger = LoggerFactory.getLogger( getClass() );
+  private List<ApiViewVoBean> apiViewVoBeans;
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
-    {
-        logger.info( String.format( "ready to scan %s api.", getClass().getName() ) );
+  {
+    logger.info( String.format( "ready to scan %s api.", getClass().getName() ) );
 
-        this.apiViewVoBeans = Collections.unmodifiableList(
-                new RestUrlScanHelper( getClass() ).doScan( getClass() )
-        );
+    this.apiViewVoBeans = Collections.unmodifiableList(
+        new RestUrlScanHelper( getClass() ).doScan( getClass() )
+    );
 
-        logger.info( String.format( "create %s api view successful.", getClass().getName() ) );
+    logger.info( String.format( "create %s api view successful.", getClass().getName() ) );
+  }
+
+  @ResponseBody
+  @GetMapping( "/api" )
+  public BaseResponseVoBean api() {
+    if ( apiViewVoBeans != null ) {
+      return new CollectionResponseVoBean<ApiViewVoBean>( SUCCESS ).setResult( apiViewVoBeans );
     }
 
-    @ResponseBody
-    @GetMapping( "/api" )
-    public BaseResponseVoBean api() {
-        if ( apiViewVoBeans != null ) {
-            return new CollectionResponseVoBean<ApiViewVoBean>( SUCCESS ).setResult( apiViewVoBeans );
-        }
-
-        return new CollectionResponseVoBean<>( EMPTY_RESULT ).setResult( new ArrayList<>() );
-    }
+    return new CollectionResponseVoBean<>( EMPTY_RESULT ).setResult( new ArrayList<>() );
+  }
 }

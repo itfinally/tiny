@@ -12,7 +12,7 @@
 -- security_user 作为 user 在 security 方面的一个补集
 -- 与 user 是一对一关系
 
-CREATE TABLE security_user_details (
+CREATE TABLE v1_security_user_details (
   id                         VARCHAR(64) PRIMARY KEY,
   create_time                LONG NOT NULL,
   update_time                LONG NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE security_user_details (
   DEFAULT CHARSET utf8mb4;
 
 -- user 与 role 的中间表, 记录 user 与 role 的关系
-CREATE TABLE security_user_role (
+CREATE TABLE v1_security_user_role (
   id           VARCHAR(64) PRIMARY KEY,
   create_time  LONG        NOT NULL,
   update_time  LONG        NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE security_user_role (
   DEFAULT CHARSET utf8mb4;
 
 -- role 表, 记录角色的元数据
-CREATE TABLE security_role (
+CREATE TABLE v1_security_role (
   id          VARCHAR(64) PRIMARY KEY,
   create_time LONG                NOT NULL,
   update_time LONG                NOT NULL,
@@ -53,12 +53,13 @@ CREATE TABLE security_role (
   status      INT(3) DEFAULT 1,
 
   name        VARCHAR(128) UNIQUE NOT NULL,
-  description VARCHAR(256) UNIQUE NOT NULL
+  description VARCHAR(256) UNIQUE NOT NULL,
+  priority    INT(11)             NOT NULL
 )
   DEFAULT CHARSET utf8mb4;
 
 -- role 与 permission 的中间表, 记录 role 拥有的权限
-CREATE TABLE security_role_permission (
+CREATE TABLE v1_security_role_permission (
   id            VARCHAR(64) PRIMARY KEY,
   create_time   LONG        NOT NULL,
   update_time   LONG        NOT NULL,
@@ -73,7 +74,7 @@ CREATE TABLE security_role_permission (
   DEFAULT CHARSET utf8mb4;
 
 -- permission 表, 记录权限的元数据
-CREATE TABLE security_permission (
+CREATE TABLE v1_security_permission (
   id          VARCHAR(64) PRIMARY KEY,
   create_time LONG                NOT NULL,
   update_time LONG                NOT NULL,

@@ -4,58 +4,58 @@ import top.itfinally.core.vo.BaseVoBean;
 import top.itfinally.security.repository.po.RoleEntity;
 
 public class RoleVoBean extends BaseVoBean<RoleVoBean> {
-    private String name;
-    private String description;
-    private int priority;
+  private String name;
+  private int priority;
+  private String description;
 
-    public RoleVoBean() {
-    }
+  public RoleVoBean() {
+  }
 
-    public RoleVoBean( RoleEntity entity ) {
-        super( entity );
+  public RoleVoBean( RoleEntity entity ) {
+    super( entity );
 
-        this.name = entity.getName();
-        this.priority = entity.getPriority();
-        this.description = entity.getDescription();
-    }
+    this.name = entity.getName();
+    this.priority = entity.getPriority();
+    this.description = entity.getDescription();
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public RoleVoBean setName( String name ) {
-        this.name = name;
-        return this;
-    }
+  public RoleVoBean setName( String name ) {
+    this.name = name;
+    return this;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public RoleVoBean setDescription( String description ) {
-        this.description = description;
-        return this;
-    }
+  public RoleVoBean setDescription( String description ) {
+    this.description = description;
+    return this;
+  }
 
-    public int getPriority() {
-        return priority;
-    }
+  public int getPriority() {
+    return priority;
+  }
 
-    public RoleVoBean setPriority( int priority ) {
-        this.priority = priority;
-        return this;
-    }
+  public RoleVoBean setPriority( int priority ) {
+    this.priority = priority;
+    return this;
+  }
 
-    @Override
-    public String toString() {
-        return "RoleVoBean{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", status=" + status +
-                ", description='" + description + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
-                ", deleteTime=" + deleteTime +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "RoleVoBean{" +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
+        ", status=" + status +
+        ", description='" + description + '\'' +
+        ", createTime=" + createTime +
+        ", updateTime=" + updateTime +
+        ", deleteTime=" + deleteTime +
+        '}';
+  }
 }

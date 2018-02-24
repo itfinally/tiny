@@ -20,124 +20,124 @@ import java.io.IOException;
 import java.util.Map;
 
 public class FileBuilder {
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+  private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final BuilderConfigure configure;
-    private final String separator = File.separator;
-    private final Map<String, TableInfo> metaDataMap;
+  private final BuilderConfigure configure;
+  private final String separator = File.separator;
+  private final Map<String, TableInfo> metaDataMap;
 
-    static {
-        Velocity.setProperty( "input.encoding", "utf-8" );
-        Velocity.setProperty( "output.encoding", "utf-8" );
-        Velocity.setProperty( RuntimeConstants.RESOURCE_LOADER, "classpath" );
-        Velocity.setProperty( "velocimacro.permissions.allow.inline", "true" );
-        Velocity.setProperty( "velocimacro.permissions.allow.inline.local.scope", "true" );
-        Velocity.setProperty( "classpath.resource.loader.class", ClasspathResourceLoader.class.getName() );
-        Velocity.init();
+  static {
+    Velocity.setProperty( "input.encoding", "utf-8" );
+    Velocity.setProperty( "output.encoding", "utf-8" );
+    Velocity.setProperty( RuntimeConstants.RESOURCE_LOADER, "classpath" );
+    Velocity.setProperty( "velocimacro.permissions.allow.inline", "true" );
+    Velocity.setProperty( "velocimacro.permissions.allow.inline.local.scope", "true" );
+    Velocity.setProperty( "classpath.resource.loader.class", ClasspathResourceLoader.class.getName() );
+    Velocity.init();
+  }
+
+  public FileBuilder( BuilderConfigure configure, Map<String, TableInfo> metaDataMap ) {
+    this.configure = configure;
+    this.metaDataMap = metaDataMap;
+  }
+
+  public FileBuilder initialize() {
+    Template xmlTemplate = Velocity.getTemplate( "template/baseXmlMapper.txt" ),
+        mapperTemplate = Velocity.getTemplate( "template/baseMapper.txt" ),
+        daoTemplate = Velocity.getTemplate( "template/baseDao.txt" );
+
+    RenderEngine javaFileEngine = new BaseJavaFileRenderEngine( configure ),
+        xmlFileEngine = new XmlFileRenderEngine( configure, null );
+
+    TableInfo tableInfo = metaDataMap.get( configure.getBaseEntity().getName() );
+
+    if ( null == configure.getAbstractDaoCls() ) {
+      writeDao( daoTemplate, tableInfo, javaFileEngine );
     }
 
-    public FileBuilder( BuilderConfigure configure, Map<String, TableInfo> metaDataMap ) {
-        this.configure = configure;
-        this.metaDataMap = metaDataMap;
+    if ( null == configure.getBaseMapperCls() ) {
+      writeMapper( mapperTemplate, tableInfo, javaFileEngine );
+      writeXmlMapper( xmlTemplate, tableInfo, xmlFileEngine );
     }
 
-    public FileBuilder initialize() {
-        Template xmlTemplate = Velocity.getTemplate( "template/baseXmlMapper.txt" ),
-                mapperTemplate = Velocity.getTemplate( "template/baseMapper.txt" ),
-                daoTemplate = Velocity.getTemplate( "template/baseDao.txt" );
+    return this;
+  }
 
-        RenderEngine javaFileEngine = new BaseJavaFileRenderEngine( configure ),
-                xmlFileEngine = new XmlFileRenderEngine( configure, null );
+  public FileBuilder build() {
+    Template xmlTemplate = Velocity.getTemplate( "template/xmlMapper.txt" ),
+        mapperTemplate = Velocity.getTemplate( "template/mapper.txt" ),
+        daoTemplate = Velocity.getTemplate( "template/dao.txt" );
 
-        TableInfo tableInfo = metaDataMap.get( configure.getBaseEntity().getName() );
+    String baseEntityName = configure.getBaseEntity().getName();
+    RenderEngine javaFileEngine = new JavaFileRenderEngine( configure ),
+        xmlFileEngine = new XmlFileRenderEngine( configure, metaDataMap );
 
-        if ( null == configure.getAbstractDaoCls() ) {
-            writeDao( daoTemplate, tableInfo, javaFileEngine );
-        }
+    metaDataMap.values().forEach( table -> {
+      if ( table.getThisEntity().getName().equals( baseEntityName ) ) {
+        return;
+      }
 
-        if ( null == configure.getBaseMapperCls() ) {
-            writeMapper( mapperTemplate, tableInfo, javaFileEngine );
-            writeXmlMapper( xmlTemplate, tableInfo, xmlFileEngine );
-        }
+      writeXmlMapper( xmlTemplate, table, xmlFileEngine );
+      writeMapper( mapperTemplate, table, javaFileEngine );
+      writeDao( daoTemplate, table, javaFileEngine );
+    } );
 
-        return this;
+    return this;
+  }
+
+  private void writeXmlMapper( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
+    String path = getFolderPath( "sqlMapper", tableInfo.getThisEntity().getOffset() );
+
+    mkdirs( path );
+
+    write( String.format( "%s%s%s.xml", path, separator, tableInfo.getThisEntity().getMapperSimpleName() ),
+        renderEngine.render( template, tableInfo ) );
+  }
+
+  private void writeMapper( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
+    String path = getFolderPath( "mapper", tableInfo.getThisEntity().getOffset() );
+
+    mkdirs( path );
+
+    write( String.format( "%s%s%s.java", path, separator, tableInfo.getThisEntity().getMapperSimpleName() ),
+        renderEngine.render( template, tableInfo ) );
+  }
+
+  private void writeDao( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
+    String path = getFolderPath( "dao", tableInfo.getThisEntity().getOffset() );
+
+    mkdirs( path );
+
+    write( String.format( "%s%s%s.java", path, separator, tableInfo.getThisEntity().getDaoSimpleName() ),
+        renderEngine.render( template, tableInfo ) );
+  }
+
+  private void write( String path, String content ) {
+    File file = new File( path );
+    if ( file.exists() && file.isFile() && !configure.isForceCreation() ) {
+      return;
     }
 
-    public FileBuilder build() {
-        Template xmlTemplate = Velocity.getTemplate( "template/xmlMapper.txt" ),
-                mapperTemplate = Velocity.getTemplate( "template/mapper.txt" ),
-                daoTemplate = Velocity.getTemplate( "template/dao.txt" );
+    try ( BufferedOutputStream out = new BufferedOutputStream( new FileOutputStream( path ) ) ) {
+      out.write( content.getBytes() );
 
-        String baseEntityName = configure.getBaseEntity().getName();
-        RenderEngine javaFileEngine = new JavaFileRenderEngine( configure ),
-                xmlFileEngine = new XmlFileRenderEngine( configure, metaDataMap );
+    } catch ( IOException e ) {
+      throw new RuntimeException( String.format( "Failed to write to file '%s'.", path ), e );
+    }
+  }
 
-        metaDataMap.values().forEach( table -> {
-            if ( table.getThisEntity().getName().equals( baseEntityName ) ) {
-                return;
-            }
-
-            writeXmlMapper( xmlTemplate, table, xmlFileEngine );
-            writeMapper( mapperTemplate, table, javaFileEngine );
-            writeDao( daoTemplate, table, javaFileEngine );
-        } );
-
-        return this;
+  private void mkdirs( String path ) {
+    File folder = new File( path );
+    if ( folder.isDirectory() ) {
+      return;
     }
 
-    private void writeXmlMapper( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
-        String path = getFolderPath( "sqlMapper", tableInfo.getThisEntity().getOffset() );
-
-        mkdirs( path );
-
-        write( String.format( "%s%s%s.xml", path, separator, tableInfo.getThisEntity().getMapperSimpleName() ),
-                renderEngine.render( template, tableInfo ) );
+    if ( !folder.mkdirs() ) {
+      throw new IllegalStateException( String.format( "Failed to create folder '%s'", folder.getPath() ) );
     }
+  }
 
-    private void writeMapper( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
-        String path = getFolderPath( "mapper", tableInfo.getThisEntity().getOffset() );
-
-        mkdirs( path );
-
-        write( String.format( "%s%s%s.java", path, separator, tableInfo.getThisEntity().getMapperSimpleName() ),
-                renderEngine.render( template, tableInfo ) );
-    }
-
-    private void writeDao( Template template, TableInfo tableInfo, RenderEngine renderEngine ) {
-        String path = getFolderPath( "dao", tableInfo.getThisEntity().getOffset() );
-
-        mkdirs( path );
-
-        write( String.format( "%s%s%s.java", path, separator, tableInfo.getThisEntity().getDaoSimpleName() ),
-                renderEngine.render( template, tableInfo ) );
-    }
-
-    private void write( String path, String content ) {
-        File file = new File( path );
-        if ( file.exists() && file.isFile() && !configure.isForceCreation() ) {
-            return;
-        }
-
-        try ( BufferedOutputStream out = new BufferedOutputStream( new FileOutputStream( path ) ) ) {
-            out.write( content.getBytes() );
-
-        } catch ( IOException e ) {
-            throw new RuntimeException( String.format( "Failed to write to file '%s'.", path ), e );
-        }
-    }
-
-    private void mkdirs( String path ) {
-        File folder = new File( path );
-        if ( folder.isDirectory() ) {
-            return;
-        }
-
-        if ( !folder.mkdirs() ) {
-            throw new IllegalStateException( String.format( "Failed to create folder '%s'", folder.getPath() ) );
-        }
-    }
-
-    private String getFolderPath( String name, String offset ) {
-        return String.format( "%s%s%s%s%s", configure.getTargetFolder(), separator, name, separator, offset );
-    }
+  private String getFolderPath( String name, String offset ) {
+    return String.format( "%s%s%s%s%s", configure.getTargetFolder(), separator, name, separator, offset );
+  }
 }

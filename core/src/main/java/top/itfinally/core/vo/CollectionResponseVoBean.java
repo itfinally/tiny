@@ -6,71 +6,71 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-public class CollectionResponseVoBean<T> extends BaseResponseVoBean<CollectionResponseVoBean> {
-    private Collection<T> result = new ArrayList<>();
+public class CollectionResponseVoBean<T> extends BaseResponseVoBean<CollectionResponseVoBean<T>> {
+  private Collection<T> result = new ArrayList<>();
 
-    public CollectionResponseVoBean() {
-    }
+  public CollectionResponseVoBean() {
+  }
 
-    public CollectionResponseVoBean( BaseResponseStatus baseResponseStatus ) {
-        super( baseResponseStatus );
-    }
+  public CollectionResponseVoBean( BaseResponseStatus baseResponseStatus ) {
+    super( baseResponseStatus );
+  }
 
-    public CollectionResponseVoBean( CollectionResponseVoBean responseVoBean ) {
-        super( responseVoBean );
-    }
+  public CollectionResponseVoBean( CollectionResponseVoBean<T> responseVoBean ) {
+    super( responseVoBean );
+  }
 
-    public Collection<T> getResult() {
-        return result;
-    }
+  public Collection<T> getResult() {
+    return result;
+  }
 
-    public CollectionResponseVoBean<T> setResult( Collection<T> result ) {
-        this.result = result;
-        return this;
-    }
+  public CollectionResponseVoBean<T> setResult( Collection<T> result ) {
+    this.result = result;
+    return this;
+  }
 
-    @Override
-    public String getMessage() {
-        return super.getMessage();
-    }
+  @Override
+  public String getMessage() {
+    return super.getMessage();
+  }
 
-    @Override
-    public CollectionResponseVoBean<T> setMessage( String message ) {
-        this.message = message;
-        return this;
-    }
+  @Override
+  public CollectionResponseVoBean<T> setMessage( String message ) {
+    this.message = message;
+    return this;
+  }
 
-    @Override
-    public int getStatusCode() {
-        return super.getStatusCode();
-    }
+  @Override
+  public int getStatusCode() {
+    return super.getStatusCode();
+  }
 
-    @Override
-    public CollectionResponseVoBean<T> setStatusCode( int statusCode ) {
-        this.statusCode = statusCode;
-        return this;
-    }
+  @Override
+  public CollectionResponseVoBean<T> setStatusCode( int statusCode ) {
+    this.statusCode = statusCode;
+    return this;
+  }
 
-    @Override
-    public String toString() {
-        return "CollectionResponseVoBean{" +
-                "message='" + message + '\'' +
-                ", statusCode=" + statusCode +
-                ", result=" + result +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "CollectionResponseVoBean{" +
+        "message='" + message + '\'' +
+        ", statusCode=" + statusCode +
+        ", result=" + result +
+        '}';
+  }
 
-    @Override
-    public boolean equals( Object o ) {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        if ( !super.equals( o ) ) return false;
-        CollectionResponseVoBean<?> that = ( CollectionResponseVoBean<?> ) o;
-        return Objects.equals( result, that.result );
-    }
+  @Override
+  public boolean equals( Object o ) {
+    if ( this == o ) return true;
+    if ( o == null || getClass() != o.getClass() ) return false;
+    if ( !super.equals( o ) ) return false;
+    CollectionResponseVoBean<?> that = ( CollectionResponseVoBean<?> ) o;
+    return Objects.equals( result, that.result );
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash( super.hashCode(), result );
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash( super.hashCode(), result );
+  }
 }

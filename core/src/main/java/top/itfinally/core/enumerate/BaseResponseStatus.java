@@ -2,7 +2,7 @@ package top.itfinally.core.enumerate;
 
 public interface BaseResponseStatus {
 
-    String getMessage();
+  String getMessage();
 
-    int getStatusCode();
+  int getStatusCode();
 }

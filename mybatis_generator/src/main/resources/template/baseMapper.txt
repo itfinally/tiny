@@ -13,38 +13,38 @@ import java.util.Map;
 
 @Mapper
 public interface ${table.thisEntity.mapperSimpleName}<Entity extends ${table.thisEntity.simpleName}> {
-    Entity query( @Param( "id" ) String id );
+  Entity query( @Param( "id" ) String id );
 
-    List<Entity> queryAll(
-        @Param( "beginRow" ) int beginRow,
-        @Param( "row" ) int row,
-        @Param( "status" ) int status
-    );
+  List<Entity> queryAll(
+    @Param( "beginRow" ) int beginRow,
+    @Param( "row" ) int row,
+    @Param( "status" ) int status
+  );
 
-    List<Entity> queryBySpecificId(
-        @Param( "ids" ) Collection<String> ids,
-        @Param( "beginRow" ) int beginRow,
-        @Param( "row" ) int row,
-        @Param( "status" ) int status
-    );
+  List<Entity> queryBySpecificId(
+    @Param( "ids" ) Collection<String> ids,
+    @Param( "beginRow" ) int beginRow,
+    @Param( "row" ) int row,
+    @Param( "status" ) int status
+  );
 
-    int save( Entity entity );
+  int save( Entity entity );
 
-    int saveAll( @Param( "entities" ) Collection<Entity> entities );
+  int saveAll( @Param( "entities" ) Collection<Entity> entities );
 
-    int update( Entity entity );
+  int update( Entity entity );
 
-    int specificUpdate(
-        @Param( "id" ) String id,
-        @Param( "updateTime" ) ${timeUnit} updateTime,
-        @Param( "fieldAndValues" ) Map<String, Object> fieldAndValues
-    );
+  int specificUpdate(
+    @Param( "id" ) String id,
+    @Param( "updateTime" ) ${timeUnit} updateTime,
+    @Param( "fieldAndValues" ) Map<String, Object> fieldAndValues
+  );
 
-    int remove( @Param( "id" ) String id, @Param( "deleteTime" ) ${timeUnit} deleteTime );
+  int remove( @Param( "id" ) String id, @Param( "deleteTime" ) ${timeUnit} deleteTime );
 
-    int removeAll( @Param( "ids" ) Collection<String> ids, @Param( "deleteTime" ) ${timeUnit} deleteTime );
+  int removeAll( @Param( "ids" ) Collection<String> ids, @Param( "deleteTime" ) ${timeUnit} deleteTime );
 
-    int physicalDelete( @Param( "id" ) String id );
+  int physicalDelete( @Param( "id" ) String id );
 
-    int physicalDeleteAll( @Param( "ids" ) Collection<String> ids );
+  int physicalDeleteAll( @Param( "ids" ) Collection<String> ids );
 }

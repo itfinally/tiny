@@ -16,36 +16,32 @@ import static top.itfinally.core.repository.QueryEnum.NOT_PAGING;
 @Repository
 public class RoleEnhancedDao extends AbstractDao<RoleEntity, RoleEnhancedMapper> {
 
-    private RoleEnhancedMapper roleEnhancedMapper;
+  private RoleEnhancedMapper roleEnhancedMapper;
 
-    @Autowired
-    public RoleEnhancedDao setRoleEnhancedMapper( RoleEnhancedMapper roleEnhancedMapper ) {
-        this.roleEnhancedMapper = roleEnhancedMapper;
-        return this;
+  @Autowired
+  public RoleEnhancedDao setRoleEnhancedMapper( RoleEnhancedMapper roleEnhancedMapper ) {
+    this.roleEnhancedMapper = roleEnhancedMapper;
+    return this;
+  }
+
+  public List<RoleEntity> queryByMultiCondition( Map<String, Object> condition, int beginRow, int row ) {
+    MultiFunctionTableQuery.conditionValidator( condition );
+
+    if ( beginRow < 0 || row < 0 ) {
+      beginRow = row = NOT_PAGING.getVal();
     }
 
-    public List<RoleEntity> queryByMultiCondition( Map<String, Object> condition, int beginRow, int row ) {
-        MultiFunctionTableQuery.conditionValidator( condition );
+    return roleEnhancedMapper.queryByMultiCondition( condition, beginRow, row );
+  }
 
-        if ( beginRow < 0 || row < 0 ) {
-            beginRow = row = NOT_PAGING.getVal();
-        }
+  public int countByMultiCondition( Map<String, Object> condition ) {
+    MultiFunctionTableQuery.conditionValidator( condition );
 
-        return roleEnhancedMapper.queryByMultiCondition( condition, beginRow, row );
-    }
+    return roleEnhancedMapper.countByMultiCondition( condition );
+  }
 
-    public int countByMultiCondition( Map<String, Object> condition ) {
-        MultiFunctionTableQuery.conditionValidator( condition );
-
-        return roleEnhancedMapper.countByMultiCondition( condition );
-    }
-
-    public int updateRoleStatus( List<String> roleIds, int status ) {
-        long now = System.currentTimeMillis();
-        return roleEnhancedMapper.updateRoleStatus( roleIds, status, now, DELETE.getStatus() == status ? now : -1 );
-    }
-
-    public List<RoleEntity> queryLowLevelRoles( int priority ) {
-        return roleEnhancedMapper.queryLowLevelRoles( priority );
-    }
+  public int updateRoleStatus( List<String> roleIds, int status ) {
+    long now = System.currentTimeMillis();
+    return roleEnhancedMapper.updateRoleStatus( roleIds, status, now, DELETE.getStatus() == status ? now : -1 );
+  }
 }

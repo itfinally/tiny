@@ -9,21 +9,21 @@ import top.itfinally.builder.util.TemplateUtils;
 import java.io.StringWriter;
 
 public class BaseJavaFileRenderEngine implements RenderEngine {
-    private static final String TIME_UNIT = "timeUnit";
+  private static final String TIME_UNIT = "timeUnit";
 
-    private final VelocityContext context = new VelocityContext();
+  private final VelocityContext context = new VelocityContext();
 
-    public BaseJavaFileRenderEngine( BuilderConfigure configure ) {
-        context.put( TIME_UNIT, configure.getTimeUnit().getSimpleName() );
-        context.put( UTIL, TemplateUtils.class );
-    }
+  public BaseJavaFileRenderEngine( BuilderConfigure configure ) {
+    context.put( TIME_UNIT, configure.getTimeUnit().getSimpleName() );
+    context.put( UTIL, TemplateUtils.class );
+  }
 
-    @Override
-    public String render( Template template, TableInfo tableInfo ) {
-        context.put( TABLE, tableInfo );
+  @Override
+  public String render( Template template, TableInfo tableInfo ) {
+    context.put( TABLE, tableInfo );
 
-        StringWriter writer = new StringWriter();
-        template.merge( context, writer );
-        return writer.toString();
-    }
+    StringWriter writer = new StringWriter();
+    template.merge( context, writer );
+    return writer.toString();
+  }
 }

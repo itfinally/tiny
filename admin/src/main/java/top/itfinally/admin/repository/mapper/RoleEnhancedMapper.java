@@ -12,17 +12,13 @@ import java.util.Map;
 @Mapper
 @Component
 public interface RoleEnhancedMapper extends BaseMapper<RoleEntity> {
-    List<RoleEntity> queryByMultiCondition(
-            @Param( "condition" ) Map<String, Object> condition,
-            @Param( "beginRow" ) int beginRow,
-            @Param( "row" ) int row
-    );
+  List<RoleEntity> queryByMultiCondition(
+      @Param( "condition" ) Map<String, Object> condition,
+      @Param( "beginRow" ) int beginRow, @Param( "row" ) int row );
 
-    int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
+  int countByMultiCondition( @Param( "condition" ) Map<String, Object> condition );
 
-    int updateRoleStatus(
-            @Param( "roleIds" ) List<String> roleIds, @Param( "status" ) int status,
-            @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
-
-    List<RoleEntity> queryLowLevelRoles( @Param( "priority" ) int priority );
+  int updateRoleStatus(
+      @Param( "roleIds" ) List<String> roleIds, @Param( "status" ) int status,
+      @Param( "updateTime" ) long updateTime, @Param( "deleteTime" ) long deleteTime );
 }

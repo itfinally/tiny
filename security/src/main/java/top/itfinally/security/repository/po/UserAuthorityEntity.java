@@ -12,146 +12,146 @@ import java.util.Objects;
 
 @Table( name = "v1_security_user_details" )
 public class UserAuthorityEntity extends BaseEntity<UserAuthorityEntity> implements UserDetails {
-    // Indicates whether the user's account has expired.
-    @Column
-    private boolean isNonExpired = true;
+  // Indicates whether the user's account has expired.
+  @Column
+  private boolean isNonExpired = true;
 
-    // Indicates whether the user is locked or unlocked.
-    @Column
-    private boolean isNonLocked = true;
+  // Indicates whether the user is locked or unlocked.
+  @Column
+  private boolean isNonLocked = true;
 
-    // Indicates whether the user's credentials (password) has expired.
-    @Column
-    private boolean isCredentialsNonExpired = true;
+  // Indicates whether the user's credentials (password) has expired.
+  @Column
+  private boolean isCredentialsNonExpired = true;
 
-    // Indicates whether the user is enabled or disabled.
-    @Column
-    private boolean isEnable = true;
+  // Indicates whether the user is enabled or disabled.
+  @Column
+  private boolean isEnable = true;
 
-    // user inject by 'UserDetailService', not reference in table 'user_authority'
-    private AbstractUserDetailsEntity user;
+  // user inject by 'UserDetailService', not reference in table 'user_authority'
+  private AbstractUserDetailsEntity user;
 
-    // user inject by 'UserDetailService', not reference in table 'user_authority'
-    private List<RoleEntity> authorities;
+  // user inject by 'UserDetailService', not reference in table 'user_authority'
+  private List<RoleEntity> authorities;
 
-    public UserAuthorityEntity() {
-    }
+  public UserAuthorityEntity() {
+  }
 
-    public UserAuthorityEntity( String id ) {
-        super( id );
-    }
+  public UserAuthorityEntity( String id ) {
+    super( id );
+  }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return authorities;
+  }
 
-    public List<RoleEntity> getRoles() {
-        return authorities;
-    }
+  public List<RoleEntity> getRoles() {
+    return authorities;
+  }
 
-    @Override
-    public String getPassword() {
-        return user.getPassword();
-    }
+  @Override
+  public String getPassword() {
+    return user.getPassword();
+  }
 
-    @Override
-    public String getUsername() {
-        return user.getAccount();
-    }
+  @Override
+  public String getUsername() {
+    return user.getAccount();
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return isNonExpired;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return isNonExpired;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return isNonLocked;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return isNonLocked;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return isCredentialsNonExpired;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return isCredentialsNonExpired;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return isEnable;
-    }
+  @Override
+  public boolean isEnabled() {
+    return isEnable;
+  }
 
-    public String getNickname() {
-        return user.getNickname();
-    }
+  public String getNickname() {
+    return user.getNickname();
+  }
 
-    public UserAuthorityEntity setAuthorities( List<RoleEntity> authorities ) {
-        this.authorities = authorities;
-        return this;
-    }
+  public UserAuthorityEntity setAuthorities( List<RoleEntity> authorities ) {
+    this.authorities = authorities;
+    return this;
+  }
 
-    public UserAuthorityEntity setNonExpired( boolean nonExpired ) {
-        isNonExpired = nonExpired;
-        return this;
-    }
+  public UserAuthorityEntity setNonExpired( boolean nonExpired ) {
+    isNonExpired = nonExpired;
+    return this;
+  }
 
-    public UserAuthorityEntity setNonLocked( boolean nonLocked ) {
-        isNonLocked = nonLocked;
-        return this;
-    }
+  public UserAuthorityEntity setNonLocked( boolean nonLocked ) {
+    isNonLocked = nonLocked;
+    return this;
+  }
 
-    public UserAuthorityEntity setCredentialsNonExpired( boolean credentialsNonExpired ) {
-        isCredentialsNonExpired = credentialsNonExpired;
-        return this;
-    }
+  public UserAuthorityEntity setCredentialsNonExpired( boolean credentialsNonExpired ) {
+    isCredentialsNonExpired = credentialsNonExpired;
+    return this;
+  }
 
-    public UserAuthorityEntity setEnable( boolean enable ) {
-        isEnable = enable;
-        return this;
-    }
+  public UserAuthorityEntity setEnable( boolean enable ) {
+    isEnable = enable;
+    return this;
+  }
 
-    @SuppressWarnings( "unchecked" )
-    public <User extends AbstractUserDetailsEntity> User getUser() {
-        return ( User ) user;
-    }
+  @SuppressWarnings( "unchecked" )
+  public <User extends AbstractUserDetailsEntity> User getUser() {
+    return ( User ) user;
+  }
 
-    public UserAuthorityEntity setUser( AbstractUserDetailsEntity user ) {
-        this.user = user;
-        return this;
-    }
+  public UserAuthorityEntity setUser( AbstractUserDetailsEntity user ) {
+    this.user = user;
+    return this;
+  }
 
-    @Override
-    public String toString() {
-        return "UserAuthorityEntity{" +
-                "id='" + id + '\'' +
-                ", status=" + status +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
-                ", deleteTime=" + deleteTime +
-                ", isNonExpired=" + isNonExpired +
-                ", isNonLocked=" + isNonLocked +
-                ", isCredentialsNonExpired=" + isCredentialsNonExpired +
-                ", isEnable=" + isEnable +
-                ", user=" + user +
-                ", authorities=" + authorities +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "UserAuthorityEntity{" +
+        "id='" + id + '\'' +
+        ", status=" + status +
+        ", createTime=" + createTime +
+        ", updateTime=" + updateTime +
+        ", deleteTime=" + deleteTime +
+        ", isNonExpired=" + isNonExpired +
+        ", isNonLocked=" + isNonLocked +
+        ", isCredentialsNonExpired=" + isCredentialsNonExpired +
+        ", isEnable=" + isEnable +
+        ", user=" + user +
+        ", authorities=" + authorities +
+        '}';
+  }
 
-    @Override
-    public boolean equals( Object o ) {
-        if ( this == o ) return true;
-        if ( o == null || getClass() != o.getClass() ) return false;
-        if ( !super.equals( o ) ) return false;
-        UserAuthorityEntity that = ( UserAuthorityEntity ) o;
-        return isNonExpired == that.isNonExpired &&
-                isNonLocked == that.isNonLocked &&
-                isCredentialsNonExpired == that.isCredentialsNonExpired &&
-                isEnable == that.isEnable &&
-                Objects.equals( user, that.user ) &&
-                Objects.equals( authorities, that.authorities );
-    }
+  @Override
+  public boolean equals( Object o ) {
+    if ( this == o ) return true;
+    if ( o == null || getClass() != o.getClass() ) return false;
+    if ( !super.equals( o ) ) return false;
+    UserAuthorityEntity that = ( UserAuthorityEntity ) o;
+    return isNonExpired == that.isNonExpired &&
+        isNonLocked == that.isNonLocked &&
+        isCredentialsNonExpired == that.isCredentialsNonExpired &&
+        isEnable == that.isEnable &&
+        Objects.equals( user, that.user ) &&
+        Objects.equals( authorities, that.authorities );
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash( super.hashCode(), isNonExpired, isNonLocked, isCredentialsNonExpired, isEnable, user, authorities );
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash( super.hashCode(), isNonExpired, isNonLocked, isCredentialsNonExpired, isEnable, user, authorities );
+  }
 }

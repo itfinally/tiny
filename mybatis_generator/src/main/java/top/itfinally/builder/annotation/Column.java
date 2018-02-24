@@ -6,7 +6,7 @@ import java.lang.annotation.*;
 @Target( { ElementType.METHOD, ElementType.FIELD } )
 @Retention( RetentionPolicy.RUNTIME )
 public @interface Column {
-    String property() default "";
+  String property() default "";
 
-    String column() default "";
+  String column() default "";
 }

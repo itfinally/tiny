@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 @MapperScan( basePackages = "top.itfinally" )
 public class SecurityServerApplication {
-    public static void main( String[] args ) {
-        SpringApplication.run( SecurityServerApplication.class, args );
-    }
+  public static void main( String[] args ) {
+    SpringApplication.run( SecurityServerApplication.class, args );
+  }
 }

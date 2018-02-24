@@ -11,5 +11,5 @@ import java.util.List;
 @Mapper
 @Component
 public interface PermissionMapper extends BaseMapper<PermissionEntity> {
-    List<PermissionEntity> queryByRoleId( @Param( "roleId" ) String roleId );
+  List<PermissionEntity> queryByRoleId( @Param( "roleId" ) String roleId );
 }

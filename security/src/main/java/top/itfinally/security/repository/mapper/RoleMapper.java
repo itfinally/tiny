@@ -11,7 +11,9 @@ import java.util.List;
 @Mapper
 @Component
 public interface RoleMapper extends BaseMapper<RoleEntity> {
-    List<RoleEntity> queryRoleByAuthorityId( @Param( "authorityId" ) String authorityId );
+  List<RoleEntity> queryRoleByAuthorityId( @Param( "authorityId" ) String authorityId, @Param( "status" ) int status );
 
-    RoleEntity queryByName( @Param( "name" ) String name );
+  RoleEntity queryByName( @Param( "name" ) String name, @Param( "status" ) int status );
+
+  List<RoleEntity> queryByPriority( @Param( "priority" ) int priority, @Param( "status" ) int status );
 }

@@ -58,8 +58,4 @@
             #{id}
         </foreach>
     </update>
-
-    <select id="queryLowLevelRoles" resultMap="roleEntity">
-        select * from v1_security_role where priority &lt; #{priority}
-    </select>
 </mapper>

@@ -15,35 +15,35 @@ import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 
 @Repository
 public class UserAuthorityDao extends AbstractDao<UserAuthorityEntity, UserAuthorityMapper> {
-    private UserRoleMapper userRoleMapper;
+  private UserRoleMapper userRoleMapper;
 
-    @Autowired
-    public UserAuthorityDao setUserRoleMapper( UserRoleMapper userRoleMapper ) {
-        this.userRoleMapper = userRoleMapper;
-        return this;
+  @Autowired
+  public UserAuthorityDao setUserRoleMapper( UserRoleMapper userRoleMapper ) {
+    this.userRoleMapper = userRoleMapper;
+    return this;
+  }
+
+  @Override
+  @Autowired
+  protected void setBaseMapper( UserAuthorityMapper baseMapper ) {
+    super.setBaseMapper( baseMapper );
+  }
+
+  @Override
+  public int remove( String id, long deleteTime ) {
+    if ( userRoleMapper.hasUserAuthority( id, NORMAL.getStatus() ) ) {
+      throw new SqlOperationException( "Cannot remove this user's authority detail before all user-role record is removed." );
     }
 
-    @Override
-    @Autowired
-    protected void setBaseMapper( UserAuthorityMapper baseMapper ) {
-        super.setBaseMapper( baseMapper );
+    return super.remove( id, deleteTime );
+  }
+
+  @Override
+  public int removeAll( Collection<String> ids, long deleteTime ) {
+    if ( userRoleMapper.hasAllUserAuthority( ids, NORMAL.getStatus() ) ) {
+      throw new SqlOperationException( "Cannot remove all user's authority detail before all user-role record is removed." );
     }
 
-    @Override
-    public int remove( String id, long deleteTime ) {
-        if ( userRoleMapper.hasUserAuthority( id, NORMAL.getStatus() ) ) {
-            throw new SqlOperationException( "Cannot remove this user's authority detail before all user-role record is removed." );
-        }
-
-        return super.remove( id, deleteTime );
-    }
-
-    @Override
-    public int removeAll( Collection<String> ids, long deleteTime ) {
-        if ( userRoleMapper.hasAllUserAuthority( ids, NORMAL.getStatus() ) ) {
-            throw new SqlOperationException( "Cannot remove all user's authority detail before all user-role record is removed." );
-        }
-
-        return super.removeAll( ids, deleteTime );
-    }
+    return super.removeAll( ids, deleteTime );
+  }
 }

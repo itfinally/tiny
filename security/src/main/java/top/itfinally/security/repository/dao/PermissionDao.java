@@ -15,41 +15,41 @@ import static top.itfinally.core.enumerate.DataStatusEnum.NORMAL;
 
 @Repository
 public class PermissionDao extends AbstractDao<PermissionEntity, PermissionMapper> {
-    private PermissionMapper permissionMapper;
-    private RolePermissionMapper rolePermissionMapper;
+  private PermissionMapper permissionMapper;
+  private RolePermissionMapper rolePermissionMapper;
 
-    @Override
-    @Autowired
-    protected void setBaseMapper( PermissionMapper baseMapper ) {
-        this.permissionMapper = baseMapper;
-        super.setBaseMapper( baseMapper );
+  @Override
+  @Autowired
+  protected void setBaseMapper( PermissionMapper baseMapper ) {
+    this.permissionMapper = baseMapper;
+    super.setBaseMapper( baseMapper );
+  }
+
+  @Autowired
+  public PermissionDao setRolePermissionMapper( RolePermissionMapper rolePermissionMapper ) {
+    this.rolePermissionMapper = rolePermissionMapper;
+    return this;
+  }
+
+  public List<PermissionEntity> queryByRoleId( String roleId ) {
+    return permissionMapper.queryByRoleId( roleId );
+  }
+
+  @Override
+  public int remove( String id, long deleteTime ) {
+    if ( rolePermissionMapper.hasPermission( id, NORMAL.getStatus() ) ) {
+      throw new SqlOperationException( "Cannot remove this permission before all role-permission record is removed." );
     }
 
-    @Autowired
-    public PermissionDao setRolePermissionMapper( RolePermissionMapper rolePermissionMapper ) {
-        this.rolePermissionMapper = rolePermissionMapper;
-        return this;
+    return super.remove( id, deleteTime );
+  }
+
+  @Override
+  public int removeAll( Collection<String> ids, long deleteTime ) {
+    if ( rolePermissionMapper.hasAllPermission( ids, NORMAL.getStatus() ) ) {
+      throw new SqlOperationException( "Cannot remove permissions before all role-permission record is removed." );
     }
 
-    public List<PermissionEntity> queryByRoleId( String roleId ) {
-        return permissionMapper.queryByRoleId( roleId );
-    }
-
-    @Override
-    public int remove( String id, long deleteTime ) {
-        if ( rolePermissionMapper.hasPermission( id, NORMAL.getStatus() ) ) {
-            throw new SqlOperationException( "Cannot remove this permission before all role-permission record is removed." );
-        }
-
-        return super.remove( id, deleteTime );
-    }
-
-    @Override
-    public int removeAll( Collection<String> ids, long deleteTime ) {
-        if( rolePermissionMapper.hasAllPermission( ids, NORMAL.getStatus() ) ) {
-            throw new SqlOperationException( "Cannot remove permissions before all role-permission record is removed." );
-        }
-
-        return super.removeAll( ids, deleteTime );
-    }
+    return super.removeAll( ids, deleteTime );
+  }
 }
