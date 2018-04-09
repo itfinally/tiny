@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    hikari:
+      auto-commit: false
+      connection-test-query: select 1
+
+    url: jdbc:mysql://localhost:3306/testing?useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    username: itfinally
+    password: 950116
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+    database-platform: org.hibernate.dialect.MySQL57Dialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 64
+
+        hbm2ddl:
+          charset_name: utf8mb4
+
+        show_sql: true
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+
+  transaction:
+    rollback-on-commit-failure: true

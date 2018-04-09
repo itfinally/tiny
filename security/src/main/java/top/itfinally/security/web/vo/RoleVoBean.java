@@ -1,12 +1,13 @@
 package top.itfinally.security.web.vo;
 
-import top.itfinally.core.vo.BaseVoBean;
-import top.itfinally.security.repository.po.RoleEntity;
+import top.itfinally.core.web.BasicVoBean;
+import top.itfinally.security.repository.entity.RoleEntity;
 
-public class RoleVoBean extends BaseVoBean<RoleVoBean> {
+public class RoleVoBean extends BasicVoBean<RoleVoBean, RoleEntity> {
   private String name;
-  private int priority;
   private String description;
+
+  private int priority;
 
   public RoleVoBean() {
   }
@@ -14,9 +15,9 @@ public class RoleVoBean extends BaseVoBean<RoleVoBean> {
   public RoleVoBean( RoleEntity entity ) {
     super( entity );
 
-    this.name = entity.getName();
-    this.priority = entity.getPriority();
-    this.description = entity.getDescription();
+    name = entity.getName();
+    priority = entity.getPriority();
+    description = entity.getDescription();
   }
 
   public String getName() {
@@ -44,18 +45,5 @@ public class RoleVoBean extends BaseVoBean<RoleVoBean> {
   public RoleVoBean setPriority( int priority ) {
     this.priority = priority;
     return this;
-  }
-
-  @Override
-  public String toString() {
-    return "RoleVoBean{" +
-        "id='" + id + '\'' +
-        ", name='" + name + '\'' +
-        ", status=" + status +
-        ", description='" + description + '\'' +
-        ", createTime=" + createTime +
-        ", updateTime=" + updateTime +
-        ", deleteTime=" + deleteTime +
-        '}';
   }
 }

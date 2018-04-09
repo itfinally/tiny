@@ -1,16 +1,16 @@
 package top.itfinally.security.web.vo;
 
 import top.itfinally.core.web.BasicVoBean;
-import top.itfinally.security.repository.entity.PermissionEntity;
+import top.itfinally.security.repository.entity.DepartmentEntity;
 
-public class PermissionVoBean extends BasicVoBean<PermissionVoBean, PermissionEntity> {
+public class DepartmentVoBean extends BasicVoBean<DepartmentVoBean, DepartmentEntity> {
   private String name;
   private String description;
 
-  public PermissionVoBean() {
+  public DepartmentVoBean() {
   }
 
-  public PermissionVoBean( PermissionEntity entity ) {
+  public DepartmentVoBean( DepartmentEntity entity ) {
     super( entity );
 
     name = entity.getName();
@@ -21,7 +21,7 @@ public class PermissionVoBean extends BasicVoBean<PermissionVoBean, PermissionEn
     return name;
   }
 
-  public PermissionVoBean setName( String name ) {
+  public DepartmentVoBean setName( String name ) {
     this.name = name;
     return this;
   }
@@ -30,7 +30,7 @@ public class PermissionVoBean extends BasicVoBean<PermissionVoBean, PermissionEn
     return description;
   }
 
-  public PermissionVoBean setDescription( String description ) {
+  public DepartmentVoBean setDescription( String description ) {
     this.description = description;
     return this;
   }
