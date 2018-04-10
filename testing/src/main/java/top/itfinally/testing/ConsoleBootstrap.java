@@ -1,23 +1,15 @@
-package top.itfinally.console;
+package top.itfinally.testing;
 
 import com.google.common.collect.Lists;
-import org.apache.logging.log4j.core.config.Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
-import top.itfinally.security.SecurityConfigure;
 import top.itfinally.security.repository.DepartmentRepository;
 import top.itfinally.security.repository.DepartmentRoleRepository;
 import top.itfinally.security.repository.RoleRepository;

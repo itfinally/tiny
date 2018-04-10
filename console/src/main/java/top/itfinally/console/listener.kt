@@ -3,12 +3,10 @@ package top.itfinally.console
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationListener
 import org.springframework.context.event.ContextRefreshedEvent
-import org.springframework.context.event.ContextStartedEvent
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import top.itfinally.console.repository.MenuItemRepository
 import top.itfinally.console.repository.entity.MenuItemEntity
-import top.itfinally.console.testing.UserService
 
 @Component
 open class ConsoleInitComponent : ApplicationListener<ContextRefreshedEvent> {
@@ -29,6 +27,5 @@ open class ConsoleInitComponent : ApplicationListener<ContextRefreshedEvent> {
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("角色列表").setPath("/console/security/role/:metadata?"), root.id)
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("部门列表").setPath("/console/security/department/:metadata?"), root.id)
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("权限列表").setPath("/console/security/permission/:metadata?"), root.id)
-    menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("用户管理").setPath("/console/security/user_security/:metadata?"), root.id)
   }
 }

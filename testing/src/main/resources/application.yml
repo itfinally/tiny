@@ -4,9 +4,9 @@ spring:
       auto-commit: false
       connection-test-query: select 1
 
-    url: jdbc:mysql://localhost:3306/testing?useSSL=false
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3306/testing?useSSL=false
     username: itfinally
     password: 950116
 

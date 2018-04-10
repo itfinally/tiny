@@ -1,4 +1,4 @@
-package top.itfinally.console
+package top.itfinally.testing
 
 import org.springframework.boot.autoconfigure.security.SecurityProperties
 import org.springframework.context.annotation.Configuration

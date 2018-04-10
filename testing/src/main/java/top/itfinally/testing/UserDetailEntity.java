@@ -1,4 +1,4 @@
-package top.itfinally.console.testing;
+package top.itfinally.testing;
 
 import top.itfinally.security.repository.entity.AbstractUserDetail;
 

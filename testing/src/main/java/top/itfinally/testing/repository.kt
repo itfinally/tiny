@@ -1,4 +1,4 @@
-package top.itfinally.console.testing
+package top.itfinally.testing
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationListener

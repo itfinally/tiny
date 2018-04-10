@@ -1,10 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>console</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>testing</artifactId>
   <version>1.0</version>
-  <name>console</name>
+  <packaging>war</packaging>
+
+  <name>testing</name>
+  <url>http://www.example.com</url>
 
   <parent>
     <groupId>top.itfinally</groupId>
@@ -13,19 +17,15 @@
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
 
-  <properties>
-    <tiny_security.version>1.0</tiny_security.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>top.itfinally</groupId>
-      <artifactId>security</artifactId>
-      <version>${tiny_security.version}</version>
+      <artifactId>console</artifactId>
+      <version>1.0</version>
     </dependency>
   </dependencies>
 
   <build>
-    <finalName>console</finalName>
+    <finalName>testing</finalName>
   </build>
 </project>
