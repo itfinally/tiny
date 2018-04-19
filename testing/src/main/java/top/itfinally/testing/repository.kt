@@ -34,11 +34,10 @@ import javax.persistence.NoResultException
 open class UserDetailRepository : BasicRepository<UserDetailEntity>() {
 
   @Autowired
-  private
-  lateinit var userSecurityRepository: UserSecurityRepository
+  private lateinit var userSecurityRepository: UserSecurityRepository
 
   @Autowired
-  lateinit var passwordEncoder: PasswordEncoder
+  private lateinit var passwordEncoder: PasswordEncoder
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryByAccountIs(account: String): UserDetailEntity? {
@@ -71,7 +70,7 @@ open class UserDetailRepository : BasicRepository<UserDetailEntity>() {
 class UserSecurityComponent : BasicUserSecurityComponent<UserDetailEntity>() {
 
   @Autowired
-  lateinit var userDetailRepository: UserDetailRepository
+  private lateinit var userDetailRepository: UserDetailRepository
 
   override fun loadUserByAccount(username: String): AbstractUserDetail<UserDetailEntity>? {
     return userDetailRepository.queryByAccountIs(username)

@@ -26,16 +26,13 @@ open class RoleService {
 
   @Autowired
   @Qualifier("securityEventBus")
-  private
-  lateinit var eventBus: EventBus
+  private lateinit var eventBus: EventBus
 
   @Autowired
-  private
-  lateinit var roleRepository: RoleRepository
+  private lateinit var roleRepository: RoleRepository
 
   @Autowired
-  private
-  lateinit var rolePermissionRepository: RolePermissionRepository
+  private lateinit var rolePermissionRepository: RolePermissionRepository
 
   open fun addRole(entity: RoleEntity): BasicResponse.It {
     return if (roleRepository.existByNameIs(entity.name)) {
@@ -105,6 +102,16 @@ open class RoleService {
     val status = if (roles.isEmpty()) EMPTY_RESULT else SUCCESS
 
     return ListResponse<RoleVoBean>(status).setResult(roles.map { RoleVoBean(it) })
+  }
+
+  open fun queryOwnRoles(): ListResponse<RoleVoBean> {
+    val userSecurity = SecurityContextHolder.getContext().authentication.principal
+        as? UserSecurityEntity.UserSecurityDelegateEntity<*> ?: return ListResponse(ILLEGAL_REQUEST)
+
+    val roles = userSecurity.getRoleEntities().mapNotNull { RoleVoBean(it) }
+    val status = if (roles.isEmpty()) EMPTY_RESULT else SUCCESS
+
+    return ListResponse<RoleVoBean>(status).setResult(roles)
   }
 
   protected fun verifyCurrentOperatorRolesPriority(targetPriority: Int) {

@@ -21,16 +21,13 @@ import top.itfinally.security.repository.entity.UserSecurityEntity
 open class MenuService {
 
   @Autowired
-  private
-  lateinit var menuItemRepository: MenuItemRepository
+  private lateinit var menuItemRepository: MenuItemRepository
 
   @Autowired
-  private
-  lateinit var roleMenuRepository: RoleMenuRepository
+  private lateinit var roleMenuRepository: RoleMenuRepository
 
   @Autowired
-  private
-  lateinit var menuRelationRepository: MenuRelationRepository
+  private lateinit var menuRelationRepository: MenuRelationRepository
 
   open fun addMenu(menu: MenuItemEntity, parentId: String): SingleResponse<MenuItemVoBean> {
     val localMenu = menuItemRepository.save(menu, parentId)
@@ -109,15 +106,15 @@ open class MenuService {
       }
 
       val parent = relations[it.id]!!
-      for (relation in childes) {
-        if (!hasMenuItem(relation.child.id)) {
-          continue
+      childes.forEach innerForEach@ {
+        if (!hasMenuItem(it.child.id)) {
+          return@innerForEach
         }
 
-        parent.childes.add(MenuItemVoBean(relation.child))
+        parent.childes.add(MenuItemVoBean(it.child))
 
         // In here, relation is mapping as childId-parent
-        relations[relation.child.id] = parent
+        relations[it.child.id] = parent
       }
 
       nextRound.addAll(childes.map { it.child }.filter { !it.isLeaf })

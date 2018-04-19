@@ -19,9 +19,7 @@ import top.itfinally.security.repository.entity.RoleEntity;
 
 import java.util.List;
 
-@EnableTransactionManagement
-@EntityScan(basePackages = "top.itfinally")
-@SpringBootApplication(scanBasePackages = "top.itfinally")
+@SpringBootApplication( scanBasePackages = "top.itfinally" )
 public class ConsoleBootstrap {
   public static void main( String... args ) {
     SpringApplication.run( ConsoleBootstrap.class, args );
@@ -54,6 +52,10 @@ public class ConsoleBootstrap {
 
     @Override
     public void onApplicationEvent( @NotNull ContextRefreshedEvent event ) {
+      if ( departmentRepository.existByName( "department1" ) ) {
+        return;
+      }
+
       DepartmentEntity department1 = new DepartmentEntity().setName( "department1" );
       DepartmentEntity department2 = new DepartmentEntity().setName( "department2" );
 

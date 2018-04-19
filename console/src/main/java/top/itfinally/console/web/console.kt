@@ -1,6 +1,7 @@
 package top.itfinally.console.web
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.util.StringUtils.isEmpty
 import org.springframework.web.bind.annotation.*
 import top.itfinally.console.repository.ConditionQuerySituation
@@ -153,8 +154,8 @@ class PermissionControllerExtended {
     return permissionService.removeByIdIs(permissionId)
   }
 
-  @PostMapping("/record_by_id_is/{permissionId}")
-  fun recordByIdIs(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
+  @PostMapping("/recover_by_id_is/{permissionId}")
+  fun recoverByIdIs(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
     if (isEmpty(permissionId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
@@ -171,8 +172,8 @@ class PermissionControllerExtended {
     return permissionService.removeAllByIdIn(permissionIds)
   }
 
-  @PostMapping("/record_all_by_id_in")
-  fun recordAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
+  @PostMapping("/recover_all_by_id_in")
+  fun recoverAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
     if (null == permissionIds || permissionIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -227,8 +228,8 @@ class RoleControllerExtended {
     return roleService.removeByIdIs(roleId)
   }
 
-  @PostMapping("/record_by_id_is/{roleId}")
-  fun recordByIdIs(@PathVariable("roleId") roleId: String): BasicResponse.It {
+  @PostMapping("/recover_by_id_is/{roleId}")
+  fun recoverByIdIs(@PathVariable("roleId") roleId: String): BasicResponse.It {
     if (isEmpty(roleId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
@@ -245,8 +246,8 @@ class RoleControllerExtended {
     return roleService.removeAllByIdIn(roleIds)
   }
 
-  @PostMapping("/record_all_by_id_in")
-  fun recordAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PostMapping("/recover_all_by_id_in")
+  fun recoverAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
     if (null == roleIds || roleIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -315,8 +316,8 @@ class DepartmentControllerExtended {
     return departmentService.removeByIdIs(departmentId)
   }
 
-  @PostMapping("/record_by_id_is/{departmentId}")
-  fun recordByIdIs(@PathVariable("departmentId") departmentId: String): BasicResponse.It {
+  @PostMapping("/recover_by_id_is/{departmentId}")
+  fun recoverByIdIs(@PathVariable("departmentId") departmentId: String): BasicResponse.It {
     if (isEmpty(departmentId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -333,8 +334,8 @@ class DepartmentControllerExtended {
     return departmentService.removeAllByIdIn(departmentId)
   }
 
-  @PostMapping("/record_all_by_id_in")
-  fun recordAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
+  @PostMapping("/recover_all_by_id_in")
+  fun recoverAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
     if (null == departmentId || departmentId.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department ids.")
     }

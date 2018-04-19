@@ -48,7 +48,7 @@ open class SecurityBeanFactory {
   }
 }
 
-open class SecurityConfigure : WebSecurityConfigurerAdapter() {
+open class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
   @Autowired
   private

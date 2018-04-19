@@ -59,7 +59,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
   protected val genericType: Class<Entity>
 
   @Autowired
-  lateinit var entityManager: EntityManager
+  protected lateinit var entityManager: EntityManager
 
   init {
     val token = object : TypeToken<Entity>(javaClass) {}

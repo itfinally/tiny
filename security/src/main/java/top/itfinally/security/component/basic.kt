@@ -66,11 +66,17 @@ class JwtAuthenticationToken(private val token: String,
   }
 }
 
+interface AccessForbiddenCallback {
+  fun handle(request: HttpServletRequest, response: HttpServletResponse, authException: RuntimeException)
+}
+
 abstract class AbstractAccessForbiddenHandler : AuthenticationEntryPoint, AccessDeniedHandler {
 
   @Autowired
-  private
-  lateinit var jsonMapper: ObjectMapper
+  private lateinit var jsonMapper: ObjectMapper
+
+  @Autowired(required = false)
+  private lateinit var accessForbiddenCallback: AccessForbiddenCallback
 
   // called when user authentication fails
   protected abstract fun authorityException(authException: AuthenticationException): Any
@@ -79,10 +85,18 @@ abstract class AbstractAccessForbiddenHandler : AuthenticationEntryPoint, Access
   protected abstract fun accessDeniedException(accessDeniedException: AccessDeniedException): Any
 
   override fun commence(request: HttpServletRequest, response: HttpServletResponse, authException: AuthenticationException) {
+    if (::accessForbiddenCallback.isLateinit) {
+      accessForbiddenCallback.handle(request, response, authException)
+    }
+
     handler(response, authorityException(authException))
   }
 
   override fun handle(request: HttpServletRequest, response: HttpServletResponse, accessDeniedException: AccessDeniedException) {
+    if (::accessForbiddenCallback.isLateinit) {
+      accessForbiddenCallback.handle(request, response, accessDeniedException)
+    }
+
     handler(response, accessDeniedException(accessDeniedException))
   }
 

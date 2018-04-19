@@ -43,12 +43,37 @@ Java web 项目基本都要求有一个后台管理系统, 该框架目的在于
      abstract fun loadUserByAccount(username: String): AbstractUserDetail<Entity>?
 }
  ```
+ 
+ 3. 然后需要编写一个类来继承 `SecurityConfigure` 来开启 Spring-Security
 
- 3. 最后启动项目即可.
+ ```kotlin
+ @EnableWebSecurity
+ @Order(SecurityProperties.BASIC_AUTH_ORDER)
+ @EnableGlobalMethodSecurity(prePostEnabled = true)
+ open class ConsoleSecurityConfigure : SecurityConfigure() {
+ }
+ ```
+ 
+ 如果需要添加自己的配置, 一定要在调用 `super.configure(http)` 之前设置
+ ```kotlin
+ override fun configure(http: HttpSecurity) {
+     // you configuration
+ 
+     super.configure(http)
+ }
+ ```
+
+ 4. (可选) 默认情况下是禁止跨域访问, 如果要跨域还需要继承 Spring 的 `WebMvcConfigurer` 并实现 `addCorsMappings` 方法, 并且该类需要配置为 `@Configuration`, 详情可参考 Spring 文档
+
+ 5. 最后, 因为尚未编写 starter, 因此需要在 `@SpringBootApplication` 的 scanBasePackages 中加入 "top.itfinally".
+
+  ```
+  @SpringBootApplication(scanBasePackages = {"top.itfinally"})
+  ```
 
 值得注意的是, 在用户信息中 UserSecurityId 是将用户与整个权限控制关联的字段, 在整个控制流程内真正流通的是 UserSecurity 对象, 相当于一个人的身份证. 因此在编写用户注册的流程时, 必须创建一个 UserSecurity 对象并且将其 Id 存储在用户信息内.
 
-另外, 在为新用户加密密码时, 请使用 `PasswordEncoder` 对象加密, 该对象直接使用 `@Autowired` 注入即可使用, 当然你也可以使用其他 `PasswordEncoder` 的实现, 但一定要把该实现放入 Spring 内并标注 `@Primary`, 否则在校验时使用的实现与加密使用的实现不一致时将导致无法登陆.
+<strong>另外</strong>, 在为新用户加密密码时, 请使用 `PasswordEncoder` 对象加密, 该对象直接使用 `@Autowired` 注入即可使用, 当然你也可以使用其他 `PasswordEncoder` 的实现, 但一定要把该实现放入 Spring 内并标注 `@Primary`, 否则在校验时使用的实现与加密使用的实现不一致时将导致无法登陆.
 
  
 ## 接口说明
@@ -219,6 +244,9 @@ HTTP 协议规定空出一行即表示 Header 结束, 此处遵循此规定, Hea
 
 项目最初是使用 Mybatis, 但考虑到大部分项目初期都是为了快速开发, 因此摒弃 Mybatis 并采用 Hibernate5. 在新版的 Hibernate 中, EntityManager 对象相当于过去版本的 Session 且线程安全, 同时可以精确控制 SQL 的生成, API 也更为精简和语义化.
 
+另外本项目所有删除操作均为逻辑删除, 同时提供物理删除, 但不推荐使用.
+为了避免时间出现问题, 实体在存储及运行时的时间单位均以毫秒为单位, 即存储长整型, 不推荐存储 Date 对象.
+
 ### core 模块
 
 主要是公共代码, 比如:
@@ -231,6 +259,10 @@ HTTP 协议规定空出一行即表示 Header 结束, 此处遵循此规定, Hea
  * QueryStatus - 查询状态枚举
  * BasicRuntime - 简化 entityManager 查询的一个辅助类, 实现类是 BasicRepository 的一个内部类, 仅限 BasicRepository 及其子类使用
  * BasicRepository 基础 crud 抽象类
+
+在创建自己的数据访问类时, 如果需要默认提供的能力, 可以继承 `BasicRepository` 类, 但相应地, 一个 Repository 只能对应一个实体, 并且该实体必须继承自 `BasicEntity` 类, 另外对应的 vo 实体也需要继承 `BasicVoBean` 类.
+
+在返回 json 数据时, 响应的实体必须是 `BasicResponse`, 
 
 ### security 模块
 
@@ -292,7 +324,7 @@ val authToken = UsernamePasswordAuthenticationToken(entry[0], entry[1])
 
 首先是 AbstractJwtTokenComponent, 登陆后该组件会创建 token, 这里推荐重写该组件并给出更安全的 `java.security.Key` 实例, 比如用不对称加密的密匙. 默认实现使用的 Key 仅仅是使用一个普通字符串生成的 Key 实例. 详细配置可以查看 [jjwt](https://github.com/jwtk/jjwt).
 
-其次是 AbstractUserDetailCachingComponent, 该组件在登陆成功后会缓存 token, 默认使用的缓存是 Guava 的 LoadingCache, 默认配置为写后( 即登陆后 ) 30 天失效, 最大可存储 20480 个 token, 可以通过重写该组件并使用 Redis 集群存储 token 以达到单点登录的效果.
+其次是 AbstractUserDetailCachingComponent, 该组件在登陆成功后会缓存 token, 默认使用的缓存是 Guava 的 LoadingCache, 默认配置为写后( 即登陆后 ) 30 天失效, 最大可存储 20480 个 token.
 
 登陆时给出的 token 必须以 Bearer 字符串开头, 并且与 token 只隔一个空格, 即: `Authorization: Bearer token`
 
@@ -329,11 +361,58 @@ public doSomething() {
 
 ### console 模块
 
+该模块主要为前端项目提供接口, 同时整合 security 模块, 提供菜单及其权限控制逻辑.
 
 
+#### 菜单设计
 
+菜单设计采用主副表形式设计, 主表记录菜单信息, 副表记录菜单节点关系.
 
+| v1_menu_item |     v1_menu_relation  |
+|  :---:   |     :---:   |
+|  name   |   child_id   |
+|  path   |   parent_id |
+| is_root |  gap     |
+| is_leaf |
 
+其中 v1_menu_relation 表通过数据冗余的方式存储菜单关系, 也就是闭包表.
+
+-> 下列是列名
+parent - child - gap
+
+-> 插入 menu1 根节点
+menu1 -  menu1 - 0
+
+-> 在 menu1 下插入一个子节点 menu2
+menu1 - menu2 - 1
+menu2 - menu2 - 0
+
+-> 在 menu3 下插入一个子节点 menu3
+menu1 - menu3 - 2
+menu2 - menu3 - 1
+menu3 - menu3 - 0
+
+如上述所示, 每加入一个节点, 都需要与所有父节点形成新的记录( 包括自身, 也就是说自己是自己的子节点同时也是自己的父节点 )
+
+因此在查询的时候无论是正向/反向,或指定某一代节点, 只需要执行一句简单查询即可:
+
+```sql
+select * from v1_menu_relation where parent_id = ? and gap = ?
+```
+
+另外在创建菜单树时, 采用的策略是广度优先遍历, 各子节点通过在父节点的子节点集合内找到自身, 利用指针的特性间接对父节点进行更新, 用最少的代码创建菜单树, 具体的代码可以查阅 `menu.kt` 文件.
+
+#### 权限管理
+
+整个权限控制设计规则如下:
+
+ 1. 每个角色都有一个 priority( 优先级 ), priority 的值越小, 优先级越高. 其中 0 优先级为最高级, 只能赋予名为 ADMIN 的角色
+ 2. 给部门赋予角色时只能赋予 priority 的值大于但不等于自身所有角色中 priority 值最小的角色
+ 3. 给其他角色赋权时必须拥有 "grant" 权限, 同时只能给出由自身所有角色所拥有的权限
+
+创建菜单树时, 也会检查当前用户是否拥有可以使用当前菜单节点的角色, 所以相应地, 也会有针对菜单的授权, 菜单权限是通过角色来赋予的. 
+
+一般地, 如果用户可以访问某个节点, 那必然能访问该节点的父节点, 如此反复直至根节点. 因此在赋权时, 必须在当前节点及其所有父节点建立与指定角色的关联. 
 
 
 

@@ -131,6 +131,11 @@ open class RoleController {
   open fun queryAvailableAssignRoles(): ListResponse<RoleVoBean> {
     return roleService.queryAvailableAssignRoles()
   }
+
+  @GetMapping("/query_own_roles")
+  open fun queryOwnRoles(): ListResponse<RoleVoBean> {
+    return roleService.queryOwnRoles()
+  }
 }
 
 @RestController
