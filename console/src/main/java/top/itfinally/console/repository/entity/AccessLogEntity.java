@@ -10,12 +10,23 @@ import java.util.Objects;
 @Entity
 @Table( name = "v1_access_log" )
 public class AccessLogEntity extends BasicEntity<AccessLogEntity> {
+  private String requestMethod;
   private String requestPath;
   private String sourceIp;
   private String username;
 
   private boolean isException;
   private String result;
+
+  @Column( name = "request_method" )
+  public String getRequestMethod() {
+    return requestMethod;
+  }
+
+  public AccessLogEntity setRequestMethod( String requestMethod ) {
+    this.requestMethod = requestMethod;
+    return this;
+  }
 
   @Column( name = "request_path" )
   public String getRequestPath() {
@@ -57,7 +68,7 @@ public class AccessLogEntity extends BasicEntity<AccessLogEntity> {
     return this;
   }
 
-  @Column( name = "result" )
+  @Column( name = "result", columnDefinition = "text" )
   public String getResult() {
     return result;
   }
@@ -74,6 +85,7 @@ public class AccessLogEntity extends BasicEntity<AccessLogEntity> {
     if ( !super.equals( o ) ) return false;
     AccessLogEntity that = ( AccessLogEntity ) o;
     return isException == that.isException &&
+        Objects.equals( requestMethod, that.requestMethod ) &&
         Objects.equals( requestPath, that.requestPath ) &&
         Objects.equals( sourceIp, that.sourceIp ) &&
         Objects.equals( username, that.username ) &&
@@ -82,13 +94,14 @@ public class AccessLogEntity extends BasicEntity<AccessLogEntity> {
 
   @Override
   public int hashCode() {
-    return Objects.hash( super.hashCode(), requestPath, sourceIp, username, isException, result );
+    return Objects.hash( super.hashCode(), requestMethod, requestPath, sourceIp, username, isException, result );
   }
 
   @Override
   public String toString() {
     return "AccessLogEntity{" +
-        "requestPath='" + requestPath + '\'' +
+        "requestMethod='" + requestMethod + '\'' +
+        ", requestPath='" + requestPath + '\'' +
         ", sourceIp='" + sourceIp + '\'' +
         ", username='" + username + '\'' +
         ", isException=" + isException +

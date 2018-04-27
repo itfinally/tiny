@@ -25,7 +25,7 @@ open class PermissionRepositoryExtended : PermissionRepository() {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 
-    runtime.select(builder.count(runtime.table.get<Int>("status")))
+    runtime.select(builder.count(runtime.table))
 
     @Suppress("CAST_NEVER_SUCCEEDS")
     return entityManager.createQuery(runtime.build()).singleResult as Long
@@ -46,7 +46,7 @@ open class RoleRepositoryExtended: RoleRepository() {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 
-    runtime.select(builder.count(runtime.table.get<Int>("status")))
+    runtime.select(builder.count(runtime.table))
 
     @Suppress("CAST_NEVER_SUCCEEDS")
     return entityManager.createQuery(runtime.build()).singleResult as Long
@@ -67,7 +67,7 @@ open class DepartmentRepositoryExtended: DepartmentRepository() {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 
-    runtime.select(builder.count(runtime.table.get<Int>("status")))
+    runtime.select(builder.count(runtime.table))
 
     @Suppress("CAST_NEVER_SUCCEEDS")
     return entityManager.createQuery(runtime.build()).singleResult as Long

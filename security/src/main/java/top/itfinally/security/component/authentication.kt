@@ -92,24 +92,24 @@ class PermissionValidationComponent : PermissionEvaluator {
   lateinit var rolePermissionRepository: RolePermissionRepository
 
   private val logger = LoggerFactory.getLogger(javaClass)
-  private val rolePermissionMappers: LoadingCache<String, Set<PermissionEntity>> = CacheBuilder.newBuilder()
+  private val rolePermissionMappers: LoadingCache<String, Set<String>> = CacheBuilder.newBuilder()
       .concurrencyLevel(getRuntime().availableProcessors())
       .expireAfterWrite(5, TimeUnit.DAYS)
       .initialCapacity(64)
-      .maximumSize(2048)
-      .build(object : CacheLoader<String, Set<PermissionEntity>>() {
-        override fun load(roleId: String?): Set<PermissionEntity> {
+      .maximumSize(4096)
+      .build(object : CacheLoader<String, Set<String>>() {
+        override fun load(roleId: String?): Set<String> {
           if (null == roleId || roleId.isBlank()) {
             return setOf()
           }
 
           return rolePermissionRepository.queryPermissionsByRoleIdIs(roleId)
-              .filter { it.status == EntityStatus.NORMAL.code }.toSet()
+              .filter { it.status == EntityStatus.NORMAL.code }.map { it.name }.toSet()
         }
       })
 
-  override fun hasPermission(authentication: Authentication?, targetDomainObject: Any?, permission: Any?): Boolean {
-    if (null == authentication || "anonymousUser" == authentication.principal) {
+  override fun hasPermission(authentication: Authentication, targetDomainObject: Any?, permission: Any?): Boolean {
+    if ("anonymousUser" == authentication.principal) {
       return false
     }
 
@@ -121,8 +121,8 @@ class PermissionValidationComponent : PermissionEvaluator {
 
     return try {
       security.getAuthorities().any {
-        return@any if ("ROLE_ADMIN" == it.authority) true
-        else rolePermissionMappers.get(it.id).any { permission.toString().equals(it.name, true) }
+        return@any if (UserSecurityHolder.getContext().isAdmin) true
+        else rolePermissionMappers.get(it.id).any { permission.toString().equals(it, true) }
       }
 
     } catch (exp: Exception) {

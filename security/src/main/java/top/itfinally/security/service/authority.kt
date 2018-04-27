@@ -13,6 +13,7 @@ import top.itfinally.core.web.ListResponse
 import top.itfinally.core.web.ResponseStatus.*
 import top.itfinally.security.AccountChangeEvent
 import top.itfinally.security.RolePermissionRefreshEvent
+import top.itfinally.security.component.UserSecurityHolder
 import top.itfinally.security.repository.*
 import top.itfinally.security.repository.entity.DepartmentEntity
 import top.itfinally.security.repository.entity.PermissionEntity
@@ -64,7 +65,9 @@ open class RoleService {
     val targetRole = roleRepository.queryByIdIs(roleId)
         ?: return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Illegal role.")
 
-    verifyCurrentOperatorRolesPriority(targetRole.priority)
+    if (UserSecurityHolder.getContext().priorityLowerOrEqual(targetRole.priority)) {
+      throw AccessDeniedException("Can not reset permissions for a higher priority role.")
+    }
 
     rolePermissionRepository.addPermissionsToRole(roleId, permissionIds)
     eventBus.post(RolePermissionRefreshEvent(roleId))
@@ -76,7 +79,9 @@ open class RoleService {
     val targetRole = roleRepository.queryByIdIs(roleId)
         ?: return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Illegal role.")
 
-    verifyCurrentOperatorRolesPriority(targetRole.priority)
+    if (UserSecurityHolder.getContext().priorityLowerOrEqual(targetRole.priority)) {
+      throw AccessDeniedException("Can not reset permissions for a higher priority role.")
+    }
 
     rolePermissionRepository.removePermissionsFromRole(roleId, permissionIds)
     eventBus.post(RolePermissionRefreshEvent(roleId))
@@ -113,27 +118,16 @@ open class RoleService {
 
     return ListResponse<RoleVoBean>(status).setResult(roles)
   }
-
-  protected fun verifyCurrentOperatorRolesPriority(targetPriority: Int) {
-    val userSecurity = SecurityContextHolder.getContext().authentication.principal
-        as? UserSecurityEntity.UserSecurityDelegateEntity<*>
-
-    if (null == userSecurity || userSecurity.getRoleEntities().map { it.priority }.all { it >= targetPriority }) {
-      throw AccessDeniedException("Can not reset permissions for a higher priority role.")
-    }
-  }
 }
 
 @Service
 open class PermissionService {
 
   @Autowired
-  private
-  lateinit var permissionRepository: PermissionRepository
+  private lateinit var permissionRepository: PermissionRepository
 
   @Autowired
-  private
-  lateinit var rolePermissionRepository: RolePermissionRepository
+  private lateinit var rolePermissionRepository: RolePermissionRepository
 
   open fun addPermission(entity: PermissionEntity): BasicResponse.It {
     return if (permissionRepository.existByName(entity.name)) {
@@ -149,7 +143,7 @@ open class PermissionService {
     }
   }
 
-  open fun removePermissionByIdIs(permissionId: String): BasicResponse.It {
+  open fun removePermission(permissionId: String): BasicResponse.It {
     val permission = permissionRepository.queryByIdIs(permissionId)
 
     return if (null == permission || permission.status == EntityStatus.DELETE.code) {
@@ -193,16 +187,13 @@ open class DepartmentService {
 
   @Autowired
   @Qualifier("securityEventBus")
-  private
-  lateinit var eventBus: EventBus
+  private lateinit var eventBus: EventBus
 
   @Autowired
-  private
-  lateinit var departmentRepository: DepartmentRepository
+  private lateinit var departmentRepository: DepartmentRepository
 
   @Autowired
-  private
-  lateinit var departmentRoleRepository: DepartmentRoleRepository
+  private lateinit var departmentRoleRepository: DepartmentRoleRepository
 
   open fun addDepartment(entity: DepartmentEntity): BasicResponse.It {
     return if (departmentRepository.existByName(entity.name)) {
@@ -257,12 +248,10 @@ open class UserSecurityService {
 
   @Autowired
   @Qualifier("securityEventBus")
-  private
-  lateinit var eventBus: EventBus
+  private lateinit var eventBus: EventBus
 
   @Autowired
-  private
-  lateinit var userRoleRepository: UserRoleRepository
+  private lateinit var userRoleRepository: UserRoleRepository
 
   open fun addRolesToUser(userSecurityId: String, roleIds: List<String>): BasicResponse.It {
     userRoleRepository.addRolesToUser(userSecurityId, roleIds)

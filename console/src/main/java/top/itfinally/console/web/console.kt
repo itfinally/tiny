@@ -1,12 +1,14 @@
 package top.itfinally.console.web
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.access.AccessDeniedException
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.util.StringUtils.isEmpty
 import org.springframework.web.bind.annotation.*
+import top.itfinally.console.repository.AccessLogQuerySituation
 import top.itfinally.console.repository.ConditionQuerySituation
 import top.itfinally.console.repository.entity.MenuItemEntity
 import top.itfinally.console.service.*
+import top.itfinally.console.web.vo.AccessLogVoBean
 import top.itfinally.console.web.vo.MenuItemVoBean
 import top.itfinally.core.EntityStatus
 import top.itfinally.core.web.BasicResponse
@@ -19,23 +21,22 @@ import top.itfinally.security.web.vo.RoleVoBean
 
 @RestController
 @RequestMapping("/menu")
-class MenuController {
+open class MenuController {
 
   @Autowired
-  private
-  lateinit var menuService: MenuService
+  private lateinit var menuService: MenuService
 
   @Autowired
-  private
-  lateinit var roleMenuService: RoleMenuService
+  private lateinit var roleMenuService: RoleMenuService
 
   @GetMapping("/get_menus")
-  fun getMenus(): ListResponse<MenuItemVoBean> {
+  open fun getMenus(): ListResponse<MenuItemVoBean> {
     return menuService.getMenus()
   }
 
   @DeleteMapping("/remove_menus")
-  fun removeMenus(@RequestBody menuIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  open fun removeMenus(@RequestBody menuIds: List<String>?): BasicResponse.It {
     if (null == menuIds || menuIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require menu ids.")
     }
@@ -44,7 +45,8 @@ class MenuController {
   }
 
   @PostMapping("/recover_menus")
-  fun recoverMenus(@RequestBody menuIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  open fun recoverMenus(@RequestBody menuIds: List<String>?): BasicResponse.It {
     if (null == menuIds || menuIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require menu ids.")
     }
@@ -53,8 +55,9 @@ class MenuController {
   }
 
   @PostMapping("/add_root_menu")
-  fun addRootMenu(@RequestParam("name") name: String, @RequestParam("path") path: String,
-                  @RequestParam("isLeaf") isLeaf: Boolean): SingleResponse<MenuItemVoBean> {
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  open fun addRootMenu(@RequestParam("name") name: String, @RequestParam("path") path: String,
+                       @RequestParam("isLeaf") isLeaf: Boolean): SingleResponse<MenuItemVoBean> {
     if (isEmpty(name)) {
       return SingleResponse<MenuItemVoBean>(ILLEGAL_REQUEST).setMessage("Require menu name")
     }
@@ -68,8 +71,9 @@ class MenuController {
   }
 
   @PostMapping("/add_menu")
-  fun addMenu(@RequestParam("name") name: String, @RequestParam("path") path: String,
-              @RequestParam("parentId") parentId: String, @RequestParam("isLeaf") isLeaf: Boolean): SingleResponse<MenuItemVoBean> {
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  open fun addMenu(@RequestParam("name") name: String, @RequestParam("path") path: String,
+                   @RequestParam("parentId") parentId: String, @RequestParam("isLeaf") isLeaf: Boolean): SingleResponse<MenuItemVoBean> {
     if (isEmpty(name)) {
       return SingleResponse<MenuItemVoBean>(ILLEGAL_REQUEST).setMessage("Require menu name")
     }
@@ -87,7 +91,8 @@ class MenuController {
   }
 
   @PostMapping("/add_roles_to_menu/{menuId}")
-  fun addRolesToMenu(@PathVariable("menuId") menuId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'grant')")
+  open fun addRolesToMenu(@PathVariable("menuId") menuId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
     if (isEmpty(menuId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require menu id.")
     }
@@ -100,7 +105,8 @@ class MenuController {
   }
 
   @DeleteMapping("/remove_roles_from_menu/{menuId}")
-  fun removeRolesFromMenu(@PathVariable("menuId") menuId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'grant')")
+  open fun removeRolesFromMenu(@PathVariable("menuId") menuId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
     if (isEmpty(menuId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require menu id.")
     }
@@ -113,8 +119,9 @@ class MenuController {
   }
 
   @PostMapping("/update_menu")
-  fun updateMenu(@RequestParam("menuId") menuId: String, @RequestParam("name") name: String,
-                 @RequestParam("path") path: String): BasicResponse.It {
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  open fun updateMenu(@RequestParam("menuId") menuId: String, @RequestParam("name") name: String,
+                      @RequestParam("path") path: String): BasicResponse.It {
     if (isEmpty(menuId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require menu id.")
     }
@@ -129,33 +136,26 @@ class MenuController {
 
 @RestController
 @RequestMapping("/permission")
-class PermissionControllerExtended {
+open class PermissionControllerExtended {
 
   @Autowired
-  private
-  lateinit var permissionService: PermissionServiceExtended
+  private lateinit var permissionService: PermissionServiceExtended
 
   @PostMapping("/query_by_conditions_is")
-  fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<PermissionVoBean> {
-    return permissionService.queryByConditionIs(ConditionQuerySituation.build(conditions))
+  @PreAuthorize("hasPermission(null, 'permission_read')")
+  open fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<PermissionVoBean> {
+    return permissionService.queryByConditionsIs(ConditionQuerySituation.build(conditions))
   }
 
   @PostMapping("/count_by_conditions_is")
-  fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
+  @PreAuthorize("hasPermission(null, 'permission_read')")
+  open fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
     return permissionService.countByConditionIs(ConditionQuerySituation.build(conditions))
   }
 
-  @DeleteMapping("/remove_by_id_is/{permissionId}")
-  fun removeByIdIs(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
-    if (isEmpty(permissionId)) {
-      return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
-    }
-
-    return permissionService.removeByIdIs(permissionId)
-  }
-
   @PostMapping("/recover_by_id_is/{permissionId}")
-  fun recoverByIdIs(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'permission_write')")
+  open fun recoverByIdIs(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
     if (isEmpty(permissionId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
@@ -164,7 +164,8 @@ class PermissionControllerExtended {
   }
 
   @DeleteMapping("/remove_all_by_id_in")
-  fun removeAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'permission_write')")
+  open fun removeAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
     if (null == permissionIds || permissionIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -173,7 +174,8 @@ class PermissionControllerExtended {
   }
 
   @PostMapping("/recover_all_by_id_in")
-  fun recoverAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'permission_write')")
+  open fun recoverAllByIdIn(@RequestBody permissionIds: List<String>?): BasicResponse.It {
     if (null == permissionIds || permissionIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -182,10 +184,11 @@ class PermissionControllerExtended {
   }
 
   @PostMapping("/update/{permissionId}")
-  fun update(@PathVariable("permissionId") id: String,
-             @RequestParam("status") status: Int,
-             @RequestParam("name") name: String,
-             @RequestParam("description") description: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'permission_write')")
+  open fun update(@PathVariable("permissionId") id: String,
+                  @RequestParam("status") status: Int,
+                  @RequestParam("name") name: String,
+                  @RequestParam("description") description: String): BasicResponse.It {
     if (isEmpty(id)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
@@ -204,32 +207,25 @@ class PermissionControllerExtended {
 
 @RestController
 @RequestMapping("/role")
-class RoleControllerExtended {
+open class RoleControllerExtended {
   @Autowired
-  private
-  lateinit var roleService: RoleServiceExtended
+  private lateinit var roleService: RoleServiceExtended
 
   @PostMapping("/query_by_conditions_is")
-  fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<RoleVoBean> {
-    return roleService.queryByConditionIs(ConditionQuerySituation.build(conditions))
+  @PreAuthorize("hasPermission(null, 'role_read')")
+  open fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<RoleVoBean> {
+    return roleService.queryByConditionsIs(ConditionQuerySituation.build(conditions))
   }
 
   @PostMapping("/count_by_conditions_is")
-  fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
+  @PreAuthorize("hasPermission(null, 'role_read')")
+  open fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
     return roleService.countByConditionIs(ConditionQuerySituation.build(conditions))
   }
 
-  @DeleteMapping("/remove_by_id_is/{roleId}")
-  fun removeByIdIs(@PathVariable("roleId") roleId: String): BasicResponse.It {
-    if (isEmpty(roleId)) {
-      return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
-    }
-
-    return roleService.removeByIdIs(roleId)
-  }
-
   @PostMapping("/recover_by_id_is/{roleId}")
-  fun recoverByIdIs(@PathVariable("roleId") roleId: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'role_write')")
+  open fun recoverByIdIs(@PathVariable("roleId") roleId: String): BasicResponse.It {
     if (isEmpty(roleId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
@@ -238,7 +234,8 @@ class RoleControllerExtended {
   }
 
   @DeleteMapping("/remove_all_by_id_in")
-  fun removeAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'role_write')")
+  open fun removeAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
     if (null == roleIds || roleIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -247,7 +244,8 @@ class RoleControllerExtended {
   }
 
   @PostMapping("/recover_all_by_id_in")
-  fun recoverAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'role_write')")
+  open fun recoverAllByIdIn(@RequestBody roleIds: List<String>?): BasicResponse.It {
     if (null == roleIds || roleIds.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission ids.")
     }
@@ -256,11 +254,12 @@ class RoleControllerExtended {
   }
 
   @PostMapping("/update/{roleId}")
-  fun update(@PathVariable("roleId") id: String,
-             @RequestParam("status") status: Int,
-             @RequestParam("name") name: String,
-             @RequestParam("description") description: String,
-             @RequestParam("priority") priority: Int): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'role_write')")
+  open fun update(@PathVariable("roleId") id: String,
+                  @RequestParam("status") status: Int,
+                  @RequestParam("name") name: String,
+                  @RequestParam("description") description: String,
+                  @RequestParam("priority") priority: Int): BasicResponse.It {
     if (isEmpty(id)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require role id.")
     }
@@ -281,7 +280,7 @@ class RoleControllerExtended {
   }
 
   @GetMapping("/query_roles_by_menu_id_is/{menuId}")
-  fun queryRolesByMenuIdIs(@PathVariable("menuId") menuId: String): ListResponse<RoleVoBean> {
+  open fun queryRolesByMenuIdIs(@PathVariable("menuId") menuId: String): ListResponse<RoleVoBean> {
     if (isEmpty(menuId)) {
       return ListResponse<RoleVoBean>(ILLEGAL_REQUEST).setMessage("Require menu id.")
     }
@@ -292,32 +291,25 @@ class RoleControllerExtended {
 
 @RestController
 @RequestMapping("/department")
-class DepartmentControllerExtended {
+open class DepartmentControllerExtended {
   @Autowired
-  private
-  lateinit var departmentService: DepartmentServiceExtended
+  private lateinit var departmentService: DepartmentServiceExtended
 
   @PostMapping("/query_by_conditions_is")
-  fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<DepartmentVoBean> {
-    return departmentService.queryByConditionIs(ConditionQuerySituation.build(conditions))
+  @PreAuthorize("hasPermission(null, 'department_read')")
+  open fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<DepartmentVoBean> {
+    return departmentService.queryByConditionsIs(ConditionQuerySituation.build(conditions))
   }
 
   @PostMapping("/count_by_conditions_is")
-  fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
+  @PreAuthorize("hasPermission(null, 'department_read')")
+  open fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
     return departmentService.countByConditionIs(ConditionQuerySituation.build(conditions))
   }
 
-  @DeleteMapping("/remove_by_id_is/{departmentId}")
-  fun removeByIdIs(@PathVariable("departmentId") departmentId: String): BasicResponse.It {
-    if (isEmpty(departmentId)) {
-      return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
-    }
-
-    return departmentService.removeByIdIs(departmentId)
-  }
-
   @PostMapping("/recover_by_id_is/{departmentId}")
-  fun recoverByIdIs(@PathVariable("departmentId") departmentId: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun recoverByIdIs(@PathVariable("departmentId") departmentId: String): BasicResponse.It {
     if (isEmpty(departmentId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -326,7 +318,8 @@ class DepartmentControllerExtended {
   }
 
   @DeleteMapping("/remove_all_by_id_in")
-  fun removeAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun removeAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
     if (null == departmentId || departmentId.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department ids.")
     }
@@ -335,7 +328,8 @@ class DepartmentControllerExtended {
   }
 
   @PostMapping("/recover_all_by_id_in")
-  fun recoverAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun recoverAllByIdIn(@RequestBody departmentId: List<String>?): BasicResponse.It {
     if (null == departmentId || departmentId.isEmpty()) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department ids.")
     }
@@ -344,10 +338,11 @@ class DepartmentControllerExtended {
   }
 
   @PostMapping("/update/{departmentId}")
-  fun update(@PathVariable("departmentId") id: String,
-             @RequestParam("status") status: Int,
-             @RequestParam("name") name: String,
-             @RequestParam("description") description: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun update(@PathVariable("departmentId") id: String,
+                  @RequestParam("status") status: Int,
+                  @RequestParam("name") name: String,
+                  @RequestParam("description") description: String): BasicResponse.It {
     if (isEmpty(id)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -361,5 +356,24 @@ class DepartmentControllerExtended {
     }
 
     return departmentService.update(id, status, name, description)
+  }
+}
+
+@RestController
+@RequestMapping("/access_log")
+open class AccessLogController {
+  @Autowired
+  private lateinit var accessLogService: AccessLogService
+
+  @PostMapping("/query_by_conditions_is")
+  @PreAuthorize("hasPermission(null, 'access_log_read')")
+  open fun queryByConditionsIs(@RequestBody conditions: Map<String, Any>): ListResponse<AccessLogVoBean> {
+    return accessLogService.queryByConditionsIs(AccessLogQuerySituation.build(conditions))
+  }
+
+  @PostMapping("/count_by_conditions_is")
+  @PreAuthorize("hasPermission(null, 'access_log_read')")
+  open fun countByConditionsIs(@RequestBody conditions: Map<String, Any>): SingleResponse<Long> {
+    return accessLogService.countByConditionIs(AccessLogQuerySituation.build(conditions))
   }
 }

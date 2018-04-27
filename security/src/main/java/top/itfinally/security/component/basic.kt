@@ -174,7 +174,7 @@ class DefaultJwtTokenService : AbstractJwtTokenComponent() {
 abstract class AbstractUserDetailCachingComponent {
   private val accountChangingMarker: LoadingCache<String, Boolean> = CacheBuilder.newBuilder()
       .concurrencyLevel(getRuntime().availableProcessors())
-      .expireAfterWrite(15, TimeUnit.MINUTES)
+      .expireAfterWrite(1, TimeUnit.DAYS)
       .initialCapacity(16)
       .maximumSize(20480)
       .build(object : CacheLoader<String, Boolean>() {
@@ -186,6 +186,8 @@ abstract class AbstractUserDetailCachingComponent {
   abstract fun queryByAccountIs(account: String): UserSecurityEntity.UserSecurityDelegateEntity<*>?
 
   abstract fun caching(account: String, user: UserSecurityEntity.UserSecurityDelegateEntity<*>)
+
+  abstract fun contains(account: String): Boolean
 
   abstract fun remove(account: String)
 
@@ -216,7 +218,7 @@ abstract class AbstractUserDetailCachingComponent {
 class DefaultUserDetailCachingService : AbstractUserDetailCachingComponent() {
   private val userTokenCache = CacheBuilder.newBuilder()
       .concurrencyLevel(getRuntime().availableProcessors())
-      .expireAfterWrite(30, TimeUnit.DAYS)
+      .expireAfterWrite(30, TimeUnit.MINUTES)
       .initialCapacity(64)
       .maximumSize(20480)
       .build(object : CacheLoader<String, UserSecurityEntity.UserSecurityDelegateEntity<*>>() {
@@ -239,6 +241,10 @@ class DefaultUserDetailCachingService : AbstractUserDetailCachingComponent() {
     userTokenCache.put(account, user)
   }
 
+  override fun contains(account: String): Boolean {
+    return userTokenCache.asMap().containsKey(account)
+  }
+
   override fun remove(account: String) {
     userTokenCache.invalidate(account)
   }
@@ -253,7 +259,6 @@ abstract class AbstractValidationImageComponent {
   }
 
   private val validationCodeCache = CacheBuilder.newBuilder()
-      .expireAfterAccess(0, TimeUnit.SECONDS)
       .expireAfterWrite(15, TimeUnit.MINUTES)
       .build<String, String>()
 
@@ -293,21 +298,20 @@ abstract class AbstractValidationImageComponent {
   }
 
   fun validation(account: String, code: String): Boolean {
-    if (validationCodeCache.asMap().containsKey(account)) {
-      return try {
-        val isExist = code.equals(validationCodeCache.get(account) { "" }, true)
+    return try {
+      val matchCode = validationCodeCache.get(account) { "" }
+      val isExist = code.equals(matchCode, true)
 
+      if (isExist) {
         validationCodeCache.invalidate(account)
         loginCounter.invalidate(account)
-
-        isExist
-
-      } catch (exp: ExecutionException) {
-        false
       }
-    }
 
-    return true
+      isExist
+
+    } catch (exp: ExecutionException) {
+      false
+    }
   }
 
   fun clear(account: String) {
@@ -331,7 +335,6 @@ class DefaultValidationImageComponent : AbstractValidationImageComponent() {
     properties.setProperty("kaptcha.image.height", "45")
     properties.setProperty("kaptcha.textproducer.font.size", "32")
 
-//        properties.setProperty( "kaptcha.noise.color", "black" );
     properties.setProperty("kaptcha.textproducer.font.color", "244,86,55")
 
     properties.setProperty("kaptcha.textproducer.char.length", "4")

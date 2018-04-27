@@ -1,6 +1,7 @@
 package top.itfinally.security.web
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.util.StringUtils.isEmpty
 import org.springframework.web.bind.annotation.*
 import top.itfinally.core.EntityStatus
@@ -25,6 +26,7 @@ open class PermissionController {
   lateinit var permissionService: PermissionService
 
   @PostMapping("/add_permission")
+  @PreAuthorize("hasPermission(null, 'permission_write')")
   open fun addPermission(@RequestParam("name") name: String,
                          @RequestParam("description", required = false, defaultValue = "") description: String,
                          @RequestParam("status") status: Int): BasicResponse.It {
@@ -41,12 +43,13 @@ open class PermissionController {
   }
 
   @DeleteMapping("/remove_permission/{permissionId}")
+  @PreAuthorize("hasPermission(null, 'permission_write')")
   open fun removePermission(@PathVariable("permissionId") permissionId: String): BasicResponse.It {
     if (isEmpty(permissionId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require permission id.")
     }
 
-    return permissionService.removePermissionByIdIs(permissionId)
+    return permissionService.removePermission(permissionId)
   }
 
   @GetMapping("/query_own_permissions")
@@ -64,6 +67,7 @@ open class RoleController {
   lateinit var roleService: RoleService
 
   @PostMapping("/add_role")
+  @PreAuthorize("hasPermission(null, 'role_write')")
   open fun addRole(@RequestParam("name") name: String, @RequestParam("description") description: String,
                    @RequestParam("priority") priority: Int,
                    @RequestParam("status") status: Int): BasicResponse.It {
@@ -84,6 +88,7 @@ open class RoleController {
   }
 
   @DeleteMapping("/remove_role/{roleId}")
+  @PreAuthorize("hasPermission(null, 'role_write')")
   open fun removeRole(@PathVariable("roleId") roleId: String): BasicResponse.It {
     if (isEmpty(roleId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require role id.")
@@ -93,6 +98,7 @@ open class RoleController {
   }
 
   @PostMapping("/add_permissions_to_role/{roleId}")
+  @PreAuthorize("hasPermission(null, 'grant')")
   open fun addPermissionsToRole(@PathVariable("roleId") roleId: String, @RequestBody permissionsIds: List<String>?): BasicResponse.It {
     if (isEmpty(roleId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require role id.")
@@ -106,6 +112,7 @@ open class RoleController {
   }
 
   @DeleteMapping("/remove_permissions_from_role/{roleId}")
+  @PreAuthorize("hasPermission(null, 'grant')")
   open fun removePermissionsFromRole(@PathVariable("roleId") roleId: String, @RequestBody permissionsIds: List<String>?): BasicResponse.It {
     if (isEmpty(roleId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require role id.")
@@ -140,14 +147,14 @@ open class RoleController {
 
 @RestController
 @RequestMapping("/department")
-class DepartmentController {
+open class DepartmentController {
 
   @Autowired
-  private
-  lateinit var departmentService: DepartmentService
+  private lateinit var departmentService: DepartmentService
 
   @PostMapping("/add_department")
-  fun addDepartment(@RequestParam("name") name: String,
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun addDepartment(@RequestParam("name") name: String,
                     @RequestParam("description", required = false, defaultValue = "") description: String,
                     @RequestParam("status") status: Int): BasicResponse.It {
     if (isEmpty(name)) {
@@ -162,7 +169,8 @@ class DepartmentController {
   }
 
   @DeleteMapping("/remove_department/{departmentId}")
-  fun removeDepartment(@RequestParam("departmentId") departmentId: String): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'department_write')")
+  open fun removeDepartment(@RequestParam("departmentId") departmentId: String): BasicResponse.It {
     if (isEmpty(departmentId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -171,7 +179,8 @@ class DepartmentController {
   }
 
   @PostMapping("/add_roles_to_department/{departmentId}")
-  fun addRolesToDepartment(@PathVariable("departmentId") departmentId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'grant')")
+  open fun addRolesToDepartment(@PathVariable("departmentId") departmentId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
     if (isEmpty(departmentId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -184,7 +193,8 @@ class DepartmentController {
   }
 
   @DeleteMapping("/remove_roles_from_department/{departmentId}")
-  fun removeRolesFromDepartment(@PathVariable("departmentId") departmentId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
+  @PreAuthorize("hasPermission(null, 'grant')")
+  open fun removeRolesFromDepartment(@PathVariable("departmentId") departmentId: String, @RequestBody roleIds: List<String>?): BasicResponse.It {
     if (isEmpty(departmentId)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require department id.")
     }
@@ -197,7 +207,7 @@ class DepartmentController {
   }
 
   @GetMapping("/query_roles_by_department_id_is/{departmentId}")
-  fun queryRolesByDepartmentIdIs(@PathVariable("departmentId") departmentId: String): ListResponse<RoleEntity> {
+  open fun queryRolesByDepartmentIdIs(@PathVariable("departmentId") departmentId: String): ListResponse<RoleEntity> {
     if (isEmpty(departmentId)) {
       return ListResponse<RoleEntity>(ILLEGAL_REQUEST).setMessage("Require department id.")
     }

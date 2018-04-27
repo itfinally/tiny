@@ -18,6 +18,9 @@ public class ConditionQuerySituation extends BasicQuerySituation<ConditionQueryS
   private long updateTimeStarted = -1;
   private long updateTimeEnd = -1;
 
+  protected ConditionQuerySituation() {
+  }
+
   public String getId() {
     return id;
   }

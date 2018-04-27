@@ -1,5 +1,6 @@
 package top.itfinally.security
 
+import com.google.common.collect.Sets
 import com.google.common.eventbus.EventBus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -18,12 +19,10 @@ import top.itfinally.security.repository.entity.RoleEntity
 open class SecurityInitComponent : ApplicationListener<ContextRefreshedEvent> {
 
   @Autowired
-  private
-  lateinit var roleRepository: RoleRepository
+  private lateinit var roleRepository: RoleRepository
 
   @Autowired
-  private
-  lateinit var permissionRepository: PermissionRepository
+  private lateinit var permissionRepository: PermissionRepository
 
   @Transactional
   override fun onApplicationEvent(event: ContextRefreshedEvent) {
@@ -51,29 +50,29 @@ open class EventBusInitComponent : ApplicationListener<ContextRefreshedEvent> {
 
   @Autowired
   @Qualifier("securityEventBus")
-  private
-  lateinit var eventBus: EventBus
+  private lateinit var eventBus: EventBus
 
   @Autowired
-  private
-  lateinit var permissionValidationComponent: PermissionValidationComponent
+  private lateinit var permissionValidationComponent: PermissionValidationComponent
 
   @Autowired
-  private
-  lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
+  private lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
+
+  private val listenerInstances = Sets.newConcurrentHashSet<Any>()
 
   override fun onApplicationEvent(event: ContextRefreshedEvent) {
-    try {
+    if (listenerInstances.contains(permissionValidationComponent)) {
       eventBus.unregister(permissionValidationComponent)
-    } catch (ignore: Exception) {
     }
 
-    try {
+    if (listenerInstances.contains(userDetailCachingComponent)) {
       eventBus.unregister(userDetailCachingComponent)
-    } catch (ignore: Exception) {
     }
 
-    EventManager.register(eventBus, permissionValidationComponent)
-    EventManager.register(eventBus, userDetailCachingComponent)
+    eventBus.register(permissionValidationComponent)
+    listenerInstances.add(permissionValidationComponent)
+
+    eventBus.register(userDetailCachingComponent)
+    listenerInstances.add(userDetailCachingComponent)
   }
 }

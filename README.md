@@ -26,7 +26,7 @@ Java web 项目基本都要求有一个后台管理系统, 该框架目的在于
  1. 首先需要实现 `AbstractUserDetail`, 定义自己的用户实体.
 
  ```java
- public abstract class AbstractUserDetail<Entity extends BasicEntity<Entity>> extends BasicEntity<Entity> {
+ public abstract class AbstractUserDetail<Entity extends BasicEntity<Entity>> {
   public abstract String getPassword();
 
   // 该字段必须唯一, 因为登陆与访问验证时均使用 username 进行查询
@@ -57,7 +57,7 @@ Java web 项目基本都要求有一个后台管理系统, 该框架目的在于
  如果需要添加自己的配置, 一定要在调用 `super.configure(http)` 之前设置
  ```kotlin
  override fun configure(http: HttpSecurity) {
-     // you configuration
+     // your configuration
  
      super.configure(http)
  }
@@ -74,166 +74,6 @@ Java web 项目基本都要求有一个后台管理系统, 该框架目的在于
 值得注意的是, 在用户信息中 UserSecurityId 是将用户与整个权限控制关联的字段, 在整个控制流程内真正流通的是 UserSecurity 对象, 相当于一个人的身份证. 因此在编写用户注册的流程时, 必须创建一个 UserSecurity 对象并且将其 Id 存储在用户信息内.
 
 <strong>另外</strong>, 在为新用户加密密码时, 请使用 `PasswordEncoder` 对象加密, 该对象直接使用 `@Autowired` 注入即可使用, 当然你也可以使用其他 `PasswordEncoder` 的实现, 但一定要把该实现放入 Spring 内并标注 `@Primary`, 否则在校验时使用的实现与加密使用的实现不一致时将导致无法登陆.
-
- 
-## 接口说明
-
-HTTP 协议规定空出一行即表示 Header 结束, 此处遵循此规定, Header 空行后跟随的是 Body.
-
-此外, 所有接口都通过 `BasicResponse` 及其子类返回相应的数据.
-
-### 基础接口
-
-* 登录:
-  
-  ```
-  POST /verifies/login HTTP/1.1
-  Authorization: Basic "Base64('username:password')"
-  
-  verifyCode='your verify code'
-  ```
-  
-  verifyCode: 验证码, 超出指定次数后需要该参数, 否则属于可选参数
-  
-* 登出:
-  
-  ```
-  GET /verifies/logout HTTP/1.1
-  Authorization: Bearer 'your token'
-  ```
-  
-* 验证码获取:
-
-  ```
-  GET /get_valid_image/{account}/{random} HTTP/1.1
-  ```
-  
-  account: 用户名
-  random: 随机数, 目的是为了防止浏览器缓存
-
-### 权限模块接口
-
-* 添加权限:
-
- ```
- POST /permission/add_permission HTTP/1.1
- Authorization: Bearer 'your token'
- 
- name='permission name'&description='permission description'
- ```
- 
- name: 权限名
- description: 权限描述, 可选
- 
-* 删除权限:
-
- ```
- DELETE /permission/add_permission/{permissionId} HTTP/1.1
- Authorization: Bearer 'your token'
- ```
- 
- permissionId: 权限 Id
- 
-### 角色模块接口
- 
-* 新增角色:
-
- ```
- POST /role/add_role HTTP/1.1
- Authorization: Bearer 'your token'
- 
- name='role name'&description='role description ( option )'
- ```
- 
- name: 角色名
- description: 角色描述, 可选
- 
-* 删除角色:
- 
- ```
- POST /role/remove_role/{roleId} HTTP/1.1
- Authorization: Bearer 'your token'
- ```
- 
- roleId: 角色 Id
- 
-* 对指定角色添加权限:
- 
- ```
- POST /role/add_permissions_to_role/{roleId} HTTP/1.1
- Authorization: Bearer 'your token'
- Content-Type: application/json
- 
- 'request body'
- ```
- 
- roleId: 角色Id
- request body: 由权限 Id 组成的数组
- 
-* 删除指定角色的权限:
- 
- ```
- DELETE /role/remove_permissions_from_role/{roleId} HTTP/1.1
- Authorization: Bearer 'your token'
- Content-Type: application/json
- 
- 'request body'
- ```
- 
- roleId: 角色Id
- request body: 由权限 Id 组成的数组
- 
-* 查询指定角色的权限:
-
- ```
- GET /role/query_permissions_by_role_id_is/{roleId} HTTP/1.1
- Authorization: Bearer 'your token'
- ```
- 
- roleId: 角色Id
- 
-* 查询自己的权限:
-
- ```
- GET /role/query_own_permissions HTTP/1.1
- Authorization: Bearer 'your token'
- ```
- 
-### 部门模块接口
-
-* 新增部门:
-
- ```
- POST /department/add_department HTTP/1.1
- Authorization: Bearer 'your token'
- 
- name='department name'&description='department description'
- ```
- 
- name: 部门名称
- description: 部门名称
- 
-* 删除部门:
-
- ```
- POST /department/remove_department/{departmentId} HTTP/1.1
- Authorization: Bearer 'your token'
- ```
- 
- departmentId: 部门 Id
- 
-* 对指定部门增加权限:
-
- ```
- POST /department/add_roles_to_department/{departmentId} HTTP/1.1
- Authorization: Bearer 'your token'
- 
- 'request body'
- ```
- 
- departmentId: 部门 Id
- request body: 由角色 Id 组成的数组
- 
  
 
 ## 项目描述
@@ -414,5 +254,69 @@ select * from v1_menu_relation where parent_id = ? and gap = ?
 
 一般地, 如果用户可以访问某个节点, 那必然能访问该节点的父节点, 如此反复直至根节点. 因此在赋权时, 必须在当前节点及其所有父节点建立与指定角色的关联. 
 
+如果想获取当前请求的角色, 可以使用 `UserSecurityHolder` 获取, 
+在请求到达服务时, 拦截器会初始化该类. 不过不能使用该类判断用户是否有权限, 或者是否拥有特定角色( 判断是否admin角色除外 ), 这一类判断统一由 `@PreAuthorize` 注解配合 spEl 表达式完成.
+
+### 持久层
+
+好了首先声明一下, 持久层为了偷懒用的是 Hibernate5, 也做了挺多封装来简化上层代码, 当然作者本人其实是个Hibernate黑粉, 不过说实话Hibernate5 的确是改了好多之前我吐槽的东西, 要在合适的地方用合适的工具, 比如我对这套框架定位是快速开发, 不言而喻.
+
+这里要说的是 BasicRepository 类的 withSituation 方法, 还有用来少写点代码的 BasicRuntime( 当然这是个接口, 实现是 BasicRepository 里面的 QueryRuntime 内部类, protected 声明, 你懂的 ), 最后的还有一个 BasicQuerySituation
+
+withSituation 方法需要 BasicRuntime 和 BasicQuerySituation.
+
+首先是 `BasicRuntime`, 因为当初用 Hibernate 时发现这货不能按条件判断添加需要的 select 的字段或者 where 条件, 比如 select:
+
+```java
+if ( condition1 ) {
+  query.select( field1 );
+}
+
+if( condition2 ) {
+  query.select( field2 );
+}
+```
+
+如果你有这种场景基本歇菜, 因为后一个 select 会覆盖前一个 select, 当然也有一个 multiselect 方法, 但是文档上对这个API的定义是, 可以自由 select, 当然表字段和实体的映射也要你自己做咯, 比如:
+
+```java
+xxx.callback( resultSet -> {
+  MyObject entity = new MyObject();
+  entity.setX1(resultSet.getObject(xxx));
+  // etc...
+} );
+```
+
+当然一般场景都是要么全查出来, 要么只查一个, QueryRuntime.select 多于一个参数时也会调用 multiselect 方法.
+
+至于 where 方法和 select 方法的情况类似, 另外调用 where 方法的顺序和 SQL 里的条件的顺序是保持一致的, 所以可以通过定义调用 where 方法的顺序实现 SQL 调优.
+
+```java
+CriteriaBuilder builder = runtime.getBuilder();
+Root table = runtime.getTable();
+
+runtime.where( 
+  builder.greaterThanOrEqualTo( table.get( "createTime" ), createTimeStarted ), 
+  builder.lessThan( table.get( "createTime" ), createTimeEnd ) )
+  
+  .where(table.get("id").in(Lists.of("xxxx1", "xxxx2")))
+```
+
+以上语句相当于下列 sql, 条件顺序跟代码出现的顺序一致
+
+```sql
+where ${createTimeStarted} <= create_time and create_time < ${createTimeEnd} and id in ("xxx1", "xxx2")
+```
+
+接下来是 `BasicQuerySituation`, 其实这个类是为了解决多种组合的条件查询, 用形参列表传参比较恶心, 因为一种组合就等于一个方法签名, 不如统一用一个条件类来控制查询条件来的简洁.
+
+目前用到的有以下几个:
+
+ * BasicQuerySituation.It / BasicQuerySituation 本身的条件
+ * MenuQuerySituation / 菜单查询条件
+ * ConditionQuerySituation / 前端数据查询条件
+ * AccessLogQuerySituation / 访问日记的查询条件
+
+这一堆 xxxSituation 类都是为了解决多条件查询设计的, 配合 BasicRuntime 一起使用, 那就不用在各种地方写一堆条件判断了.
 
 

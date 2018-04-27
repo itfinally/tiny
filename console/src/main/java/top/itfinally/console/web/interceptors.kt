@@ -7,21 +7,52 @@ import org.springframework.context.event.ContextClosedEvent
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import top.itfinally.console.AccessLogRepository
+import top.itfinally.console.repository.AccessLogRepository
 import top.itfinally.console.repository.entity.AccessLogEntity
 import top.itfinally.core.web.BasicResponse
 import top.itfinally.core.web.ResponseStatus.SERVER_ERROR
 import top.itfinally.security.component.AccessForbiddenCallback
 import top.itfinally.security.repository.entity.UserSecurityEntity
 import java.lang.Exception
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+
+// 用于存储当前线程承载的请求
+// 主要解决在多个拦截器中通过判断 HttpServletRequest 对象在 ThreadLocal 的存活
+// 来避免多次记录请求信息的状况, 跨类的共享变量设计尽量少用, 并且作用域越小越好
+private val isAlreadyRecordThisError = ThreadLocal<Boolean>()
+
+@Component
+class HoldingErrorInterceptor : OncePerRequestFilter() {
+  @Autowired
+  private lateinit var objectMapper: ObjectMapper
+
+  @Autowired
+  private lateinit var accessLoggerInterceptor: AccessLoggerInterceptor
+
+  override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
+    try {
+      filterChain.doFilter(request, response)
+
+    } catch (allException: Exception) {
+
+      // 主要是为了记录在 spring-security 的拦截链内触发的异常, 因为 AccessLoggerInterceptor 组件只能记录
+      // 经过自身的请求, 但是在成功登陆或校验身份前是不会经过 AccessLoggerInterceptor, 因此需要在此处再做一次拦截
+      // 记录经过 AccessLoggerInterceptor 前就触发的异常, 并且要注意不能重复记录异常
+      if (null == isAlreadyRecordThisError.get() || !isAlreadyRecordThisError.get()) {
+        accessLoggerInterceptor.buildLog(request, true, allException)
+      }
+
+      isAlreadyRecordThisError.remove()
+
+      response.writer.write(objectMapper.writeValueAsString(BasicResponse.It(SERVER_ERROR).setMessage(allException.message)))
+    }
+  }
+}
 
 @Component
 class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback, ApplicationListener<ContextClosedEvent> {
@@ -30,14 +61,14 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
   private val bufferSize = 32
 
   private val sentinelThread = Executors.newScheduledThreadPool(1)
-  private val loggerContainer = ArrayBlockingQueue<AccessLogEntity>(512)
+  private val loggerContainer = LinkedBlockingQueue<AccessLogEntity>(512)
   private val lock = ReentrantLock()
 
   // 解决抛出 spring-security 异常时, 被专用的异常处理组件拦截导致本组件认为请求成功
-  private val isRaiseExceptionWithSecurity = ThreadLocal<Boolean>()
+  private val isAlreadyRecordInSecurity = ThreadLocal<Boolean>()
 
-  @Volatile
-  private var currentScheduledTask = Task().start()
+  private val task = Task()
+  private val currentScheduledTask = AtomicReference<Future<*>>(task.start())
 
   @Autowired
   private lateinit var accessLogRepository: AccessLogRepository
@@ -57,8 +88,6 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
                   logs.forEach { logger.info(it) }
                 }
               }
-
-              currentScheduledTask = start()
             }
 
           } finally {
@@ -66,22 +95,25 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
           }
         }
       }
+
+      currentScheduledTask.compareAndSet(currentScheduledTask.get(), start())
     }
 
     fun start(): ScheduledFuture<*> {
-      return sentinelThread.schedule(this, 5, TimeUnit.MINUTES)
+      return sentinelThread.schedule(this, 1, TimeUnit.MINUTES)
     }
   }
 
-  private fun submitLogger(request: HttpServletRequest, isException: Boolean, exp: Exception?) {
+  internal fun buildLog(request: HttpServletRequest, isException: Boolean, exp: Exception?) {
     val userSecurity = SecurityContextHolder.getContext()
         ?.authentication?.principal as? UserSecurityEntity.UserSecurityDelegateEntity<*>
 
     loggerContainer.offer(AccessLogEntity()
+        .setException(isException)
         .setSourceIp(request.remoteAddr)
+        .setRequestMethod(request.method)
         .setRequestPath(request.requestURI)
         .setUsername(if (null == userSecurity) "Anonymous" else userSecurity.getUsername())
-        .setException(isException)
         .setResult(if (null == exp) "Request successful" else "${exp::class.java.name} -> ${exp.message}"))
 
     if (loggerContainer.size > bufferSize) {
@@ -98,8 +130,9 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
               }
             }
 
-            currentScheduledTask.cancel(false)
-            currentScheduledTask = Task().start()
+            val scheduled = currentScheduledTask.get()
+            currentScheduledTask.compareAndSet(scheduled, task.start())
+            scheduled.cancel(false)
           }
 
         } finally {
@@ -125,47 +158,35 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
     return logs
   }
 
-  override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
-    try {
-      filterChain.doFilter(request, response)
-
-      if (null == isRaiseExceptionWithSecurity.get() || !isRaiseExceptionWithSecurity.get()) {
-        submitLogger(request, false, null)
-      }
-
-      isRaiseExceptionWithSecurity.remove()
-
-    } catch (exp: Exception) {
-      submitLogger(request, true, exp)
-
-      // 继续往上抛出异常
-      throw exp
-    }
-  }
-
-  // 出现由于权限问题拒绝访问而导致异常时, 该方法的调用会先于 doFilterInternal 的 isRaiseExceptionWithSecurity.get
-  override fun handle(request: HttpServletRequest, response: HttpServletResponse, authException: RuntimeException) {
-    submitLogger(request, true, authException)
-    isRaiseExceptionWithSecurity.set(true)
-  }
-
   override fun onApplicationEvent(event: ContextClosedEvent) {
     sentinelThread.shutdownNow()
     accessLogRepository.saveAll(loggerContainer.toList())
   }
-}
-
-@Component
-class SystemErrorInterceptor : OncePerRequestFilter() {
-  @Autowired
-  private lateinit var objectMapper: ObjectMapper
 
   override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
     try {
       filterChain.doFilter(request, response)
 
+      if (null == isAlreadyRecordInSecurity.get() || !isAlreadyRecordInSecurity.get()) {
+        buildLog(request, false, null)
+      }
+
+      isAlreadyRecordInSecurity.remove()
+
     } catch (allException: Exception) {
-      response.writer.write(objectMapper.writeValueAsString(BasicResponse.It(SERVER_ERROR).setMessage(allException.message)))
+      buildLog(request, true, allException)
+
+      // 上层拦截时不会再重复记录该请求
+      isAlreadyRecordThisError.set(true)
+
+      // 继续往上抛出异常
+      throw allException
     }
+  }
+
+  // 出现由于权限问题拒绝访问而导致异常时, 该方法的调用会先于 doFilterInternal 的 isAlreadyRecordInSecurity.get
+  override fun handle(request: HttpServletRequest, response: HttpServletResponse, authException: RuntimeException) {
+    buildLog(request, true, authException)
+    isAlreadyRecordInSecurity.set(true)
   }
 }

@@ -72,7 +72,7 @@ open class MenuService {
     val menuItemFilter = fun(menuItemId: String): Boolean { return if (isAdmin) true else roleMenuItems.contains(menuItemId) }
     val menuItemMapping = breadthTraversal(rootMenuItems, menuItemFilter)
 
-    return ListResponse<MenuItemVoBean>().setResult(rootMenuItems.mapNotNull { menuItemMapping[it.id] })
+    return ListResponse<MenuItemVoBean>().setResult(rootMenuItems.mapNotNull { menuItemMapping[it.id] }.sortedBy { it.name })
   }
 
   // Combine all menu item to tree.

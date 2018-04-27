@@ -26,7 +26,7 @@ public class BasicQuerySituation<Situation extends BasicQuerySituation<Situation
     }
   }
 
-  public BasicQuerySituation() {
+  protected BasicQuerySituation() {
   }
 
   public BasicQuerySituation( int status ) {

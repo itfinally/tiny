@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table( name = "v1_role_menu", uniqueConstraints =
+@Table( name = "v1_console_role_menu", uniqueConstraints =
 @UniqueConstraint( name = "role_menu", columnNames = { "role_id", "menu_id" } ) )
 public class RoleMenuEntity extends BasicEntity<RoleMenuEntity> {
   private RoleEntity role;

@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table( name = "v1_menu_relation", uniqueConstraints =
+@Table( name = "v1_console_menu_relation", uniqueConstraints =
 @UniqueConstraint( name = "parent_child", columnNames = { "parent_id", "child_id" } ) )
 public class MenuRelationEntity extends BasicEntity<MenuRelationEntity> {
   private int gap;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.eventbus.EventBus
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component
 import org.springframework.util.Base64Utils
 import org.springframework.util.StringUtils
 import org.springframework.web.filter.OncePerRequestFilter
+import top.itfinally.core.web.BasicResponse
 import top.itfinally.core.web.ResponseStatus.SUCCESS
 import top.itfinally.core.web.ResponseStatus.UNAUTHORIZED
 import top.itfinally.core.web.SingleResponse
@@ -101,7 +103,7 @@ class JwtLoginProcessingFilter : AbstractAuthenticationProcessingFilter("/verifi
     validationImageComponent.clear(userSecurityDelegateEntity.getUsername())
     userDetailCachingComponent.caching(userSecurityDelegateEntity.getUsername(), userSecurityDelegateEntity)
 
-    // active 'userDetailCachingComponent' to reset user status
+    // 通知 'userDetailCachingComponent' 组件重置当前账户的状态
     eventBus.post(AccountResetEvent(userSecurityDelegateEntity.getUsername()))
 
     response.contentType = "application/json;charset=UTF-8"
@@ -118,23 +120,19 @@ class JwtAuthorizationFilter : OncePerRequestFilter() {
   private val authenticationDetailsSource = WebAuthenticationDetailsSource()
 
   @Autowired
-  private
-  lateinit var jsonMapper: ObjectMapper
+  private lateinit var jsonMapper: ObjectMapper
 
   @Autowired
-  private
-  lateinit var jwtTokenComponent: AbstractJwtTokenComponent
+  private lateinit var jwtTokenComponent: AbstractJwtTokenComponent
 
   @Autowired
-  private
-  lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
+  private lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
 
   @Autowired(required = false)
-  private
-  var userSecurityComponent: BasicUserSecurityComponent<*>? = null
+  private lateinit var userSecurityComponent: BasicUserSecurityComponent<*>
 
   override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
-    if (null == userSecurityComponent) {
+    if (!::userSecurityComponent.isLateinit) {
       throw UnsupportedOperationException("Please implement interface 'BasicUserSecurityComponent' before use it.")
     }
 
@@ -156,14 +154,14 @@ class JwtAuthorizationFilter : OncePerRequestFilter() {
     var userSecurityDelegateEntity = userDetailCachingComponent.queryByAccountIs(account)
 
     if (null == userSecurityDelegateEntity) {
-      response.writer.write(jsonMapper.writeValueAsString(SingleResponse<Any>(UNAUTHORIZED).setMessage("Token expired.")))
+      response.writer.write(jsonMapper.writeValueAsString(SingleResponse<Any>(UNAUTHORIZED).setMessage("Token expired, please re-login.")))
       return
     }
 
     // refresh account when someone change it
     if (userDetailCachingComponent.isChange(userSecurityDelegateEntity.getUsername())) {
       val userName = (userSecurityDelegateEntity.getUser() as AbstractUserDetail).getUsername()
-      userSecurityDelegateEntity = userSecurityComponent!!.loadUserByUsername(userName) as UserSecurityEntity.UserSecurityDelegateEntity<*>
+      userSecurityDelegateEntity = userSecurityComponent.loadUserByUsername(userName) as UserSecurityEntity.UserSecurityDelegateEntity<*>
 
       userDetailCachingComponent.caching(account, userSecurityDelegateEntity)
     }
@@ -182,24 +180,38 @@ class JwtAuthorizationFilter : OncePerRequestFilter() {
 class JwtLogoutHandler : LogoutHandler, LogoutSuccessHandler {
 
   @Autowired
-  private
-  lateinit var jsonMapper: ObjectMapper
+  private lateinit var jsonMapper: ObjectMapper
 
   @Autowired
-  private
-  lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
+  private lateinit var jwtTokenComponent: AbstractJwtTokenComponent
 
-  override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
-    authentication.isAuthenticated = false
+  @Autowired
+  private lateinit var userDetailCachingComponent: AbstractUserDetailCachingComponent
 
-    val securityDelegateEntity = authentication.principal
-        as? UserSecurityEntity.UserSecurityDelegateEntity<*> ?: return
+  override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
+    var token = request.getHeader("Authorization")
 
-    userDetailCachingComponent.remove(securityDelegateEntity.getUsername())
+    if (StringUtils.isEmpty(token) || !token.startsWith("Bearer ")) {
+      throw BadCredentialsException("Missing token in request headers.")
+    }
+
+    token = token.substring(6).trim()
+    val account = jwtTokenComponent.queryByTokenIs(token)
+    if (null == account || account.isBlank()) {
+      throw BadCredentialsException("Missing account in token.")
+    }
+
+    if (userDetailCachingComponent.contains(account)) {
+      userDetailCachingComponent.remove(account)
+
+    } else {
+      // 针对重复登出给出明确意义
+      throw BadCredentialsException("Missing account in server.")
+    }
   }
 
-  override fun onLogoutSuccess(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
+  override fun onLogoutSuccess(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
     response.contentType = "application/json;charset=UTF-8"
-    response.writer.write(jsonMapper.writeValueAsString(SingleResponse<Any>(SUCCESS).setMessage("Logout successful.")))
+    response.writer.write(jsonMapper.writeValueAsString(BasicResponse.It(SUCCESS).setMessage("Logout successful.")))
   }
 }

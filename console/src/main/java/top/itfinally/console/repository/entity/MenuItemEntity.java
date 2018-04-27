@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import java.util.Objects;
 
 @Entity
-@Table( name = "v1_menu_item" )
+@Table( name = "v1_console_menu_item" )
 public class MenuItemEntity extends BasicEntity<MenuItemEntity> {
   private String name;
   private String path = "";
@@ -42,7 +42,7 @@ public class MenuItemEntity extends BasicEntity<MenuItemEntity> {
     return this;
   }
 
-  @Column( name = "is_root", columnDefinition = "int(3) not null" )
+  @Column( name = "is_root" )
   public boolean isRoot() {
     return isRoot;
   }
@@ -52,7 +52,7 @@ public class MenuItemEntity extends BasicEntity<MenuItemEntity> {
     return this;
   }
 
-  @Column( name = "is_leaf", columnDefinition = "int(3) not null" )
+  @Column( name = "is_leaf" )
   public boolean isLeaf() {
     return isLeaf;
   }

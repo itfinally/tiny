@@ -18,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import top.itfinally.security.component.*
+import top.itfinally.security.web.UserSecurityInjectInterceptor
 
 @Configuration
 open class SecurityBeanFactory {
@@ -51,34 +52,32 @@ open class SecurityBeanFactory {
 open class SecurityConfiguration : WebSecurityConfigurerAdapter() {
 
   @Autowired
-  private
-  lateinit var jwtLoginProcessingFilter: JwtLoginProcessingFilter
+  private lateinit var jwtLoginProcessingFilter: JwtLoginProcessingFilter
 
   @Autowired
-  private
-  lateinit var jwtAuthorizationFilter: JwtAuthorizationFilter
+  private lateinit var jwtAuthorizationFilter: JwtAuthorizationFilter
 
   @Autowired
-  private
-  lateinit var forbiddenHandler: AbstractAccessForbiddenHandler
+  private lateinit var userSecurityInjectInterceptor: UserSecurityInjectInterceptor
 
   @Autowired
-  private
-  lateinit var logoutHandler: JwtLogoutHandler
+  private lateinit var forbiddenHandler: AbstractAccessForbiddenHandler
 
   @Autowired
-  private
-  lateinit var permissionValidationComponent: PermissionEvaluator
+  private lateinit var logoutHandler: JwtLogoutHandler
 
   @Autowired
-  private
-  lateinit var userSecurityComponent: BasicUserSecurityComponent<*>
+  private lateinit var permissionValidationComponent: PermissionEvaluator
+
+  @Autowired
+  private lateinit var userSecurityComponent: BasicUserSecurityComponent<*>
 
   override fun configure(http: HttpSecurity) {
     http.cors().and()
 
         .addFilterBefore(jwtLoginProcessingFilter, UsernamePasswordAuthenticationFilter::class.java)
         .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(userSecurityInjectInterceptor, UsernamePasswordAuthenticationFilter::class.java)
 
         .exceptionHandling()
         .accessDeniedHandler(forbiddenHandler)
@@ -94,15 +93,15 @@ open class SecurityConfiguration : WebSecurityConfigurerAdapter() {
         .and()
 
         .logout()
-        .logoutUrl("/verifies/logout")
         .addLogoutHandler(logoutHandler)
         .logoutSuccessHandler(logoutHandler)
+        .logoutUrl("/verifies/logout")
 
         .and()
 
         .authorizeRequests()
         .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        .antMatchers("/verifies/get_valid_image").permitAll()
+        .antMatchers("/verifies/get_valid_image/**").permitAll()
         .anyRequest().authenticated()
   }
 
