@@ -164,7 +164,7 @@ val authToken = UsernamePasswordAuthenticationToken(entry[0], entry[1])
 
 首先是 AbstractJwtTokenComponent, 登陆后该组件会创建 token, 这里推荐重写该组件并给出更安全的 `java.security.Key` 实例, 比如用不对称加密的密匙. 默认实现使用的 Key 仅仅是使用一个普通字符串生成的 Key 实例. 详细配置可以查看 [jjwt](https://github.com/jwtk/jjwt).
 
-其次是 AbstractUserDetailCachingComponent, 该组件在登陆成功后会缓存 token, 默认使用的缓存是 Guava 的 LoadingCache, 默认配置为写后( 即登陆后 ) 30 天失效, 最大可存储 20480 个 token.
+其次是 AbstractUserDetailCachingComponent, 该组件在登陆成功后会缓存 token, 默认使用的缓存是 Guava 的 LoadingCache, 默认配置为写后( 即登陆后 ) 30 分钟后失效, 最大可存储 20480 个 token.
 
 登陆时给出的 token 必须以 Bearer 字符串开头, 并且与 token 只隔一个空格, 即: `Authorization: Bearer token`
 
@@ -218,18 +218,25 @@ public doSomething() {
 其中 v1_menu_relation 表通过数据冗余的方式存储菜单关系, 也就是闭包表.
 
 -> 下列是列名
+
 parent - child - gap
 
 -> 插入 menu1 根节点
+
 menu1 -  menu1 - 0
 
 -> 在 menu1 下插入一个子节点 menu2
+
 menu1 - menu2 - 1
+
 menu2 - menu2 - 0
 
 -> 在 menu3 下插入一个子节点 menu3
+
 menu1 - menu3 - 2
+
 menu2 - menu3 - 1
+
 menu3 - menu3 - 0
 
 如上述所示, 每加入一个节点, 都需要与所有父节点形成新的记录( 包括自身, 也就是说自己是自己的子节点同时也是自己的父节点 )
@@ -259,7 +266,7 @@ select * from v1_menu_relation where parent_id = ? and gap = ?
 
 ### 持久层
 
-好了首先声明一下, 持久层为了偷懒用的是 Hibernate5, 也做了挺多封装来简化上层代码, 当然作者本人其实是个Hibernate黑粉, 不过说实话Hibernate5 的确是改了好多之前我吐槽的东西, 要在合适的地方用合适的工具, 比如我对这套框架定位是快速开发, 不言而喻.
+好了首先声明一下, 持久层为了偷懒用的是 Hibernate5, 也做了挺多封装来简化上层代码, 当然本人其实是个Hibernate黑粉, 不过说实话 Hibernate5 的确是改了好多之前被吐槽的东西, 要在合适的地方用合适的工具, 比如我对这套框架定位是快速开发, 不言而喻.
 
 这里要说的是 BasicRepository 类的 withSituation 方法, 还有用来少写点代码的 BasicRuntime( 当然这是个接口, 实现是 BasicRepository 里面的 QueryRuntime 内部类, protected 声明, 你懂的 ), 最后的还有一个 BasicQuerySituation
 

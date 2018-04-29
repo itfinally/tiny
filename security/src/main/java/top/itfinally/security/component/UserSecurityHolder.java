@@ -1,6 +1,7 @@
 package top.itfinally.security.component;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+import top.itfinally.core.NullSafety;
 import top.itfinally.security.repository.entity.AbstractUserDetail;
 import top.itfinally.security.repository.entity.RoleEntity;
 import top.itfinally.security.repository.entity.UserSecurityEntity;
@@ -72,7 +73,7 @@ public class UserSecurityHolder {
   }
 
   public static void initContext() {
-    Object target = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Object target = NullSafety.call( () -> SecurityContextHolder.getContext().getAuthentication().getPrincipal() );
     UserSecurityEntity.UserSecurityDelegateEntity usd = target instanceof UserSecurityEntity.UserSecurityDelegateEntity
         ? ( UserSecurityEntity.UserSecurityDelegateEntity ) target
         : null;

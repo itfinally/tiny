@@ -144,8 +144,7 @@ open class MenuService {
 @Service
 open class RoleMenuService {
   @Autowired
-  private
-  lateinit var roleMenuRepository: RoleMenuRepository
+  private lateinit var roleMenuRepository: RoleMenuRepository
 
   fun addRolesToMenuItem(menuId: String, roleIds: List<String>): BasicResponse.It {
     roleMenuRepository.addRolesToMenuItem(menuId, roleIds)

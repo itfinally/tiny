@@ -253,7 +253,7 @@ open class RoleControllerExtended {
     return roleService.recoverAllByIdIn(roleIds)
   }
 
-  @PostMapping("/update/{roleId}")
+  @PostMapping("/d/{roleId}")
   @PreAuthorize("hasPermission(null, 'role_write')")
   open fun update(@PathVariable("roleId") id: String,
                   @RequestParam("status") status: Int,

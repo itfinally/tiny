@@ -2,7 +2,6 @@ package top.itfinally.console.repository;
 
 import org.springframework.util.StringUtils;
 import top.itfinally.core.BasicRuntime;
-import top.itfinally.core.EntityStatus;
 import top.itfinally.core.QueryStatus;
 import top.itfinally.core.repository.BasicEntity;
 import top.itfinally.core.repository.BasicQuerySituation;

@@ -28,23 +28,18 @@ public class ImageVerifyController {
     return this;
   }
 
-  @GetMapping( "/get_valid_image/{account}/{random}" )
-  public void getValidImage( @PathVariable( "account" ) String account, @PathVariable( "random" ) String random,
-                             HttpServletResponse response ) {
+  @GetMapping( "/get_valid_image/{account}/{now}" )
+  public void getValidImage( @PathVariable( "account" ) String account, @PathVariable("now") long now,
+                             HttpServletResponse response ) throws IOException {
 
-    if ( isEmpty( account ) || isEmpty( random ) ) {
+    if ( isEmpty( account ) ) {
       return;
     }
 
     BufferedImage stream = imageVerifyComponent.createImage( account );
 
-    try {
-      response.setContentType( "image/png" );
-      response.setHeader( "Cache-Control", "no-cache" );
-      ImageIO.write( stream, "PNG", response.getOutputStream() );
-
-    } catch ( IOException exp ) {
-      logger.error( "Failed to write valid image to output stream.", exp );
-    }
+    response.setContentType( "image/png" );
+    response.setHeader( "Cache-Control", "no-cache" );
+    ImageIO.write( stream, "PNG", response.getOutputStream() );
   }
 }

@@ -22,14 +22,13 @@ import top.itfinally.security.web.vo.RoleVoBean
 open class PermissionController {
 
   @Autowired
-  private
-  lateinit var permissionService: PermissionService
+  private lateinit var permissionService: PermissionService
 
   @PostMapping("/add_permission")
   @PreAuthorize("hasPermission(null, 'permission_write')")
   open fun addPermission(@RequestParam("name") name: String,
                          @RequestParam("description", required = false, defaultValue = "") description: String,
-                         @RequestParam("status") status: Int): BasicResponse.It {
+                         @RequestParam("status", required = false, defaultValue = "1") status: Int): BasicResponse.It {
 
     if (isEmpty(name) || isEmpty(description)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require name and description.")
@@ -63,14 +62,14 @@ open class PermissionController {
 open class RoleController {
 
   @Autowired
-  private
-  lateinit var roleService: RoleService
+  private lateinit var roleService: RoleService
 
   @PostMapping("/add_role")
   @PreAuthorize("hasPermission(null, 'role_write')")
-  open fun addRole(@RequestParam("name") name: String, @RequestParam("description") description: String,
+  open fun addRole(@RequestParam("name") name: String,
+                   @RequestParam("description", required = false, defaultValue = "") description: String,
                    @RequestParam("priority") priority: Int,
-                   @RequestParam("status") status: Int): BasicResponse.It {
+                   @RequestParam("status", required = false, defaultValue = "1") status: Int): BasicResponse.It {
 
     if (isEmpty(name) || isEmpty(description)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require name and description.")
@@ -155,8 +154,8 @@ open class DepartmentController {
   @PostMapping("/add_department")
   @PreAuthorize("hasPermission(null, 'department_write')")
   open fun addDepartment(@RequestParam("name") name: String,
-                    @RequestParam("description", required = false, defaultValue = "") description: String,
-                    @RequestParam("status") status: Int): BasicResponse.It {
+                         @RequestParam("description", required = false, defaultValue = "") description: String,
+                         @RequestParam("status", required = false, defaultValue = "1") status: Int): BasicResponse.It {
     if (isEmpty(name)) {
       return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Require name and description.")
     }
