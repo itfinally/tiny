@@ -99,14 +99,14 @@ open class MenuService {
         else -> throw IllegalStateException("Menu item '${it.name}' has been broken.")
       }
 
-      val childes = menuRelationRepository.queryByParentIdIs(it.id, MenuQuerySituation().setDirect(true)).filter { it.gap > 0 }
+      val childes = menuRelationRepository.queryByParentIdIs(it.id, MenuQuerySituation().setDirect(true))
 
       if (childes.isEmpty()) {
         return@forEach
       }
 
       val parent = relations[it.id]!!
-      childes.forEach innerForEach@ {
+      childes.forEach innerForEach@{
         if (!hasMenuItem(it.child.id)) {
           return@innerForEach
         }

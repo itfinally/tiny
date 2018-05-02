@@ -526,7 +526,9 @@ name: 部门名
  ```
  
  name: 菜单名
+ 
  path: vue 前端路由路径, 菜单点击时会触发这里指定的路由
+ 
  isLeaf: 是否叶节点, true or false
  
 * 添加非根节点的菜单项:
@@ -539,8 +541,11 @@ name: 部门名
  ```
  
  name: 菜单名
+ 
  path: vue 前端路由路径, 菜单点击时会触发这里指定的路由
+ 
  parentId: 父菜单的 id
+ 
  isLeaf: 是否叶节点, true or false
  
 * 给指定角色开放指定菜单:
@@ -554,6 +559,7 @@ name: 部门名
  ```
  
  menuId: 指定的菜单 id
+ 
  request body: 由角色 Id 组成的数组
  
 * 禁止指定角色访问指定菜单
@@ -567,18 +573,21 @@ name: 部门名
  ```
  
  menuId: 指定的菜单 id
+ 
  request body: 由角色 Id 组成的数组
  
 * 更新菜单信息
 
-  ```http
-  POST /menu/update_menu HTTP/1.1
-  Authorization: Bearer 'your token'
+ ```http
+ POST /menu/update_menu HTTP/1.1
+ Authorization: Bearer 'your token'
   
-  menuId='menu id'&name='menu name'&path='menu path'
-  ```
+ menuId='menu id'&name='menu name'&path='menu path'
+ ```
   
-  menuId: 菜单 id
-  name: 菜单名
-  path: vue 前端路由路径, 菜单点击时会触发这里指定的路由
+menuId: 菜单 id
+
+name: 菜单名
+
+path: vue 前端路由路径, 菜单点击时会触发这里指定的路由
 
