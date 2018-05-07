@@ -3,72 +3,91 @@ package top.itfinally.core.repository;
 import top.itfinally.core.EntityStatus;
 import top.itfinally.core.QueryStatus;
 
-@SuppressWarnings( "unchecked" )
-public class BasicQuerySituation<Situation extends BasicQuerySituation<Situation>> {
-  protected int beginRow = QueryStatus.NOT_PAGING.getCode();
-  protected int row = QueryStatus.NOT_PAGING.getCode();
-  protected int status = EntityStatus.NORMAL.getCode();
+import java.util.Map;
 
-  public static class It extends BasicQuerySituation<It> {
-    public It() {
+public class BasicQuerySituation {
+  protected int beginRow;
+  protected int status;
+  protected int row;
+
+  @SuppressWarnings( "unchecked" )
+  protected static class InnerBuilder<SituationType extends BasicQuerySituation,
+      BuilderType extends BasicQuerySituation.InnerBuilder<SituationType, BuilderType>> {
+    private int beginRow = QueryStatus.NOT_PAGING.getCode();
+    private int row = QueryStatus.NOT_PAGING.getCode();
+    private int status = EntityStatus.NORMAL.getCode();
+
+    protected InnerBuilder() {
     }
 
-    public It( int status ) {
-      super( status );
+    protected InnerBuilder( Map<String, Object> conditions ) {
+      if ( null == conditions ) {
+        return;
+      }
+
+      if ( conditions.containsKey( "status" ) && conditions.get( "status" ) instanceof Integer ) {
+        status = ( int ) conditions.get( "status" );
+      }
+
+      if ( conditions.containsKey( "beginRow" ) && conditions.get( "beginRow" ) instanceof Integer ) {
+        beginRow = ( int ) conditions.get( "beginRow" );
+      }
+
+      if ( conditions.containsKey( "row" ) && conditions.get( "row" ) instanceof Integer ) {
+        row = ( int ) conditions.get( "row" );
+      }
     }
 
-    public It( int beginRow, int row ) {
-      super( beginRow, row );
+    public BuilderType setBeginRow( int beginRow ) {
+      this.beginRow = beginRow;
+      return ( BuilderType ) this;
     }
 
-    public It( int status, int beginRow, int row ) {
-      super( status, beginRow, row );
+    public BuilderType setRow( int row ) {
+      this.row = row;
+      return ( BuilderType ) this;
+    }
+
+    public BuilderType setStatus( int status ) {
+      this.status = status;
+      return ( BuilderType ) this;
+    }
+
+    protected SituationType build( SituationType situation ) {
+      situation.beginRow = beginRow;
+      situation.status = status;
+      situation.row = row;
+
+      return situation;
+    }
+  }
+
+  public static class Builder extends InnerBuilder<BasicQuerySituation, Builder> {
+    public Builder() {
+    }
+
+    public Builder( Map<String, Object> conditions ) {
+      super( conditions );
+    }
+
+    public BasicQuerySituation build() {
+      return super.build( new BasicQuerySituation() );
     }
   }
 
   protected BasicQuerySituation() {
   }
 
-  public BasicQuerySituation( int status ) {
-    this( QueryStatus.NOT_PAGING.getCode(), QueryStatus.NOT_PAGING.getCode() );
-    this.status = status;
-  }
-
-  public BasicQuerySituation( int beginRow, int row ) {
-    this.beginRow = beginRow;
-    this.row = row;
-  }
-
-  public BasicQuerySituation( int status, int beginRow, int row ) {
-    this( beginRow, row );
-    this.status = status;
-  }
-
   public int getBeginRow() {
     return beginRow;
-  }
-
-  public Situation setBeginRow( int beginRow ) {
-    this.beginRow = beginRow;
-    return ( Situation ) this;
   }
 
   public int getRow() {
     return row;
   }
 
-  public Situation setRow( int row ) {
-    this.row = row;
-    return ( Situation ) this;
-  }
-
   public int getStatus() {
     return status;
-  }
-
-  public Situation setStatus( int status ) {
-    this.status = status;
-    return ( Situation ) this;
   }
 
   public boolean isPaging() {

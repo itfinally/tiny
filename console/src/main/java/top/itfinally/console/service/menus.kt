@@ -18,7 +18,7 @@ import top.itfinally.security.repository.entity.RoleEntity
 import top.itfinally.security.repository.entity.UserSecurityEntity
 
 @Service
-open class MenuService {
+class MenuService {
 
   @Autowired
   private lateinit var menuItemRepository: MenuItemRepository
@@ -29,14 +29,14 @@ open class MenuService {
   @Autowired
   private lateinit var menuRelationRepository: MenuRelationRepository
 
-  open fun addMenu(menu: MenuItemEntity, parentId: String): SingleResponse<MenuItemVoBean> {
+  fun addMenu(menu: MenuItemEntity, parentId: String): SingleResponse<MenuItemVoBean> {
     val localMenu = menuItemRepository.save(menu, parentId)
 
     return if (null == localMenu) SingleResponse<MenuItemVoBean>(ILLEGAL_REQUEST).setMessage("Menu name ${menu.name} already exists.")
     else SingleResponse<MenuItemVoBean>(SUCCESS).setResult(MenuItemVoBean(localMenu))
   }
 
-  open fun updateMenu(menuId: String, name: String, path: String): BasicResponse.It {
+  fun updateMenu(menuId: String, name: String, path: String): BasicResponse.It {
     val menu = menuItemRepository.queryByIdIs(menuId)
         ?: return BasicResponse.It(ILLEGAL_REQUEST).setMessage("Menu is not found.")
 
@@ -53,7 +53,7 @@ open class MenuService {
     return BasicResponse.It(SUCCESS)
   }
 
-  open fun getMenus(): ListResponse<MenuItemVoBean> {
+  fun getMenus(): ListResponse<MenuItemVoBean> {
     val roles = getCurrentOperatorRoles()
     if (roles.isEmpty()) {
       return ListResponse(EMPTY_RESULT)
@@ -99,7 +99,7 @@ open class MenuService {
         else -> throw IllegalStateException("Menu item '${it.name}' has been broken.")
       }
 
-      val childes = menuRelationRepository.queryByParentIdIs(it.id, MenuQuerySituation().setDirect(true))
+      val childes = menuRelationRepository.queryByParentIdIs(it.id, MenuQuerySituation.Builder().setDirect(true).build())
 
       if (childes.isEmpty()) {
         return@forEach
@@ -142,7 +142,7 @@ open class MenuService {
 }
 
 @Service
-open class RoleMenuService {
+class RoleMenuService {
   @Autowired
   private lateinit var roleMenuRepository: RoleMenuRepository
 

@@ -12,16 +12,16 @@ import top.itfinally.security.repository.entity.RoleEntity
 
 @Repository
 @Transactional
-open class PermissionRepositoryExtended : PermissionRepository() {
+class PermissionRepositoryExtended : PermissionRepository() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByConditionsIs(conditions: ConditionQuerySituation): List<PermissionEntity> {
+  fun queryByConditionsIs(conditions: ConditionQuerySituation): List<PermissionEntity> {
     val runtime = conditions.build(QueryRuntime())
     return withSituation(runtime, conditions).resultList
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
+  fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 
@@ -34,15 +34,15 @@ open class PermissionRepositoryExtended : PermissionRepository() {
 
 @Repository
 @Transactional
-open class RoleRepositoryExtended: RoleRepository() {
+class RoleRepositoryExtended: RoleRepository() {
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByConditionsIs(conditions: ConditionQuerySituation): List<RoleEntity> {
+  fun queryByConditionsIs(conditions: ConditionQuerySituation): List<RoleEntity> {
     val runtime = conditions.build(QueryRuntime())
     return withSituation(runtime, conditions).resultList
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
+  fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 
@@ -55,15 +55,15 @@ open class RoleRepositoryExtended: RoleRepository() {
 
 @Repository
 @Transactional
-open class DepartmentRepositoryExtended: DepartmentRepository() {
+class DepartmentRepositoryExtended: DepartmentRepository() {
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByConditionsIs(conditions: ConditionQuerySituation): List<DepartmentEntity> {
+  fun queryByConditionsIs(conditions: ConditionQuerySituation): List<DepartmentEntity> {
     val runtime = conditions.build(QueryRuntime())
     return withSituation(runtime, conditions).resultList
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
+  fun countByConditionsIs(conditions: ConditionQuerySituation): Long {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 

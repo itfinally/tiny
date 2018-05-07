@@ -3,6 +3,8 @@ package top.itfinally.core
 import com.google.common.reflect.TypeToken
 import org.hibernate.Session
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import top.itfinally.core.repository.BasicEntity
@@ -74,7 +76,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByIdIs(id: String): Entity? {
+  fun queryByIdIs(id: String): Entity? {
     val entity = entityManager.find(genericType, id)
 
     entityManager.clear()
@@ -82,7 +84,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryAllByIdIn(ids: List<String>): List<Entity> {
+  fun queryAllByIdIn(ids: List<String>): List<Entity> {
     if (ids.isEmpty()) {
       return listOf()
     }
@@ -103,14 +105,14 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryAll(situation: BasicQuerySituation<*>): List<Entity> {
+  fun queryAll(situation: BasicQuerySituation): List<Entity> {
     val entities = withSituation(QueryRuntime(), situation).resultList
 
     entityManager.clear()
     return entities
   }
 
-  open fun existsById(id: String): Boolean {
+  fun existsById(id: String): Boolean {
     val runtime = QueryRuntime()
     val table = runtime.table
 
@@ -118,12 +120,12 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     return entityManager.createQuery(runtime.build()).resultList.size > 0
   }
 
-  open fun save(entity: Entity): Entity {
+  fun save(entity: Entity): Entity {
     entityManager.persist(entity)
     return entity
   }
 
-  open fun saveAll(entities: List<Entity>): Iterator<Entity> {
+  fun saveAll(entities: List<Entity>): Iterator<Entity> {
     entities.forEachIndexed { index, entity ->
       entityManager.persist(entity)
 
@@ -136,11 +138,11 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     return entities.iterator()
   }
 
-  open fun update(entity: Entity): Entity {
+  fun update(entity: Entity): Entity {
     return entityManager.merge(entity)
   }
 
-  open fun updateAll(entities: List<Entity>): Iterator<Entity> {
+  fun updateAll(entities: List<Entity>): Iterator<Entity> {
     val now = currentTimeMillis()
 
     val newEntities = entities.mapIndexed { index, entity ->
@@ -157,7 +159,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     return newEntities.iterator()
   }
 
-  open fun removeByIdIs(id: String) {
+  fun removeByIdIs(id: String) {
     val builder = entityManager.criteriaBuilder
     val update = builder.createCriteriaUpdate(genericType)
     val table = update.from(genericType)
@@ -169,7 +171,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(update).executeUpdate()
   }
 
-  open fun removeAllByIdIn(ids: List<String>) {
+  fun removeAllByIdIn(ids: List<String>) {
     if (ids.isEmpty()) {
       return
     }
@@ -187,21 +189,21 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(update).executeUpdate()
   }
 
-  open fun remove(entity: Entity) {
+  fun remove(entity: Entity) {
     val now = currentTimeMillis()
     removeByIdIs(entity.id)
 
     entity.setStatus(EntityStatus.DELETE.code).setDeleteTime(now).updateTime = now
   }
 
-  open fun removeAll(entities: List<Entity>) {
+  fun removeAll(entities: List<Entity>) {
     val now = currentTimeMillis()
     removeAllByIdIn(entities.map { it.id })
 
     entities.forEach { it.setStatus(EntityStatus.DELETE.code).setDeleteTime(now).setUpdateTime(now) }
   }
 
-  open fun recoverByIdIs(id: String) {
+  fun recoverByIdIs(id: String) {
     val builder = entityManager.criteriaBuilder
     val update = builder.createCriteriaUpdate(genericType)
     val table = update.from(genericType)
@@ -213,7 +215,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(update).executeUpdate()
   }
 
-  open fun recoverAllByIdIn(ids: List<String>) {
+  fun recoverAllByIdIn(ids: List<String>) {
     if (ids.isEmpty()) {
       return
     }
@@ -231,21 +233,21 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(update).executeUpdate()
   }
 
-  open fun recover(entity: Entity) {
+  fun recover(entity: Entity) {
     val now = currentTimeMillis()
     recoverByIdIs(entity.id)
 
     entity.setUpdateTime(now).setDeleteTime(-1).status = EntityStatus.NORMAL.code
   }
 
-  open fun recoverAll(entities: List<Entity>) {
+  fun recoverAll(entities: List<Entity>) {
     val now = currentTimeMillis()
     recoverAllByIdIn(entities.map { it.id })
 
     entities.forEach { it.setUpdateTime(now).setDeleteTime(-1).setStatus(EntityStatus.NORMAL.code) }
   }
 
-  open fun deleteByIdIs(id: String) {
+  fun deleteByIdIs(id: String) {
     val builder = entityManager.criteriaBuilder
     val delete = builder.createCriteriaDelete(genericType)
     val table = delete.from(genericType)
@@ -254,7 +256,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(delete).executeUpdate()
   }
 
-  open fun deleteAllByIdIn(ids: List<String>) {
+  fun deleteAllByIdIn(ids: List<String>) {
     if (ids.isEmpty()) {
       return
     }
@@ -269,15 +271,15 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     entityManager.createQuery(delete).executeUpdate()
   }
 
-  open fun delete(entity: Entity) {
+  fun delete(entity: Entity) {
     deleteByIdIs(entity.id)
   }
 
-  open fun deleteAll(entities: List<Entity>) {
+  fun deleteAll(entities: List<Entity>) {
     deleteAllByIdIn(entities.map { it.id })
   }
 
-  protected open fun <Return> queryOneBySomethingIdIs(situation: BasicQuerySituation<*>, selectField: String,
+  protected fun <Return> queryOneBySomethingIdIs(situation: BasicQuerySituation, selectField: String,
                                                       conditionField: String, conditionValue: Any): List<Return> {
 
     val runtime = QueryRuntime()
@@ -293,7 +295,7 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     return entities
   }
 
-  protected open fun <Return> queryOneBySomethingIdIn(situation: BasicQuerySituation<*>, selectField: String,
+  protected fun <Return> queryOneBySomethingIdIn(situation: BasicQuerySituation, selectField: String,
                                                       conditionField: String, conditionValues: List<Any>): List<Return> {
     if (conditionValues.isEmpty()) {
       return listOf()
@@ -311,15 +313,15 @@ abstract class BasicRepository<Entity : BasicEntity<Entity>> {
     return entities
   }
 
-  protected fun withSituation(runtime: BasicRuntime<Entity>, situation: BasicQuerySituation<*>): TypedQuery<Entity> {
+  protected fun withSituation(runtime: BasicRuntime<Entity>, situation: BasicQuerySituation): TypedQuery<Entity> {
     if (situation.hasStatus()) {
-      runtime.where(runtime.builder.equal(runtime.table.get<Int>("status"), situation.getStatus()))
+      runtime.where(runtime.builder.equal(runtime.table.get<Int>("status"), situation.status))
     }
 
     val readyToQuery = entityManager.createQuery(runtime.build())
 
-    if (situation.isPaging()) {
-      readyToQuery.setFirstResult(situation.getBeginRow()).maxResults = situation.getRow()
+    if (situation.isPaging) {
+      readyToQuery.setFirstResult(situation.beginRow).maxResults = situation.row
     }
 
     return readyToQuery

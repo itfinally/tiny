@@ -160,7 +160,7 @@ open class PermissionService {
         as? UserSecurityEntity.UserSecurityDelegateEntity<*> ?: return ListResponse(EMPTY_RESULT)
 
     val permissions = if (userSecurity.getRoleEntities().any { it.name.equals("admin", true) }) {
-      permissionRepository.queryAll(BasicQuerySituation.It())
+      permissionRepository.queryAll(BasicQuerySituation.Builder().build())
 
     } else {
       rolePermissionRepository.queryPermissionsByRoleIdsIn(userSecurity.getRoleEntities().map { it.id })

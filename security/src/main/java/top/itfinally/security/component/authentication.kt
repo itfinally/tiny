@@ -75,9 +75,9 @@ abstract class BasicUserSecurityComponent<Entity : AbstractUserDetail<Entity>> :
       throw LockedException(String.format("Account '%s' has been locked.", username))
     }
 
-    val personalRoles = userRoleRepository.queryRolesByUserSecurityIdIs(userSecurity.id, BasicQuerySituation.It(EntityStatus.NORMAL.code))
-    val departments = userDepartmentRepository.queryDepartmentsByUserSecurityIdIs(userSecurity.id, BasicQuerySituation.It(EntityStatus.NORMAL.code))
-    val departmentRoles = departmentRoleRepository.queryRolesByDepartmentIdIn(departments.map { it.id }, BasicQuerySituation.It(EntityStatus.NORMAL.code))
+    val personalRoles = userRoleRepository.queryRolesByUserSecurityIdIs(userSecurity.id, BasicQuerySituation.Builder().build())
+    val departments = userDepartmentRepository.queryDepartmentsByUserSecurityIdIs(userSecurity.id, BasicQuerySituation.Builder().build())
+    val departmentRoles = departmentRoleRepository.queryRolesByDepartmentIdIn(departments.map { it.id }, BasicQuerySituation.Builder().build())
 
     return userSecurity.UserSecurityDelegateEntity<Entity>(entity, Stream.concat(personalRoles.stream(), departmentRoles.stream()).distinct().collect(toList()))
   }

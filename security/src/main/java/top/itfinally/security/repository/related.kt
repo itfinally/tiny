@@ -16,41 +16,41 @@ open class DepartmentRoleRepository : BasicRepository<DepartmentRoleEntity>() {
   // For the reason to compatible with java, There must use overloading to do the same thing.
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryDepartmentsByRoleIdIs(roleId: String): List<DepartmentEntity> {
-    return queryDepartmentsByRoleIdIs(roleId, BasicQuerySituation.It())
+    return queryDepartmentsByRoleIdIs(roleId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryDepartmentsByRoleIdIs(roleId: String, situation: BasicQuerySituation<*>): List<DepartmentEntity> {
+  open fun queryDepartmentsByRoleIdIs(roleId: String, situation: BasicQuerySituation): List<DepartmentEntity> {
     return queryOneBySomethingIdIs(situation, "department", "role", roleId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryRolesByDepartmentIdIs(departmentId: String): List<RoleEntity> {
-    return queryRolesByDepartmentIdIs(departmentId, BasicQuerySituation.It())
+    return queryRolesByDepartmentIdIs(departmentId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByDepartmentIdIs(departmentId: String, situation: BasicQuerySituation<*>): List<RoleEntity> {
+  open fun queryRolesByDepartmentIdIs(departmentId: String, situation: BasicQuerySituation): List<RoleEntity> {
     return queryOneBySomethingIdIs(situation, "role", "department", departmentId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryDepartmentsByRoleIdIn(roleIds: List<String>): List<DepartmentEntity> {
-    return queryDepartmentsByRoleIdIn(roleIds, BasicQuerySituation.It())
+    return queryDepartmentsByRoleIdIn(roleIds, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryDepartmentsByRoleIdIn(roleIds: List<String>, situation: BasicQuerySituation<*>): List<DepartmentEntity> {
+  open fun queryDepartmentsByRoleIdIn(roleIds: List<String>, situation: BasicQuerySituation): List<DepartmentEntity> {
     return queryOneBySomethingIdIn(situation, "department", "role", roleIds)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryRolesByDepartmentIdIn(departmentIds: List<String>): List<RoleEntity> {
-    return queryRolesByDepartmentIdIn(departmentIds, BasicQuerySituation.It())
+    return queryRolesByDepartmentIdIn(departmentIds, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByDepartmentIdIn(departmentIds: List<String>, situation: BasicQuerySituation<*>): List<RoleEntity> {
+  open fun queryRolesByDepartmentIdIn(departmentIds: List<String>, situation: BasicQuerySituation): List<RoleEntity> {
     return queryOneBySomethingIdIn(situation, "role", "department", departmentIds)
   }
 
@@ -117,31 +117,31 @@ open class RolePermissionRepository : BasicRepository<RolePermissionEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryRolesByPermissionIdIs(permissionId: String): List<RoleEntity> {
-    return queryRolesByPermissionIdIs(permissionId, BasicQuerySituation.It())
+    return queryRolesByPermissionIdIs(permissionId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByPermissionIdIs(permissionId: String, situation: BasicQuerySituation<*>): List<RoleEntity> {
+  open fun queryRolesByPermissionIdIs(permissionId: String, situation: BasicQuerySituation): List<RoleEntity> {
     return queryOneBySomethingIdIs(situation, "role", "permission", permissionId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryPermissionsByRoleIdIs(roleId: String): List<PermissionEntity> {
-    return queryPermissionsByRoleIdIs(roleId, BasicQuerySituation.It())
+    return queryPermissionsByRoleIdIs(roleId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryPermissionsByRoleIdIs(roleId: String, situation: BasicQuerySituation<*>): List<PermissionEntity> {
+  open fun queryPermissionsByRoleIdIs(roleId: String, situation: BasicQuerySituation): List<PermissionEntity> {
     return queryOneBySomethingIdIs(situation, "permission", "role", roleId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryPermissionsByRoleIdsIn(roleIds: List<String>): List<PermissionEntity> {
-    return queryPermissionsByRoleIdsIn(roleIds, BasicQuerySituation.It())
+    return queryPermissionsByRoleIdsIn(roleIds, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryPermissionsByRoleIdsIn(roleIds: List<String>, situation: BasicQuerySituation<*>): List<PermissionEntity> {
+  open fun queryPermissionsByRoleIdsIn(roleIds: List<String>, situation: BasicQuerySituation): List<PermissionEntity> {
     return queryOneBySomethingIdIn<PermissionEntity>(situation, "permission", "role", roleIds).distinct()
   }
 
@@ -207,21 +207,21 @@ open class UserRoleRepository : BasicRepository<UserRoleEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryUserSecuritiesByRoleIdIs(roleId: String): List<UserSecurityEntity> {
-    return queryUserSecuritiesByRoleIdIs(roleId, BasicQuerySituation.It())
+    return queryUserSecuritiesByRoleIdIs(roleId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryUserSecuritiesByRoleIdIs(roleId: String, situation: BasicQuerySituation<*>): List<UserSecurityEntity> {
+  open fun queryUserSecuritiesByRoleIdIs(roleId: String, situation: BasicQuerySituation): List<UserSecurityEntity> {
     return queryOneBySomethingIdIs(situation, "userSecurity", "role", roleId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryRolesByUserSecurityIdIs(userSecurityId: String): List<RoleEntity> {
-    return queryRolesByUserSecurityIdIs(userSecurityId, BasicQuerySituation.It())
+    return queryRolesByUserSecurityIdIs(userSecurityId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByUserSecurityIdIs(userSecurityId: String, situation: BasicQuerySituation<*>): List<RoleEntity> {
+  open fun queryRolesByUserSecurityIdIs(userSecurityId: String, situation: BasicQuerySituation): List<RoleEntity> {
     return queryOneBySomethingIdIs(situation, "role", "userSecurity", userSecurityId)
   }
 
@@ -288,21 +288,21 @@ open class UserDepartmentRepository : BasicRepository<UserDepartmentEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryUserSecuritiesByDepartmentIdIs(departmentId: String): List<UserSecurityEntity> {
-    return queryUserSecuritiesByDepartmentIdIs(departmentId, BasicQuerySituation.It())
+    return queryUserSecuritiesByDepartmentIdIs(departmentId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryUserSecuritiesByDepartmentIdIs(departmentId: String, situation: BasicQuerySituation<*>): List<UserSecurityEntity> {
+  open fun queryUserSecuritiesByDepartmentIdIs(departmentId: String, situation: BasicQuerySituation): List<UserSecurityEntity> {
     return queryOneBySomethingIdIs(situation, "userSecurity", "department", departmentId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryDepartmentsByUserSecurityIdIs(userSecurityId: String): List<DepartmentEntity> {
-    return queryDepartmentsByUserSecurityIdIs(userSecurityId, BasicQuerySituation.It())
+    return queryDepartmentsByUserSecurityIdIs(userSecurityId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryDepartmentsByUserSecurityIdIs(userSecurityId: String, situation: BasicQuerySituation<*>): List<DepartmentEntity> {
+  open fun queryDepartmentsByUserSecurityIdIs(userSecurityId: String, situation: BasicQuerySituation): List<DepartmentEntity> {
     return queryOneBySomethingIdIs(situation, "department", "userSecurity", userSecurityId)
   }
 

@@ -11,7 +11,7 @@ import top.itfinally.security.repository.PermissionRepository
 import top.itfinally.security.repository.entity.PermissionEntity
 
 @Component
-open class ConsoleInitComponent : ApplicationListener<ContextRefreshedEvent> {
+class ConsoleInitComponent : ApplicationListener<ContextRefreshedEvent> {
 
   @Autowired
   private lateinit var menuItemRepository: MenuItemRepository
@@ -31,6 +31,7 @@ open class ConsoleInitComponent : ApplicationListener<ContextRefreshedEvent> {
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("角色列表").setPath("/console/security/role/:metadata?"), root.id)
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("部门列表").setPath("/console/security/department/:metadata?"), root.id)
     menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("权限列表").setPath("/console/security/permission/:metadata?"), root.id)
+    menuItemRepository.save(MenuItemEntity().setRoot(false).setLeaf(true).setName("系统日记").setPath("/console/security/access_log/:metadata?"), root.id)
 
     permissionRepository.save(PermissionEntity().setName("access_log_read").setDescription("系统日记读权限"))
   }

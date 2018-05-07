@@ -25,11 +25,11 @@ open class RoleRepository : BasicRepository<RoleEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryByNameIs(name: String): RoleEntity? {
-    return queryByNameIs(name, BasicQuerySituation.It())
+    return queryByNameIs(name, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByNameIs(name: String, situation: BasicQuerySituation<*>): RoleEntity? {
+  open fun queryByNameIs(name: String, situation: BasicQuerySituation): RoleEntity? {
     val runtime = QueryRuntime()
     val builder = runtime.builder
 
@@ -85,11 +85,11 @@ open class PermissionRepository : BasicRepository<PermissionEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
   open fun queryByNameIs(name: String): PermissionEntity? {
-    return queryByNameIs(name, BasicQuerySituation.It())
+    return queryByNameIs(name, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByNameIs(name: String, situation: BasicQuerySituation<*>): PermissionEntity? {
+  open fun queryByNameIs(name: String, situation: BasicQuerySituation): PermissionEntity? {
     val runtime = QueryRuntime()
     val builder = runtime.builder
     val table = runtime.table

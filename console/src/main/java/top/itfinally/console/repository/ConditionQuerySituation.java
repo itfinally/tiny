@@ -10,29 +10,86 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Root;
 import java.util.Map;
 
-public class ConditionQuerySituation extends BasicQuerySituation<ConditionQuerySituation> {
-  private String id = null;
-  private long createTimeStarted = -1;
-  private long createTimeEnd = -1;
-  private long updateTimeStarted = -1;
-  private long updateTimeEnd = -1;
+@SuppressWarnings( "unchecked" )
+public class ConditionQuerySituation extends BasicQuerySituation {
+  protected String id;
+  protected long createTimeStarted;
+  protected long createTimeEnd;
+  protected long updateTimeStarted;
+  protected long updateTimeEnd;
 
   protected ConditionQuerySituation() {
   }
 
+  protected static class InnerBuilder<SituationType extends ConditionQuerySituation, BuilderType
+      extends BasicQuerySituation.InnerBuilder<SituationType, BuilderType>>
+      extends BasicQuerySituation.InnerBuilder<SituationType, BuilderType> {
+
+    private String id = null;
+    private long createTimeStarted = -1;
+    private long createTimeEnd = -1;
+    private long updateTimeStarted = -1;
+    private long updateTimeEnd = -1;
+
+    protected InnerBuilder() {
+    }
+
+    protected InnerBuilder( Map<String, Object> conditions ) {
+      super( conditions );
+
+      if ( null == conditions ) {
+        return;
+      }
+
+      if ( conditions.containsKey( "id" ) && conditions.get( "id" ) instanceof String ) {
+        id = ( String ) conditions.get( "id" );
+      }
+
+      if ( conditions.containsKey( "status" ) && conditions.get( "status" ) instanceof Integer ) {
+        super.setStatus( ( int ) conditions.get( "status" ) );
+
+      } else {
+        super.setStatus( QueryStatus.NOT_STATUS.getCode() );
+      }
+
+      if ( conditions.containsKey( "createTimeStarted" ) && conditions.containsKey( "createTimeEnd" ) ) {
+        createTimeStarted = ( long ) conditions.get( "createTimeStarted" );
+        createTimeEnd = ( long ) conditions.get( "createTimeEnd" );
+      }
+
+      if ( conditions.containsKey( "updateTimeStarted" ) && conditions.containsKey( "updateTimeEnd" ) ) {
+        createTimeStarted = ( long ) conditions.get( "updateTimeStarted" );
+        createTimeEnd = ( long ) conditions.get( "updateTimeEnd" );
+      }
+    }
+
+    @Override
+    protected SituationType build( SituationType situation ) {
+      situation.id = id;
+      situation.createTimeStarted = createTimeStarted;
+      situation.createTimeEnd = createTimeEnd;
+      situation.updateTimeStarted = updateTimeStarted;
+      situation.updateTimeEnd = updateTimeEnd;
+
+      return super.build( situation );
+    }
+  }
+
+  public static class Builder extends InnerBuilder<ConditionQuerySituation, Builder> {
+    public Builder() {
+    }
+
+    public Builder( Map<String, Object> conditions ) {
+      super( conditions );
+    }
+
+    public ConditionQuerySituation build() {
+      return super.build( new ConditionQuerySituation() );
+    }
+  }
+
   public String getId() {
     return id;
-  }
-
-  public ConditionQuerySituation setId( String id ) {
-    this.id = id;
-    return this;
-  }
-
-  public ConditionQuerySituation setCreateTimeRange( long started, long end ) {
-    this.createTimeStarted = started;
-    this.createTimeEnd = end;
-    return this;
   }
 
   public long getCreateTimeStarted() {
@@ -43,48 +100,12 @@ public class ConditionQuerySituation extends BasicQuerySituation<ConditionQueryS
     return createTimeEnd;
   }
 
-  public ConditionQuerySituation setUpdateTimeRange( long started, long end ) {
-    this.updateTimeStarted = started;
-    this.updateTimeEnd = end;
-    return this;
-  }
-
   public long getUpdateTimeStarted() {
     return updateTimeStarted;
   }
 
   public long getUpdateTimeEnd() {
     return updateTimeEnd;
-  }
-
-  public static ConditionQuerySituation build( Map<String, Object> conditions ) {
-    ConditionQuerySituation situation = new ConditionQuerySituation();
-    if ( null == conditions ) {
-      return situation;
-    }
-
-    if ( conditions.containsKey( "id" ) && conditions.get( "id" ) instanceof String ) {
-      situation.id = ( String ) conditions.get( "id" );
-    }
-
-    if ( conditions.containsKey( "status" ) && conditions.get( "status" ) instanceof Integer ) {
-      situation.status = ( int ) conditions.get( "status" );
-
-    } else {
-      situation.status = QueryStatus.NOT_STATUS.getCode();
-    }
-
-    if ( conditions.containsKey( "createTimeStarted" ) && conditions.containsKey( "createTimeEnd" ) ) {
-      situation.createTimeStarted = ( long ) conditions.get( "createTimeStarted" );
-      situation.createTimeEnd = ( long ) conditions.get( "createTimeEnd" );
-    }
-
-    if ( conditions.containsKey( "updateTimeStarted" ) && conditions.containsKey( "updateTimeEnd" ) ) {
-      situation.createTimeStarted = ( long ) conditions.get( "updateTimeStarted" );
-      situation.createTimeEnd = ( long ) conditions.get( "updateTimeEnd" );
-    }
-
-    return situation;
   }
 
   @SuppressWarnings( "unchecked" )

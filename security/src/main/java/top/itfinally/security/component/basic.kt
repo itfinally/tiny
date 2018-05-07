@@ -218,13 +218,13 @@ abstract class AbstractUserDetailCachingComponent {
 class DefaultUserDetailCachingService : AbstractUserDetailCachingComponent() {
   private val userTokenCache = CacheBuilder.newBuilder()
       .concurrencyLevel(getRuntime().availableProcessors())
-      .expireAfterWrite(30, TimeUnit.MINUTES)
+      .expireAfterAccess(30, TimeUnit.MINUTES)
       .initialCapacity(64)
       .maximumSize(20480)
       .build(object : CacheLoader<String, UserSecurityEntity.UserSecurityDelegateEntity<*>>() {
         override fun load(roleId: String?): UserSecurityEntity.UserSecurityDelegateEntity<*> {
           // No cache, just redirect to login
-          throw AccountExpiredException("Require re-login.")
+          throw AccountExpiredException("Is time to re-login.")
         }
       })
 

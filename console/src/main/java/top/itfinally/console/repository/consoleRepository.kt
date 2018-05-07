@@ -8,16 +8,16 @@ import top.itfinally.core.BasicRepository
 
 @Repository
 @Transactional
-open class AccessLogRepository : BasicRepository<AccessLogEntity>() {
+class AccessLogRepository : BasicRepository<AccessLogEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByConditionsIs(conditions: AccessLogQuerySituation): List<AccessLogEntity> {
+  fun queryByConditionsIs(conditions: AccessLogQuerySituation): List<AccessLogEntity> {
     val runtime = conditions.build(QueryRuntime())
     return withSituation(runtime, conditions).resultList
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun countByConditionsIs(conditions: AccessLogQuerySituation): Long {
+  fun countByConditionsIs(conditions: AccessLogQuerySituation): Long {
     val runtime = conditions.build(QueryRuntime())
     val builder = runtime.builder
 

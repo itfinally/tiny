@@ -15,7 +15,7 @@
 
   <properties>
     <java.version>1.8</java.version>
-    <kotlin.version>1.2.30</kotlin.version>
+    <kotlin.version>1.2.41</kotlin.version>
     <maven-compile.version>3.6.2</maven-compile.version>
 
     <guava.version>24.0-jre</guava.version>
@@ -77,20 +77,20 @@
 
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compile.version}</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-          <encoding>utf-8</encoding>
-        </configuration>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
 
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
         <version>${kotlin.version}</version>
+        <configuration>
+          <compilerPlugins>
+            <plugin>spring</plugin>
+          </compilerPlugins>
+          <jvmTarget>1.8</jvmTarget>
+        </configuration>
         <executions>
           <execution>
             <id>compile</id>
@@ -107,9 +107,13 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <jvmTarget>${java.version}</jvmTarget>
-        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-maven-allopen</artifactId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

@@ -44,13 +44,13 @@ Java web 项目基本都要求有一个后台管理系统, 该框架目的在于
 }
  ```
  
- 3. 然后需要编写一个类来继承 `SecurityConfigure` 来开启 Spring-Security
+ 3. 然后需要编写一个类来继承 `ConsoleSecurityConfiguration` 配置, 配上下列注解以开启 Spring-Security 
 
  ```kotlin
  @EnableWebSecurity
  @Order(SecurityProperties.BASIC_AUTH_ORDER)
  @EnableGlobalMethodSecurity(prePostEnabled = true)
- open class ConsoleSecurityConfigure : SecurityConfigure() {
+ open class ExampleConfigure : ConsoleSecurityConfiguration() {
  }
  ```
  

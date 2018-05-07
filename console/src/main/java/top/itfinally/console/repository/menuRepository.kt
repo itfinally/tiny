@@ -16,15 +16,15 @@ import java.lang.System.currentTimeMillis
 @Repository
 @Transactional
 @Suppress("UNCHECKED_CAST")
-open class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
+class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByChildIdIs(childId: String): MutableList<MenuRelationEntity> {
-    return queryByChildIdIs(childId, MenuQuerySituation())
+  fun queryByChildIdIs(childId: String): MutableList<MenuRelationEntity> {
+    return queryByChildIdIs(childId, MenuQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByChildIdIs(childId: String, situation: MenuQuerySituation): MutableList<MenuRelationEntity> {
+  fun queryByChildIdIs(childId: String, situation: MenuQuerySituation): MutableList<MenuRelationEntity> {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
@@ -39,12 +39,12 @@ open class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByParentIdIs(parentId: String): List<MenuRelationEntity> {
-    return queryByParentIdIs(parentId, MenuQuerySituation())
+  fun queryByParentIdIs(parentId: String): List<MenuRelationEntity> {
+    return queryByParentIdIs(parentId, MenuQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryByParentIdIs(parentId: String, situation: MenuQuerySituation): List<MenuRelationEntity> {
+  fun queryByParentIdIs(parentId: String, situation: MenuQuerySituation): List<MenuRelationEntity> {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
@@ -59,12 +59,12 @@ open class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryChildesByParentIdIs(parentId: String): List<MenuItemEntity> {
-    return queryChildesByParentIdIs(parentId, MenuQuerySituation())
+  fun queryChildesByParentIdIs(parentId: String): List<MenuItemEntity> {
+    return queryChildesByParentIdIs(parentId, MenuQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryChildesByParentIdIs(parentId: String, situation: MenuQuerySituation): List<MenuItemEntity> {
+  fun queryChildesByParentIdIs(parentId: String, situation: MenuQuerySituation): List<MenuItemEntity> {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
@@ -79,19 +79,19 @@ open class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryParentsByChildIdIs(childId: String): List<MenuItemEntity> {
-    return queryParentsByChildIdIs(childId, MenuQuerySituation(EntityStatus.NORMAL.code))
+  fun queryParentsByChildIdIs(childId: String): List<MenuItemEntity> {
+    return queryParentsByChildIdIs(childId, MenuQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryParentsByChildIdIs(childId: String, situation: MenuQuerySituation): List<MenuItemEntity> {
+  fun queryParentsByChildIdIs(childId: String, situation: MenuQuerySituation): List<MenuItemEntity> {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
 
     runtime.select(table.get<MenuItemEntity>("parent")).where(builder.equal(table.get<MenuItemEntity>("child").get<String>("id"), childId))
 
-    if (situation.isDirect) {
+    if (situation.isPaging) {
       runtime.where(builder.equal(table.get<Int>("gap"), 1))
     }
 
@@ -159,7 +159,7 @@ open class MenuRelationRepository : BasicRepository<MenuRelationEntity>() {
 
 @Repository
 @Transactional
-open class MenuItemRepository : BasicRepository<MenuItemEntity>() {
+class MenuItemRepository : BasicRepository<MenuItemEntity>() {
 
   @Autowired
   private
@@ -174,7 +174,7 @@ open class MenuItemRepository : BasicRepository<MenuItemEntity>() {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun existByNameIs(name: String): Boolean {
+  fun existByNameIs(name: String): Boolean {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
@@ -184,7 +184,7 @@ open class MenuItemRepository : BasicRepository<MenuItemEntity>() {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRootMenuItems(): List<MenuItemEntity> {
+  fun queryRootMenuItems(): List<MenuItemEntity> {
     val runtime = QueryRuntime()
     val table = runtime.table
     val builder = runtime.builder
@@ -193,12 +193,12 @@ open class MenuItemRepository : BasicRepository<MenuItemEntity>() {
     return entityManager.createQuery(runtime.build()).resultList
   }
 
-  open fun save(menuItem: MenuItemEntity, parentId: String): MenuItemEntity? {
+  fun save(menuItem: MenuItemEntity, parentId: String): MenuItemEntity? {
     if (existByNameIs(menuItem.name)) {
       return null
     }
 
-    val grandParent = menuRelationRepository.queryByChildIdIs(parentId, MenuQuerySituation())
+    val grandParent = menuRelationRepository.queryByChildIdIs(parentId, MenuQuerySituation.Builder().build())
     val relations = mutableListOf<MenuRelationEntity>()
 
     if (menuItem.isRoot && !grandParent.isEmpty()) {
@@ -230,43 +230,43 @@ open class MenuItemRepository : BasicRepository<MenuItemEntity>() {
 
 @Repository
 @Transactional
-open class RoleMenuRepository : BasicRepository<RoleMenuEntity>() {
+class RoleMenuRepository : BasicRepository<RoleMenuEntity>() {
 
   @Autowired
   private
   lateinit var menuRelationRepository: MenuRelationRepository
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryMenusByRoleIdIs(roleId: String): List<MenuItemEntity> {
-    return queryMenusByRoleIdIs(roleId, BasicQuerySituation.It())
+  fun queryMenusByRoleIdIs(roleId: String): List<MenuItemEntity> {
+    return queryMenusByRoleIdIs(roleId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryMenusByRoleIdIs(roleId: String, situation: BasicQuerySituation<*>): List<MenuItemEntity> {
+  fun queryMenusByRoleIdIs(roleId: String, situation: BasicQuerySituation): List<MenuItemEntity> {
     return queryOneBySomethingIdIs(situation, "menuItem", "role", roleId)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryMenusByRoleIdIn(roleIds: List<String>): List<MenuItemEntity> {
-    return queryMenusByRoleIdIn(roleIds, BasicQuerySituation.It())
+  fun queryMenusByRoleIdIn(roleIds: List<String>): List<MenuItemEntity> {
+    return queryMenusByRoleIdIn(roleIds, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryMenusByRoleIdIn(roleIds: List<String>, situation: BasicQuerySituation<*>): List<MenuItemEntity> {
+  fun queryMenusByRoleIdIn(roleIds: List<String>, situation: BasicQuerySituation): List<MenuItemEntity> {
     return queryOneBySomethingIdIn(situation, "menuItem", "role", roleIds)
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByMenuItemIdIs(menuItemId: String): List<RoleEntity> {
-    return queryRolesByMenuItemIdIs(menuItemId, BasicQuerySituation.It())
+  fun queryRolesByMenuItemIdIs(menuItemId: String): List<RoleEntity> {
+    return queryRolesByMenuItemIdIs(menuItemId, BasicQuerySituation.Builder().build())
   }
 
   @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
-  open fun queryRolesByMenuItemIdIs(menuItemId: String, situation: BasicQuerySituation<*>): List<RoleEntity> {
+  fun queryRolesByMenuItemIdIs(menuItemId: String, situation: BasicQuerySituation): List<RoleEntity> {
     return queryOneBySomethingIdIs(situation, "role", "menuItem", menuItemId)
   }
 
-  open fun addRolesToMenuItem(menuId: String, roleIds: List<String>) {
+  fun addRolesToMenuItem(menuId: String, roleIds: List<String>) {
     if (roleIds.isEmpty()) {
       return
     }
@@ -317,7 +317,7 @@ open class RoleMenuRepository : BasicRepository<RoleMenuEntity>() {
     }
   }
 
-  open fun removeRolesFromMenuItem(menuId: String, roleIds: List<String>) {
+  fun removeRolesFromMenuItem(menuId: String, roleIds: List<String>) {
     if (roleIds.isEmpty()) {
       return
     }
