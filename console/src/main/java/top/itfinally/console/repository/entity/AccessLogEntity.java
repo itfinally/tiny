@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import java.util.Objects;
 
 @Entity
-@Table( name = "v1_access_log" )
+@Table( name = "v1_console_access_log" )
 public class AccessLogEntity extends BasicEntity<AccessLogEntity> {
   private String requestMethod;
   private String requestPath;

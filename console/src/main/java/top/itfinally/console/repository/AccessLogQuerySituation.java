@@ -19,7 +19,7 @@ public class AccessLogQuerySituation extends ConditionQuerySituation {
   }
 
   @SuppressWarnings( "unchecked" )
-  public static class InnerBuilder<SituationType extends AccessLogQuerySituation, BuilderType
+  protected static class InnerBuilder<SituationType extends AccessLogQuerySituation, BuilderType
       extends ConditionQuerySituation.InnerBuilder<SituationType, BuilderType>>
       extends ConditionQuerySituation.InnerBuilder<SituationType, BuilderType> {
 
