@@ -24,6 +24,10 @@ import javax.servlet.http.HttpServletResponse
 // 用于存储当前线程承载的请求
 // 主要解决在多个拦截器中通过判断 HttpServletRequest 对象在 ThreadLocal 的存活
 // 来避免多次记录请求信息的状况, 跨类的共享变量设计尽量少用, 并且作用域越小越好
+//
+// 这里用 ThreadLocal 其实有问题, 但只会在 mvc 使用异步回调的方式处理请求时才会凸显
+// 异步 + 线程池可能会出现 A 线程负责某个拦截器, 然后被中断, 最后 B 线程继续处理
+// 即两个线程处理同一个请求
 private val isAlreadyRecordThisError = ThreadLocal<Boolean>()
 
 @Component
@@ -100,7 +104,7 @@ class AccessLoggerInterceptor : OncePerRequestFilter(), AccessForbiddenCallback,
     }
 
     fun start(): ScheduledFuture<*> {
-      return sentinelThread.schedule(this, 1, TimeUnit.MINUTES)
+      return sentinelThread.schedule(this, 5, TimeUnit.MINUTES)
     }
   }
 

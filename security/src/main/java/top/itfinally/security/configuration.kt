@@ -21,19 +21,19 @@ import top.itfinally.security.component.*
 import top.itfinally.security.web.UserSecurityInjectInterceptor
 
 @Configuration
-open class SecurityBeanFactory {
+class SecurityBeanFactory {
   @Bean
-  open fun shaPasswordEncoderBean(): PasswordEncoder {
+  fun shaPasswordEncoderBean(): PasswordEncoder {
     return BCryptPasswordEncoder()
   }
 
   @Bean(name = ["securityEventBus"])
-  open fun securityEventBus(): EventBus {
+  fun securityEventBus(): EventBus {
     return EventBus()
   }
 
   @Bean
-  open fun daoAuthenticationProvider(userDetailCachingComponent: BasicUserSecurityComponent<*>,
+  fun daoAuthenticationProvider(userDetailCachingComponent: BasicUserSecurityComponent<*>,
                                      passwordEncoder: PasswordEncoder): DaoAuthenticationProvider {
 
     val daoAuthenticationProvider = DaoAuthenticationProvider()
@@ -44,7 +44,7 @@ open class SecurityBeanFactory {
   }
 
   @Bean
-  open fun authenticationManager(daoAuthenticationProvider: DaoAuthenticationProvider): AuthenticationManager {
+  fun authenticationManager(daoAuthenticationProvider: DaoAuthenticationProvider): AuthenticationManager {
     return ProviderManager(listOf(daoAuthenticationProvider, AnonymousAuthenticationProvider("noMatch")))
   }
 }
